@@ -323,14 +323,37 @@ export default function App() {
       return;
     }
     
+    // Cold-start: hydrate from localStorage cache if in-memory state is still empty
+    const cid = wsSession.company.id;
+    try {
+      if (vehicles.length === 0) {
+        const cached = localStorage.getItem(`walksafe_vehicles_${cid}`);
+        if (cached) setVehicles(JSON.parse(cached));
+      }
+      if (schedules.length === 0) {
+        const cached = localStorage.getItem(`walksafe_schedules_${cid}`);
+        if (cached) setSchedules(JSON.parse(cached));
+      }
+      if (checks.length === 0) {
+        const cached = localStorage.getItem(`walksafe_checks_${cid}`);
+        if (cached) setChecks(JSON.parse(cached));
+      }
+      if (notifications.length === 0) {
+        const cached = localStorage.getItem(`walksafe_notifications_${cid}`);
+        if (cached) setNotifications(JSON.parse(cached));
+      }
+      if (templates.length === 0) {
+        const cached = localStorage.getItem(`walksafe_templates_${cid}`);
+        if (cached) setTemplates(JSON.parse(cached));
+      }
+    } catch (_e) {}
+
+    
     // Quick-bypass if the browser is explicitly offline to prevent any fetch timeout lag
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      if (!silently) setLoading(true);
-      loadLocalCacheFallback(wsSession.company.id);
+      // Offline - keep current in-memory state, mark offline, still try network
       setOnlineStatus(false);
       setSynced(false);
-      if (!silently) setLoading(false);
-      return;
     }
     
     // Attempt parallel sync state flush to minimize connection timeouts on mobile networks
@@ -372,12 +395,11 @@ export default function App() {
       
       // If we still have pending items after trying, load local cache immediately and return
       if (remainingCheck.length > 0) {
-        if (!silently) setLoading(true);
-        loadLocalCacheFallback(wsSession.company.id);
+        // Keep current in-memory state, mark offline
         setOnlineStatus(false);
         setSynced(false);
         if (!silently) setLoading(false);
-        return;
+        // Still try the main fetch below
       }
     }
 
@@ -469,9 +491,7 @@ export default function App() {
       setOnlineStatus(true);
       
     } catch (err) {
-      console.warn("Backend offline or launching. Using local on-device database backup:", err);
-      // Load from localStorage cache fallback
-      loadLocalCacheFallback(cid);
+      console.warn("Backend offline or timing out. Keeping current in-memory state:", err);
       setSynced(false);
       setOnlineStatus(false);
     } finally {
@@ -481,23 +501,23 @@ export default function App() {
 
   const loadLocalCacheFallback = (cid: string) => {
     try {
+      // Only fill states that are still at initial empty state (cold start), never overwrite fresh data
       const cachedVeh = localStorage.getItem(`walksafe_vehicles_${cid}`);
-      if (cachedVeh) setVehicles(JSON.parse(cachedVeh));
+      if (cachedVeh && vehicles.length === 0) setVehicles(JSON.parse(cachedVeh));
       const cachedDrv = localStorage.getItem(`walksafe_drivers_${cid}`);
-      if (cachedDrv) setDrivers(JSON.parse(cachedDrv));
+      if (cachedDrv && drivers.length === 0) setDrivers(JSON.parse(cachedDrv));
       const cachedChecks = localStorage.getItem(`walksafe_checks_${cid}`);
-      if (cachedChecks) setChecks(JSON.parse(cachedChecks));
+      if (cachedChecks && checks.length === 0) setChecks(JSON.parse(cachedChecks));
       const cachedDefects = localStorage.getItem(`walksafe_defects_${cid}`);
-      if (cachedDefects) setDefects(JSON.parse(cachedDefects));
-      
+      if (cachedDefects && defects.length === 0) setDefects(JSON.parse(cachedDefects));
       const cachedAnn = localStorage.getItem(`walksafe_announcements_${cid}`);
-      if (cachedAnn) setAnnouncements(JSON.parse(cachedAnn));
+      if (cachedAnn && announcements.length === 0) setAnnouncements(JSON.parse(cachedAnn));
       const cachedSch = localStorage.getItem(`walksafe_schedules_${cid}`);
-      if (cachedSch) setSchedules(JSON.parse(cachedSch));
+      if (cachedSch && schedules.length === 0) setSchedules(JSON.parse(cachedSch));
       const cachedNot = localStorage.getItem(`walksafe_notifications_${cid}`);
-      if (cachedNot) setNotifications(JSON.parse(cachedNot));
+      if (cachedNot && notifications.length === 0) setNotifications(JSON.parse(cachedNot));
       const cachedTpl = localStorage.getItem(`walksafe_templates_${cid}`);
-      if (cachedTpl) setTemplates(JSON.parse(cachedTpl));
+      if (cachedTpl && templates.length === 0) setTemplates(JSON.parse(cachedTpl));
     } catch (e) {}
   };
 
