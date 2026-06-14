@@ -394,13 +394,18 @@ export default function App() {
       const loadTimeout = setTimeout(() => loadController.abort(), 4000);
       const fetchOpts = { headers: reqHeaders, signal: loadController.signal };
 
-      const compRes = await fetchWithTimeout("/api/company", fetchOpts);
-      if (!compRes.ok || !compRes.headers.get("content-type")?.includes("application/json")) throw new Error("Network issue");
-      const compData = await compRes.json();
-      setCompany(compData);
-      // Sync back into session if company name changed
-      const updatedSession = { ...wsSession, company: compData };
-      localStorage.setItem("walksafe_workspace_session", JSON.stringify(updatedSession));
+      let compData;
+      try {
+        const compRes = await fetchWithTimeout("/api/company", fetchOpts);
+        if (compRes.ok && compRes.headers.get("content-type")?.includes("application/json")) {
+          compData = await compRes.json();
+          setCompany(compData);
+          const updatedSession = { ...wsSession, company: compData };
+          localStorage.setItem("walksafe_workspace_session", JSON.stringify(updatedSession));
+        }
+      } catch (e) {
+        console.warn("Company fetch failed, using cached:", e);
+      }
       
       // Perform all non-critical bulk entity fetches concurrently heavily optimizing TTIL over bad 3G/Edge
       const [vehRes, drvRes, checksRes, defectsRes, annRes, schRes, notRes, tplRes] = await Promise.all([
@@ -965,7 +970,7 @@ export default function App() {
       // Event listener for real-time background syncs natively pushed from the service worker
       // instead of aggressively polling the server every few seconds.
       const handleSwMessage = (event: MessageEvent) => {
-        if (event.data && event.data.type === 'PUSH_SYNC') {
+        if (event.data && (event.data.type === 'PUSH_SYNC' || event.data.type === 'PUSH_RECEIVED')) {
           processSyncQueue();
           loadDatabaseState(true);
         }

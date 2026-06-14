@@ -1033,8 +1033,14 @@ app.post('/checks', async (c) => {
         else if (targetSch.frequency === "monthly") nextDate.setMonth(nextDate.getMonth() + 1);
         const nextId = "sch-" + Date.now() + Math.floor(Math.random() * 1000);
         const nextDue = nextDate.toISOString().split("T")[0];
+        try {
         await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,templateId,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?,?)")
           .bind(nextId, companyId, targetSch.title, targetSch.vehicleId, nextDue, targetSch.driverId, targetSch.frequency, targetSch.templateId, new Date().toISOString()).run();
+      } catch (_e) {
+        try { await db.prepare("ALTER TABLE schedules ADD COLUMN templateId TEXT").run(); } catch (__e) {}
+        await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?)")
+          .bind(nextId, companyId, targetSch.title, targetSch.vehicleId, nextDue, targetSch.driverId, targetSch.frequency, new Date().toISOString()).run();
+      }
       }
     }
   } else {
@@ -1050,8 +1056,14 @@ app.post('/checks', async (c) => {
         else if (autoSch.frequency === "monthly") nextDate.setMonth(nextDate.getMonth() + 1);
         const nextId = "sch-" + Date.now() + Math.floor(Math.random() * 1000);
         const nextDue = nextDate.toISOString().split("T")[0];
+        try {
         await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,templateId,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?,?)")
           .bind(nextId, companyId, autoSch.title, autoSch.vehicleId, nextDue, autoSch.driverId, autoSch.frequency, autoSch.templateId, new Date().toISOString()).run();
+      } catch (_e) {
+        try { await db.prepare("ALTER TABLE schedules ADD COLUMN templateId TEXT").run(); } catch (__e) {}
+        await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?)")
+          .bind(nextId, companyId, autoSch.title, autoSch.vehicleId, nextDue, autoSch.driverId, autoSch.frequency, new Date().toISOString()).run();
+      }
       }
     }
   }
@@ -1263,10 +1275,18 @@ app.post('/schedules', async (c) => {
   const isRecurring = body.isRecurring ? 1 : 0;
   const createdAt = new Date().toISOString();
 
-  await db.prepare(`
+  try {
+    await db.prepare(`
     INSERT INTO schedules (id, companyId, title, vehicleId, dueDate, status, driverId, frequency, isRecurring, templateId, createdAt)
     VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
   `).bind(id, companyId, title, vehicleId, dueDate, driverId, frequency, isRecurring, body.templateId || null, createdAt).run();
+  } catch (_e) {
+    try { await db.prepare("ALTER TABLE schedules ADD COLUMN templateId TEXT").run(); } catch (__e) {}
+    await db.prepare(`
+    INSERT INTO schedules (id, companyId, title, vehicleId, dueDate, status, driverId, frequency, isRecurring, templateId, createdAt)
+    VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
+  `).bind(id, companyId, title, vehicleId, dueDate, driverId, frequency, isRecurring, body.templateId || null, createdAt).run();
+  }
 
   // Schedule notification dispatch logic
   const veh: any = await db.prepare("SELECT registration FROM vehicles WHERE id = ?").bind(vehicleId).first();
@@ -1349,10 +1369,18 @@ app.put('/schedules/:id', async (c) => {
     const nextId = "sch-" + Date.now() + Math.floor(Math.random() * 1000);
     const nextCreatedAt = new Date().toISOString();
 
-    await db.prepare(`
-      INSERT INTO schedules (id, companyId, title, vehicleId, dueDate, status, driverId, frequency, isRecurring, templateId, createdAt)
-      VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, 1, ?, ?)
-    `).bind(nextId, companyId, title, vehicleId, nextDueDateStr, driverId, freqVal, templateId, nextCreatedAt).run();
+    try {
+      await db.prepare(`
+        INSERT INTO schedules (id, companyId, title, vehicleId, dueDate, status, driverId, frequency, isRecurring, templateId, createdAt)
+        VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, 1, ?, ?)
+      `).bind(nextId, companyId, title, vehicleId, nextDueDateStr, driverId, freqVal, templateId, nextCreatedAt).run();
+    } catch (_e) {
+      try { await db.prepare("ALTER TABLE schedules ADD COLUMN templateId TEXT").run(); } catch (__e) {}
+      await db.prepare(`
+        INSERT INTO schedules (id, companyId, title, vehicleId, dueDate, status, driverId, frequency, isRecurring, createdAt)
+        VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, 1, ?)
+      `).bind(nextId, companyId, title, vehicleId, nextDueDateStr, driverId, freqVal, nextCreatedAt).run();
+    }
 
     // Trigger Notification of recurring schedule setup
     const veh: any = await db.prepare("SELECT registration FROM vehicles WHERE id = ?").bind(vehicleId).first();
