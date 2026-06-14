@@ -52,6 +52,7 @@ export function generateDVSA_PDF(
   };
 
   const safeRelatedDefects = relatedDefects || [];
+const templateName = safeCheck.templateName || undefined;
 
   // Create an A4 portrait PDF document
   const doc = targetDoc || new jsPDF({
@@ -96,7 +97,7 @@ export function generateDVSA_PDF(
 
   doc.setFontSize(8);
   doc.setTextColor("#F5A623");
-  doc.text("DVSA ROADWORTHINESS COMPLIANT", 196, 17.5, { align: "right" });
+  doc.text(templateName ? templateName.toUpperCase() : "DVSA ROADWORTHINESS COMPLIANT", 196, 17.5, { align: "right" });
 
   y = 28;
 
@@ -208,7 +209,7 @@ export function generateDVSA_PDF(
   doc.setFont("Helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(primaryColor);
-  doc.text("DETAILED CHECKLIST RESULTS (27 POINT AUDIT)", 10, y);
+  doc.text(templateName ? `DETAILED CHECKLIST RESULTS: ${templateName.toUpperCase()}` : "DETAILED CHECKLIST RESULTS (27 POINT AUDIT)", 10, y);
   
   y += 4;
 
@@ -407,7 +408,7 @@ export function generateDVSA_PDF(
     doc.setTextColor(grayColor);
     doc.setFontSize(9);
     doc.text("This vehicle has been certified as safe and fully roadworthy in accordance with the standard", 14, y + 12);
-    doc.text("Department for Transport/DVSA guide to maintaining roadworthiness legislation.", 14, y + 17);
+    doc.text(templateName ? "Vehicle has been certified as safe and roadworthy." : "Department for Transport/DVSA guide to maintaining roadworthiness legislation.", 14, y + 17);
     
     y += 26;
   }
@@ -542,7 +543,7 @@ export function generateDVSA_PDF(
   doc.setFont("Helvetica", "normal");
   doc.setTextColor(grayColor);
   doc.text(`Generated At: ${new Date(safeCheck.createdAt).toLocaleDateString("en-GB")} ${new Date(safeCheck.createdAt).toLocaleTimeString("en-GB")} UTC | Stored on Secure Cloud Archive`, 10, y + 9);
-  doc.text(`This document serves as legal proof of daily checks under standard DVSA regulations and must be retained for 15 months minimum.`, 10, y + 13.5);
+  doc.text(templateName ? `This document is a certified compliance record generated through WalkSafe. Retain for 15 months minimum.` : `This document serves as legal proof of daily checks under standard DVSA regulations and must be retained for 15 months minimum.`, 10, y + 13.5);
 
   // Return the PDF document
   return doc;

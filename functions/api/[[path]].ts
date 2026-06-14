@@ -833,7 +833,8 @@ app.post('/checks', async (c) => {
     latitude, 
     longitude,
     miscDamageNotes,
-    miscDamagePhotoUrl
+    miscDamagePhotoUrl,
+    templateName
   } = await c.req.json();
 
   const serverCompletedAt = new Date().toISOString();
@@ -866,8 +867,8 @@ app.post('/checks', async (c) => {
   // Insert the Walkround compliance check record
   try {
     await db.prepare(`
-      INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, miscDamageNotes, miscDamagePhotoUrl)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, miscDamageNotes, miscDamagePhotoUrl, templateName)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       checkId,
       vehicleId,
@@ -885,7 +886,8 @@ app.post('/checks', async (c) => {
       latitude !== undefined ? latitude : null,
       longitude !== undefined ? longitude : null,
       miscDamageNotes !== undefined ? miscDamageNotes : "",
-      miscDamagePhotoUrl !== undefined ? miscDamagePhotoUrl : ""
+      miscDamagePhotoUrl !== undefined ? miscDamagePhotoUrl : "",
+      templateName !== undefined ? templateName : null
     ).run();
   } catch (err: any) {
     try {
@@ -894,11 +896,14 @@ app.post('/checks', async (c) => {
       } catch (e) {}
       try {
         await db.prepare("ALTER TABLE checks ADD COLUMN miscDamagePhotoUrl TEXT").run();
+      try {
+        await db.prepare("ALTER TABLE checks ADD COLUMN templateName TEXT").run();
+      } catch (e) {}
       } catch (e) {}
       
       await db.prepare(`
-        INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, miscDamageNotes, miscDamagePhotoUrl)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, miscDamageNotes, miscDamagePhotoUrl, templateName)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         checkId,
         vehicleId,
@@ -916,12 +921,13 @@ app.post('/checks', async (c) => {
         latitude !== undefined ? latitude : null,
         longitude !== undefined ? longitude : null,
         miscDamageNotes !== undefined ? miscDamageNotes : "",
-        miscDamagePhotoUrl !== undefined ? miscDamagePhotoUrl : ""
+        miscDamagePhotoUrl !== undefined ? miscDamagePhotoUrl : "",
+        templateName !== undefined ? templateName : null
       ).run();
     } catch (altErr) {
       await db.prepare(`
-        INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, templateName)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         checkId,
         vehicleId,
@@ -937,7 +943,8 @@ app.post('/checks', async (c) => {
         JSON.stringify(items),
         createdAt,
         latitude !== undefined ? latitude : null,
-        longitude !== undefined ? longitude : null
+        longitude !== undefined ? longitude : null,
+        templateName !== undefined ? templateName : null
       ).run();
     }
   }

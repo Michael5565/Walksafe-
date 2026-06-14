@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS checks (
   createdAt TEXT,
   miscDamageNotes TEXT,
   miscDamagePhotoUrl TEXT
+  templateName TEXT,  
 );
 
 CREATE TABLE IF NOT EXISTS defects (

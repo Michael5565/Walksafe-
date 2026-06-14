@@ -78,6 +78,7 @@ export interface WalkaroundCheck {
   longitude?: number | null;
   miscDamageNotes?: string;
   miscDamagePhotoUrl?: string;
+  templateName?: string;
 }
 
 export interface Defect {

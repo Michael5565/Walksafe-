@@ -1252,7 +1252,8 @@ export default function App() {
       latitude: checkPayload.latitude,
       longitude: checkPayload.longitude,
       miscDamageNotes: checkPayload.miscDamageNotes,
-      miscDamagePhotoUrl: checkPayload.miscDamagePhotoUrl
+      miscDamagePhotoUrl: checkPayload.miscDamagePhotoUrl,
+      templateName: checkPayload.templateName
     };
 
     // Update checks state locally

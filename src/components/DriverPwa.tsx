@@ -123,6 +123,7 @@ export default function DriverPwa({
   const [authError, setAuthError] = useState<string | null>(null);
   const [currentItemIndex, setCurrentItemIndex] = useState<number>(0);
   const [activeTemplateId, setActiveTemplateId] = useState<string | undefined>(undefined);
+const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>(undefined);
 
   // Solo Operator DVLA State
   const [soloVehReg, setSoloVehReg] = useState("");
@@ -712,6 +713,12 @@ export default function DriverPwa({
       setPendingScheduleId(null);
     }
     setActiveTemplateId(scheduleTemplateId);
+    let resolvedName: string | undefined;
+    if (scheduleTemplateId && templatesFromProps) {
+      const foundTpl = templatesFromProps.find(t => t.id === scheduleTemplateId);
+      if (foundTpl) resolvedName = foundTpl.name;
+    }
+    setActiveTemplateName(resolvedName);
 
     setCurrentItemIndex(0);
     
@@ -866,6 +873,7 @@ export default function DriverPwa({
       longitude: gpsCoords?.longitude || null,
       miscDamageNotes,
       miscDamagePhotoUrl,
+      templateName: activeTemplateName,
       scheduleId: pendingScheduleId,
       results: reportedFailures.map(f => ({
         itemKey: f.itemKey,

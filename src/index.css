@@ -143,6 +143,9 @@
 }
 
 /* Global Styles */
+html {
+  overscroll-behavior: none;
+}
 body {
   background-color: #f9f9f7;
   color: #1a1c1b;
@@ -150,6 +153,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  overscroll-behavior: none;
 }
 
 /* Material Symbols fallback */
