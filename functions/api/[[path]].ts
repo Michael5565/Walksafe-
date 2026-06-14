@@ -834,7 +834,8 @@ app.post('/checks', async (c) => {
     longitude,
     miscDamageNotes,
     miscDamagePhotoUrl,
-    templateName
+    templateName,
+    scheduleId
   } = await c.req.json();
 
   const serverCompletedAt = new Date().toISOString();
@@ -1014,9 +1015,45 @@ app.post('/checks', async (c) => {
       `Driver ${driverLabel} reported defects during check. ${isDangerous ? 'Vehicle grounded instantly.' : 'Status updated for engineer triage.'}`,
       new Date().toISOString()
     ).run();
+  }
+
+  // --- MARK SCHEDULE AS COMPLETED ---
+  let completedScheduleId = null;
+  if (scheduleId) {
+    // Mark the specific schedule that triggered this check
+    const targetSch = await db.prepare("SELECT * FROM schedules WHERE id = ? AND companyId = ?").bind(scheduleId, companyId).first();
+    if (targetSch) {
+      completedScheduleId = scheduleId;
+      await db.prepare("UPDATE schedules SET status = ? WHERE id = ? AND companyId = ?").bind("completed", scheduleId, companyId).run();
+      
+      if (targetSch.isRecurring === 1 && targetSch.frequency) {
+        const nextDate = new Date(targetSch.dueDate);
+        if (targetSch.frequency === "daily") nextDate.setDate(nextDate.getDate() + 1);
+        else if (targetSch.frequency === "weekly") nextDate.setDate(nextDate.getDate() + 7);
+        else if (targetSch.frequency === "monthly") nextDate.setMonth(nextDate.getMonth() + 1);
+        const nextId = "sch-" + Date.now() + Math.floor(Math.random() * 1000);
+        const nextDue = nextDate.toISOString().split("T")[0];
+        await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,templateId,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?,?)")
+          .bind(nextId, companyId, targetSch.title, targetSch.vehicleId, nextDue, targetSch.driverId, targetSch.frequency, targetSch.templateId, new Date().toISOString()).run();
+      }
+    }
   } else {
-    // Clear scheduled actions on successful clean compliance walkthroughs
-    await db.prepare("UPDATE schedules SET status = 'completed' WHERE vehicleId = ? AND companyId = ? AND status = 'pending'").bind(vehicleId, companyId).run();
+    // Auto-resolve ONE pending schedule for this vehicle
+    const autoSch = await db.prepare("SELECT * FROM schedules WHERE vehicleId = ? AND companyId = ? AND status = 'pending' ORDER BY dueDate ASC LIMIT 1").bind(vehicleId, companyId).first();
+    if (autoSch) {
+      completedScheduleId = autoSch.id;
+      await db.prepare("UPDATE schedules SET status = 'completed' WHERE id = ?").bind(autoSch.id).run();
+      if (autoSch.isRecurring === 1 && autoSch.frequency) {
+        const nextDate = new Date(autoSch.dueDate);
+        if (autoSch.frequency === "daily") nextDate.setDate(nextDate.getDate() + 1);
+        else if (autoSch.frequency === "weekly") nextDate.setDate(nextDate.getDate() + 7);
+        else if (autoSch.frequency === "monthly") nextDate.setMonth(nextDate.getMonth() + 1);
+        const nextId = "sch-" + Date.now() + Math.floor(Math.random() * 1000);
+        const nextDue = nextDate.toISOString().split("T")[0];
+        await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,templateId,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?,?)")
+          .bind(nextId, companyId, autoSch.title, autoSch.vehicleId, nextDue, autoSch.driverId, autoSch.frequency, autoSch.templateId, new Date().toISOString()).run();
+      }
+    }
   }
 
   // --- TRIGGER PUSH SYNC ---
