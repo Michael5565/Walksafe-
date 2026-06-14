@@ -1642,7 +1642,7 @@ export default function App() {
             </Suspense>
           </main>
           <footer style={{textAlign:'center',marginTop:32,paddingTop:16,borderTop:'1px solid #E5E5E0',fontSize:10,color:'#77767b',textTransform:'uppercase',letterSpacing:'0.05em'}}>
-            DVSA COMPLIANT &copy; 2026 WALKSAFE
+            DVSA COMPLIANT &copy; 2026 WALKSAFE &middot; <a href="https://getwalksafe.co.uk/privacy.html" target="_blank" style="color:inherit;text-decoration:underline">Privacy</a> &middot; <a href="https://getwalksafe.co.uk/terms.html" target="_blank" style="color:inherit;text-decoration:underline">Terms</a> &middot; <a href="https://getwalksafe.co.uk/refund-policy.html" target="_blank" style="color:inherit;text-decoration:underline">Refund Policy</a>
           </footer>
         </div>
       );
