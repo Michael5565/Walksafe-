@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+
+<html lang="en-GB"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+        .uk-plate-shadow {
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .3; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#1d1b16",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#e8e8e6",
+                        "on-primary-fixed-variant": "#47464a",
+                        "inverse-on-surface": "#f1f1ef",
+                        "surface": "#f9f9f7",
+                        "tertiary-fixed": "#e8e2d9",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-error-container": "#93000a",
+                        "surface-card": "#FFFFFF",
+                        "plate-blue": "#003399",
+                        "major-defect-orange": "#EA580C",
+                        "surface-container-low": "#f4f4f2",
+                        "primary": "#000000",
+                        "secondary-container": "#fea619",
+                        "surface-variant": "#e2e3e1",
+                        "tertiary": "#000000",
+                        "primary-fixed": "#e4e1e6",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "compliance-green": "#16A34A",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#88837c",
+                        "on-secondary-container": "#684000",
+                        "surface-container-lowest": "#ffffff",
+                        "border-subtle": "#E5E5E0",
+                        "on-secondary": "#ffffff",
+                        "background": "#f9f9f7",
+                        "surface-container-highest": "#e2e3e1",
+                        "primary-fixed-dim": "#c8c5ca",
+                        "on-background": "#1a1c1b",
+                        "on-surface": "#1a1c1b",
+                        "tertiary-container": "#1d1b16",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#1b1b1e",
+                        "surface-container": "#eeeeec",
+                        "on-primary-fixed": "#1b1b1e",
+                        "on-tertiary-fixed-variant": "#494640",
+                        "on-primary-container": "#858387",
+                        "outline-variant": "#c8c5cb",
+                        "inverse-primary": "#c8c5ca",
+                        "surface-bright": "#f9f9f7",
+                        "danger-red": "#DC2626",
+                        "secondary-fixed": "#ffddb8",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "surface-dim": "#dadad8",
+                        "tertiary-fixed-dim": "#cbc6bd",
+                        "surface-tint": "#5f5e61",
+                        "secondary": "#855300",
+                        "plate-yellow": "#FFDE00",
+                        "outline": "#77767b",
+                        "inverse-surface": "#2f3130",
+                        "on-surface-variant": "#47464b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sidebar-width": "240px",
+                        "margin-page": "32px",
+                        "gutter": "16px",
+                        "card-padding": "24px",
+                        "grid-unit": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "plate-text": ["JetBrains Mono"],
+                        "headline-md": ["Inter"],
+                        "data-mono": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                        "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "plate-text": ["20px", {"lineHeight": "24px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background font-body-md text-on-surface antialiased">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-[240px] z-50 bg-primary border-r border-border-subtle dark:border-outline-variant flex flex-col h-full">
+<div class="px-6 py-8">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">WalkSafe</h1>
+<p class="font-label-caps text-label-caps text-on-primary-container mt-1">Fleet Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Today's Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span class="font-label-caps text-label-caps">Operations &amp; Comms</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="event_upcoming">event_upcoming</span>
+<span class="font-label-caps text-label-caps">Compliance Schedules</span>
+</a>
+<!-- ACTIVE TAB: Vehicle Fleet -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary bg-primary border-l-2 border-secondary-container transition-all scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+<span class="font-label-caps text-label-caps">Vehicle Fleet</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span class="font-label-caps text-label-caps">Drivers &amp; PINs</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="report_problem">report_problem</span>
+<span class="font-label-caps text-label-caps">Defect Triage</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="font-label-caps text-label-caps">Compliance Log</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-primary-container hover:text-on-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-caps text-label-caps">Billing &amp; Plans</span>
+</a>
+</nav>
+<div class="p-4 bg-primary-container/20">
+<button class="w-full flex items-center justify-center gap-2 py-3 bg-secondary-container text-primary font-bold text-label-caps rounded-lg">
+                DVSA Mode Active
+            </button>
+</div>
+<div class="mt-auto border-t border-primary-container p-4">
+<div class="flex items-center gap-3 text-on-primary">
+<span class="material-symbols-outlined" data-icon="business">business</span>
+<span class="font-label-caps text-label-caps">Fleet Transport Ltd</span>
+</div>
+</div>
+</aside>
+<!-- Top AppBar -->
+<header class="fixed top-0 right-0 h-[64px] z-40 bg-surface border-b border-border-subtle flex items-center justify-between px-margin-page w-[calc(100%-240px)] ml-[240px]">
+<h2 class="font-headline-md text-headline-md text-primary font-bold">Vehicle Fleet</h2>
+<div class="flex items-center gap-6">
+<div class="flex flex-col items-end">
+<span class="font-data-mono text-data-mono text-primary leading-none">DVSA REF: 8820-X</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant uppercase tracking-wider">UTC 12:45:01</span>
+</div>
+<div class="flex gap-4">
+<button class="p-2 hover:bg-surface-container transition-colors rounded-full text-primary">
+<span class="material-symbols-outlined" data-icon="sync">sync</span>
+</button>
+<button class="p-2 hover:bg-surface-container transition-colors rounded-full text-primary relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-danger-red rounded-full"></span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[240px] pt-[64px] p-margin-page min-h-screen">
+<!-- Header Card -->
+<section class="bg-surface-card border border-border-subtle p-card-padding flex items-center justify-between mb-8 shadow-sm">
+<div>
+<h3 class="font-title-sm text-title-sm text-primary">Fleet Vehicle Registers</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage roadworthiness, MOT schedules, and driver assignments.</p>
+</div>
+<button class="flex items-center gap-2 bg-primary text-secondary-container px-6 py-3 font-bold rounded-lg transition-transform active:scale-95 shadow-md">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span class="font-label-caps text-label-caps">Add Vehicle</span>
+</button>
+</section>
+<!-- Vehicle Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Vehicle Card 1 -->
+<div class="bg-surface-card border border-border-subtle flex flex-col group hover:border-primary transition-all duration-300">
+<!-- UK Plate -->
+<div class="bg-plate-yellow p-4 border-b border-border-subtle flex items-center justify-center uk-plate-shadow relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-3 bg-plate-blue flex flex-col items-center justify-center">
+<span class="text-[6px] text-white font-bold leading-none mb-1">GB</span>
+</div>
+<span class="font-plate-text text-plate-text text-black tracking-widest uppercase">WN69 UTY</span>
+</div>
+<div class="p-card-padding flex-1">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h4 class="font-title-sm text-title-sm text-primary">Ford Transit LWB</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2021 • Frozen White</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-compliance-green/10 text-compliance-green rounded-full border border-compliance-green/20">
+<span class="material-symbols-outlined !text-[14px]" data-icon="check_circle">check_circle</span>
+<span class="font-label-caps text-label-caps">Roadworthy</span>
+</div>
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between items-center pb-2 border-b border-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MOT Expiry</span>
+<span class="font-data-mono text-data-mono text-primary">14 NOV 2024</span>
+</div>
+<div class="flex justify-between items-center pb-2 border-b border-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Tax Status</span>
+<span class="font-data-mono text-data-mono text-primary">VALID</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Mileage</span>
+<span class="font-data-mono text-data-mono text-primary">42,881 mi</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded uppercase tracking-tighter">S. Jenkins</span>
+<span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded uppercase tracking-tighter">M. Thompson</span>
+</div>
+</div>
+<div class="p-4 border-t border-border-subtle bg-surface-container-lowest">
+<button class="w-full py-2 border border-primary text-primary font-bold text-label-caps hover:bg-primary hover:text-on-primary transition-colors">
+                        Edit Vehicle
+                    </button>
+</div>
+</div>
+<!-- Vehicle Card 2 (Critical State) -->
+<div class="bg-surface-card border border-border-subtle flex flex-col group hover:border-danger-red transition-all duration-300">
+<!-- UK Plate -->
+<div class="bg-plate-yellow p-4 border-b border-border-subtle flex items-center justify-center uk-plate-shadow relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-3 bg-plate-blue flex flex-col items-center justify-center">
+<span class="text-[6px] text-white font-bold leading-none mb-1">GB</span>
+</div>
+<span class="font-plate-text text-plate-text text-black tracking-widest uppercase">HG18 PLK</span>
+</div>
+<div class="p-card-padding flex-1">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h4 class="font-title-sm text-title-sm text-primary">Mercedes Sprinter</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2018 • Obsidian Black</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-danger-red/10 text-danger-red rounded-full border border-danger-red/20">
+<span class="w-2 h-2 bg-danger-red rounded-full pulse-dot"></span>
+<span class="font-label-caps text-label-caps">Grounded</span>
+</div>
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between items-center pb-2 border-b border-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MOT Expiry</span>
+<span class="font-data-mono text-data-mono text-major-defect-orange">02 APR 2024 (Critical)</span>
+</div>
+<div class="flex justify-between items-center pb-2 border-b border-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Tax Status</span>
+<span class="font-data-mono text-data-mono text-primary">VALID</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Safety Defect</span>
+<span class="font-data-mono text-data-mono text-danger-red">Brake Pad Wear</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded uppercase tracking-tighter">Maintenance Only</span>
+</div>
+</div>
+<div class="p-4 border-t border-border-subtle bg-surface-container-lowest">
+<button class="w-full py-2 border border-primary text-primary font-bold text-label-caps hover:bg-primary hover:text-on-primary transition-colors">
+                        Review Defect
+                    </button>
+</div>
+</div>
+<!-- Vehicle Card 3 -->
+<div class="bg-surface-card border border-border-subtle flex flex-col group hover:border-primary transition-all duration-300">
+<!-- UK Plate -->
+<div class="bg-plate-yellow p-4 border-b border-border-subtle flex items-center justify-center uk-plate-shadow relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-3 bg-plate-blue flex flex-col items-center justify-center">
+<span class="text-[6px] text-white font-bold leading-none mb-1">GB</span>
+</div>
+<span class="font-plate-text text-plate-text text-black tracking-widest uppercase">LX72 ZNP</span>
+</div>
+<div class="p-card-padding flex-1">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h4 class="font-title-sm text-title-sm text-primary">Vauxhall Vivaro-e</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2022 • Quartz Grey</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-compliance-green/10 text-compliance-green rounded-full border border-compliance-green/20">
+<span class="material-symbols-outlined !text-[14px]" data-icon="check_circle">check_circle</span>
+<span class="font-label-caps text-label-caps">Roadworthy</span>
+</div>
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between items-center pb-2 border-b border-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MOT Expiry</span>
+<span class="font-data-mono text-data-mono text-primary">20 OCT 2025</span>
+</div>
+<div class="flex justify-between items-center pb-2 border-b border-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Charge Status</span>
+<span class="font-data-mono text-data-mono text-compliance-green">88% (Connected)</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Last Insp.</span>
+<span class="font-data-mono text-data-mono text-primary">12 MAR 2024</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded uppercase tracking-tighter">P. Harrison</span>
+</div>
+</div>
+<div class="p-4 border-t border-border-subtle bg-surface-container-lowest">
+<button class="w-full py-2 border border-primary text-primary font-bold text-label-caps hover:bg-primary hover:text-on-primary transition-colors">
+                        Edit Vehicle
+                    </button>
+</div>
+</div>
+<!-- Vehicle Card 4 (MOT Warning) -->
+<div class="bg-surface-card border border-border-subtle flex flex-col group hover:border-major-defect-orange transition-all duration-300">
+<!-- UK Plate -->
+<div class="bg-plate-yellow p-4 border-b border-border-subtle flex items-center justify-center uk-plate-shadow relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-3 bg-plate-blue flex flex-col items-center justify-center">
+<span class="text-[6px] text-white font-bold leading-none mb-1">GB</span>
+</div>
+<span class="font-plate-text text-plate-text text-black tracking-widest uppercase">BT70 KWM</span>
+</div>
+<div class="p-card-padding flex-1">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h4 class="font-title-sm text-title-sm text-primary">Iveco Daily</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2020 • Polar White</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-compliance-green/10 text-compliance-green rounded-full border border-compliance-green/20">
+<span class="material-symbols-outlined !text-[14px]" data-icon="check_circle">check_circle</span>
+<span class="font-label-caps text-label-caps">Roadworthy</span>
+</div>
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between items-center pb-2 border-b border-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MOT Expiry</span>
+<span class="font-data-mono text-data-mono text-major-defect-orange">14 APR 2024 (12 Days)</span>
+</div>
+<div class="flex justify-between items-center pb-2 border-b border-surface-container">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Tax Status</span>
+<span class="font-data-mono text-data-mono text-primary">VALID</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Booked</span>
+<span class="font-data-mono text-data-mono text-primary">10 APR @ Halford's</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold rounded uppercase tracking-tighter">R. Davies</span>
+</div>
+</div>
+<div class="p-4 border-t border-border-subtle bg-surface-container-lowest">
+<button class="w-full py-2 border border-primary text-primary font-bold text-label-caps hover:bg-primary hover:text-on-primary transition-colors">
+                        Manage Schedule
+                    </button>
+</div>
+</div>
+<!-- Add New Vehicle Placeholder -->
+<div class="bg-surface-container/30 border-2 border-dashed border-border-subtle flex items-center justify-center p-card-padding group cursor-pointer hover:bg-surface-container-high transition-all">
+<div class="text-center">
+<div class="w-16 h-16 bg-surface-card border border-border-subtle flex items-center justify-center rounded-full mx-auto mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined !text-3xl text-on-surface-variant" data-icon="add_circle">add_circle</span>
+</div>
+<span class="font-title-sm text-title-sm text-on-surface-variant">Register New Asset</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2 max-w-[200px]">Initialise compliance monitoring for a new fleet vehicle.</p>
+</div>
+</div>
+</div>
+<!-- Footer Stats -->
+<section class="mt-12 grid grid-cols-1 md:grid-cols-4 gap-gutter border-t border-border-subtle pt-8">
+<div class="bg-surface-card p-4 border border-border-subtle shadow-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Total Fleet</span>
+<span class="font-headline-md text-headline-md font-bold text-primary">42</span>
+</div>
+<div class="bg-surface-card p-4 border border-border-subtle shadow-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Roadworthy</span>
+<span class="font-headline-md text-headline-md font-bold text-compliance-green">40</span>
+</div>
+<div class="bg-surface-card p-4 border border-border-subtle shadow-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Grounded</span>
+<span class="font-headline-md text-headline-md font-bold text-danger-red">02</span>
+</div>
+<div class="bg-surface-card p-4 border border-border-subtle shadow-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">MOT Overdue</span>
+<span class="font-headline-md text-headline-md font-bold text-major-defect-orange">01</span>
+</div>
+</section>
+</main>
+<script>
+        // Micro-interaction for UI feedback
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => btn.classList.add('scale-95'));
+            btn.addEventListener('mouseup', () => btn.classList.remove('scale-95'));
+            btn.addEventListener('mouseleave', () => btn.classList.remove('scale-95'));
+        });
+
+        // Theme sync if needed
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            // Uncomment to force dark mode based on system
+            // document.documentElement.classList.add('dark');
+        }
+    </script>
+</body></html>

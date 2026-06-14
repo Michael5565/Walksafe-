@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WalkSafe | Drivers &amp; PINs Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#ffddb8",
+                        "on-error": "#ffffff",
+                        "on-background": "#1a1c1b",
+                        "inverse-on-surface": "#f1f1ef",
+                        "compliance-green": "#16A34A",
+                        "surface-container-high": "#e8e8e6",
+                        "major-defect-orange": "#EA580C",
+                        "surface-container": "#eeeeec",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#c8c5ca",
+                        "border-subtle": "#E5E5E0",
+                        "tertiary-fixed-dim": "#cbc6bd",
+                        "background": "#f9f9f7",
+                        "on-secondary-container": "#684000",
+                        "surface-variant": "#e2e3e1",
+                        "on-primary-container": "#858387",
+                        "on-primary-fixed": "#1b1b1e",
+                        "tertiary-fixed": "#e8e2d9",
+                        "surface-card": "#FFFFFF",
+                        "surface-container-highest": "#e2e3e1",
+                        "surface-tint": "#5f5e61",
+                        "outline": "#77767b",
+                        "surface-bright": "#f9f9f7",
+                        "primary-fixed-dim": "#c8c5ca",
+                        "plate-yellow": "#FFDE00",
+                        "outline-variant": "#c8c5cb",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#47464b",
+                        "tertiary-container": "#1d1b16",
+                        "on-secondary-fixed": "#2a1700",
+                        "on-tertiary-fixed-variant": "#494640",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface": "#f9f9f7",
+                        "tertiary": "#000000",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#1b1b1e",
+                        "secondary-container": "#fea619",
+                        "surface-dim": "#dadad8",
+                        "inverse-surface": "#2f3130",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "on-tertiary-container": "#88837c",
+                        "danger-red": "#DC2626",
+                        "on-primary-fixed-variant": "#47464a",
+                        "on-tertiary-fixed": "#1d1b16",
+                        "surface-container-low": "#f4f4f2",
+                        "primary-fixed": "#e4e1e6",
+                        "primary": "#000000",
+                        "on-error-container": "#93000a",
+                        "plate-blue": "#003399",
+                        "on-surface": "#1a1c1b",
+                        "secondary": "#855300"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "card-padding": "24px",
+                        "gutter": "16px",
+                        "grid-unit": "8px",
+                        "sidebar-width": "240px",
+                        "margin-page": "32px"
+                    },
+                    "fontFamily": {
+                        "plate-text": ["JetBrains Mono"],
+                        "data-mono": ["JetBrains Mono"],
+                        "body-sm": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "plate-text": ["20px", {"lineHeight": "24px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                        "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #f9f9f7; color: #1a1c1b; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav-indicator { border-left: 2px solid #fea619; }
+        .qr-gradient { background: linear-gradient(135deg, #FFFFFF 0%, #F4F4F2 100%); }
+        .amber-glow:hover { box-shadow: 0 0 15px rgba(254, 166, 25, 0.2); }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="fixed h-full w-[240px] left-0 top-0 bg-primary dark:bg-primary border-r border-border-subtle flex flex-col gap-2 p-4 z-50">
+<div class="mb-8 px-2">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">WalkSafe</h1>
+<p class="font-body-sm text-body-sm text-on-primary-container">Fleet Management</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 p-3 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Today's Overview</span>
+</a>
+<a class="flex items-center gap-3 p-3 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span>Operations &amp; Comms</span>
+</a>
+<a class="flex items-center gap-3 p-3 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span>Compliance Schedules</span>
+</a>
+<a class="flex items-center gap-3 p-3 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+<span>Vehicle Fleet</span>
+</a>
+<a class="flex items-center gap-3 p-3 transition-all duration-200 text-secondary-container border-l-2 border-secondary-container bg-surface-container/10 rounded-r" href="#">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span>Drivers &amp; PINs</span>
+</a>
+<a class="flex items-center gap-3 p-3 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span>Defect Triage</span>
+</a>
+<a class="flex items-center gap-3 p-3 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span>Compliance Log</span>
+</a>
+<a class="flex items-center gap-3 p-3 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span>Billing &amp; Plans</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Shell -->
+<main class="ml-[240px] h-screen flex flex-col overflow-y-auto">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 h-[64px] w-[calc(100%-240px)] bg-surface-card border-b border-border-subtle flex justify-between items-center px-margin-page z-40">
+<h2 class="font-headline-md text-headline-md text-primary font-bold">Drivers &amp; PINs Management</h2>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-low transition-colors duration-150 rounded-full">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+</button>
+<button class="p-2 hover:bg-surface-container-low transition-colors duration-150 rounded-full relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-danger-red rounded-full"></span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-container-high border border-border-subtle overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1gw3cTFHUU4COeeZl1i_BFCuAhD6rpT9EwYbOquC_xLkFF01wq6La637OOmpzLxEqthrIYuoTlyDyvEhUJUpEMSkpoSD74VPzeqG0BP5IuhwGasKHfyGVqJGoGCEJWhaNkipDiJPaz_ACqdVa8a3hYvM6L6YE1lpXkrMF-jOPddoPbwocZM50Wi56OblbdpgN88lL-QqpKP_4Fdv2iOZF75Nz4_kxJ7pgei8q5jTkTNwIz1EdtuXc-w"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<div class="mt-[64px] p-margin-page">
+<!-- Header Action Row -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-1">Personnel Directory</h3>
+<p class="text-on-surface-variant font-body-sm">Manage authentication protocols and access PINs for active fleet operators.</p>
+</div>
+<button class="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary font-title-sm rounded-lg hover:bg-on-surface-variant transition-all shadow-sm" onclick="togglePINModal()">
+<span class="material-symbols-outlined" data-icon="key">key</span>
+                    Generate New PIN
+                </button>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter">
+<!-- Driver Card 1 -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col gap-4 group hover:border-secondary-container transition-all">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden border border-border-subtle">
+<img alt="Felix" class="w-full h-full object-cover" data-alt="A professional headshot of a mature truck driver with a kind expression, wearing a high-visibility vest. The portrait is captured in clean, natural lighting against a blurred fleet yard background. The overall style is professional, sharp, and consistent with an institutional safety management platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCmEYjQkmh9YTU9ouKukX4cJnldf-BuzLdrYTetHqIHM6Z6qQ1Ji7Q3Z0qeG0_FQnYGk-WkO6NCOH_b-XP4UJlPUe4HqtJsJ6VuyxCpgIEUkttFXc8tfERSNnCm9O-BOZF9BCB1AWLRrfpJRn1aPpTNXe7hhZTT4WK3bxErTp6gzo06nwVBxpTIZ5apYtACYpirht7wzRYiLm9_UKUiwA6I9wjQYOB1b3W6XJkEjfK5Zez-vFckNOiPg"/>
+</div>
+<span class="px-2 py-1 bg-compliance-green/10 text-compliance-green text-label-caps uppercase rounded">Active</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm font-semibold text-on-surface">Felix Vane</h4>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-on-surface-variant text-label-caps uppercase">Emp ID:</span>
+<span class="font-data-mono text-data-mono text-primary">WS-0941</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 py-3 border-y border-border-subtle border-dashed">
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">License Cat</span>
+<span class="font-data-mono text-data-mono">C+E</span>
+</div>
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">Check-in</span>
+<span class="font-data-mono text-data-mono text-[12px]">08:14 AM</span>
+</div>
+</div>
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-title-sm rounded flex items-center justify-center gap-2 amber-glow transition-all" onclick="openQRModal('Felix Vane', 'WS-0941')">
+<span class="material-symbols-outlined text-[18px]" data-icon="qr_code_2">qr_code_2</span>
+                        QR Code Login
+                    </button>
+</div>
+<!-- Driver Card 2 -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col gap-4 group hover:border-secondary-container transition-all">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden border border-border-subtle">
+<img alt="Marcus" class="w-full h-full object-cover" data-alt="A portrait of a focused logistics operator with a short beard and a neutral expression, wearing a professional black polo shirt. Soft overhead lighting highlights clean features. The image conveys institutional reliability and professional accountability within a corporate fleet environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAR1y2H2Sx-ZXfNj43iZ7cOwqQ1x96qmt5A8U_qZEs5t00tRrNlii6zlmoJPDd8srlakaE1UhZ10GK-7cHfMRzuHVaLJwhVErZlHi8T_p4tjgUOLE3-Fd7HsODMVn58jYl_nEx92Pv9aJNuhwOqf-hq0fWTH8SvpVrFS_4JN-TAg0X205um1JVg9NJrFGDY5Rjm6ta2Neuuyw1BMF2m7ciX5MHCjckfy0_V55DFi7id_atcuGyGGLvo0A"/>
+</div>
+<span class="px-2 py-1 bg-on-surface-variant/10 text-on-surface-variant text-label-caps uppercase rounded">Off-Duty</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm font-semibold text-on-surface">Marcus Thorne</h4>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-on-surface-variant text-label-caps uppercase">Emp ID:</span>
+<span class="font-data-mono text-data-mono text-primary">WS-0882</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 py-3 border-y border-border-subtle border-dashed">
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">License Cat</span>
+<span class="font-data-mono text-data-mono">C1</span>
+</div>
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">Check-in</span>
+<span class="font-data-mono text-data-mono text-[12px]">Yesterday</span>
+</div>
+</div>
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-title-sm rounded flex items-center justify-center gap-2 amber-glow transition-all" onclick="openQRModal('Marcus Thorne', 'WS-0882')">
+<span class="material-symbols-outlined text-[18px]" data-icon="qr_code_2">qr_code_2</span>
+                        QR Code Login
+                    </button>
+</div>
+<!-- Driver Card 3 -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col gap-4 group hover:border-secondary-container transition-all">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden border border-border-subtle">
+<img alt="Sarah" class="w-full h-full object-cover" data-alt="A portrait of a confident female driver wearing a branded fleet management cap and a professional uniform. Bright, even lighting creates a clean and clinical aesthetic. The background is a soft-focus industrial garage, emphasizing a context of transportation and safety." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnOtQkoNQFNg0v-Wn8Gv-wtCW3PrpNzU7HYCZ8su3WiqHD61dzirUBurCu2Vnid2FxkBgLvUMVNp7R6ooxVCq1r-CEiGzRrSNTIIlNN0Mb25qeTc7QfFOasl2G65HLxATvqcA3HiSN3C7hEi6BczNL5-YKPk37oBeGwYt6fMFqevTW2I-IXyRhv7pbfX-C-RQZvtJmy9bQeuBHV7uuJx1LoB5cefl_Ej5w6YNAyEOzFO_EsaiZby5nRg"/>
+</div>
+<span class="px-2 py-1 bg-compliance-green/10 text-compliance-green text-label-caps uppercase rounded">Active</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm font-semibold text-on-surface">Sarah J. Miller</h4>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-on-surface-variant text-label-caps uppercase">Emp ID:</span>
+<span class="font-data-mono text-data-mono text-primary">WS-1022</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 py-3 border-y border-border-subtle border-dashed">
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">License Cat</span>
+<span class="font-data-mono text-data-mono">C+E</span>
+</div>
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">Check-in</span>
+<span class="font-data-mono text-data-mono text-[12px]">06:45 AM</span>
+</div>
+</div>
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-title-sm rounded flex items-center justify-center gap-2 amber-glow transition-all" onclick="openQRModal('Sarah J. Miller', 'WS-1022')">
+<span class="material-symbols-outlined text-[18px]" data-icon="qr_code_2">qr_code_2</span>
+                        QR Code Login
+                    </button>
+</div>
+<!-- Driver Card 4 -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col gap-4 group hover:border-secondary-container transition-all">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden border border-border-subtle">
+<img alt="David" class="w-full h-full object-cover" data-alt="A professional headshot of a senior logistics officer with graying hair and glasses, wearing a sharp corporate uniform. The lighting is bright and professional, suggesting a high-trust, regulatory-compliant environment. The aesthetic is minimalist and institutional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb7FZz8KkjfdMa2tDGeVZPij3CIbD7XXnn9kFe2OzL6Zsq3jcKsXVXHm_kVTnMNOdwgBVXf261QBCT-Hk5drhMCbjdvYrjLJp1yzJWOFWEH3EcWiD6eom8IlC4gHesy2dJQ4C-TbzuRCoisrUKZNp25E3LvXsvy0V37hrwvAUwuHLTQcyWJRvD-TSGdSZgi2scFjsMWceqGcQEy4N_MY5vdo8Djg00euMpb8WvSzUIj7NNiigy1DCZyQ"/>
+</div>
+<span class="px-2 py-1 bg-compliance-green/10 text-compliance-green text-label-caps uppercase rounded">Active</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm font-semibold text-on-surface">David Chen</h4>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-on-surface-variant text-label-caps uppercase">Emp ID:</span>
+<span class="font-data-mono text-data-mono text-primary">WS-1150</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 py-3 border-y border-border-subtle border-dashed">
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">License Cat</span>
+<span class="font-data-mono text-data-mono">D1</span>
+</div>
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">Check-in</span>
+<span class="font-data-mono text-data-mono text-[12px]">09:00 AM</span>
+</div>
+</div>
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-title-sm rounded flex items-center justify-center gap-2 amber-glow transition-all" onclick="openQRModal('David Chen', 'WS-1150')">
+<span class="material-symbols-outlined text-[18px]" data-icon="qr_code_2">qr_code_2</span>
+                        QR Code Login
+                    </button>
+</div>
+<!-- Driver Card 5 -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col gap-4 group hover:border-secondary-container transition-all">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden border border-border-subtle">
+<img alt="Elena" class="w-full h-full object-cover" data-alt="A portrait of a young female driver with a determined expression, wearing a navy blue transport uniform. The style is crisp and modern with high-contrast lighting. The focus is sharp on her professional demeanor, reflecting the high standards of a safety-first logistics company." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDas7us7MqWRq9-ehx8G2Is9QTpKvQazcSuprC4cFwyjjeeYZorUtczVGOpgFiNst1kMCm8f1goamw9cxGbZG1JdF71gwoS9pI5YQK4PWKVJhTyhartI2Mu4FxCiWQ7SIGK3PEUaNjluc4X47CkDUuLF08rHqiWq5t_nCp7cPDZGOAqJcU0Zt635RVIKoz8K51YL9yjOiQU_UOX9tO1t7Ei1M0jKUkHzUzo3aVBQZ7hsNjDXBe_kUFXPw"/>
+</div>
+<span class="px-2 py-1 bg-on-surface-variant/10 text-on-surface-variant text-label-caps uppercase rounded">Off-Duty</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm font-semibold text-on-surface">Elena Rodriguez</h4>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-on-surface-variant text-label-caps uppercase">Emp ID:</span>
+<span class="font-data-mono text-data-mono text-primary">WS-0749</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 py-3 border-y border-border-subtle border-dashed">
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">License Cat</span>
+<span class="font-data-mono text-data-mono">C</span>
+</div>
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">Check-in</span>
+<span class="font-data-mono text-data-mono text-[12px]">2 days ago</span>
+</div>
+</div>
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-title-sm rounded flex items-center justify-center gap-2 amber-glow transition-all" onclick="openQRModal('Elena Rodriguez', 'WS-0749')">
+<span class="material-symbols-outlined text-[18px]" data-icon="qr_code_2">qr_code_2</span>
+                        QR Code Login
+                    </button>
+</div>
+<!-- Driver Card 6 -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col gap-4 group hover:border-secondary-container transition-all">
+<div class="flex justify-between items-start">
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden border border-border-subtle">
+<img alt="Julian" class="w-full h-full object-cover" data-alt="A portrait of a male driver in his late 20s, wearing a high-vis orange vest and a focused expression. Warm sunrise light filters through, creating a clean, high-performance look. The style is realistic and grounded, emphasizing the daily accountability of transport operations." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCndGbzLK8jkE7E-FFxThjJ-pVVSw5zNF_Jtlo_1wvci3uQKHuD0Ebr_mRxdd4maXtPEh8P2fsG8aNCTKmI8ZHIUWDKX8x1yqA-q6s5njgLgoMZGjniZguYY044q3UMFrn6kkehyVDnr9QTul1A7PfVkcmtl9E4OBWWlI1w-kuXUsw-ONMI80zz6_7RaLQTPFFGdDXqVXE_SbAB8MMYbComdEKHRHqkrN9RNPQXLM0FMEeSOH4RqloSog"/>
+</div>
+<span class="px-2 py-1 bg-compliance-green/10 text-compliance-green text-label-caps uppercase rounded">Active</span>
+</div>
+<div>
+<h4 class="font-title-sm text-title-sm font-semibold text-on-surface">Julian Hayes</h4>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-on-surface-variant text-label-caps uppercase">Emp ID:</span>
+<span class="font-data-mono text-data-mono text-primary">WS-1201</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 py-3 border-y border-border-subtle border-dashed">
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">License Cat</span>
+<span class="font-data-mono text-data-mono">B</span>
+</div>
+<div>
+<span class="text-on-surface-variant text-label-caps block mb-1">Check-in</span>
+<span class="font-data-mono text-data-mono text-[12px]">10:30 AM</span>
+</div>
+</div>
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-title-sm rounded flex items-center justify-center gap-2 amber-glow transition-all" onclick="openQRModal('Julian Hayes', 'WS-1201')">
+<span class="material-symbols-outlined text-[18px]" data-icon="qr_code_2">qr_code_2</span>
+                        QR Code Login
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Backdrop -->
+<div class="fixed inset-0 bg-primary/40 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4" id="modal-backdrop">
+<!-- QR Code Login Panel -->
+<div class="bg-white w-full max-w-md rounded-xl border border-border-subtle shadow-xl overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="qr-modal">
+<div class="p-6 border-b border-border-subtle flex justify-between items-center">
+<h3 class="font-headline-md text-[20px] font-bold text-primary">QR Code Login Panel</h3>
+<button class="text-on-surface-variant hover:text-primary" onclick="closeQRModal()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="p-8 flex flex-col items-center text-center">
+<div class="mb-4">
+<h4 class="font-title-sm text-title-sm font-semibold" id="modal-driver-name">Driver Name</h4>
+<p class="font-data-mono text-data-mono text-on-surface-variant" id="modal-driver-id">WS-0000</p>
+</div>
+<!-- QR Code Container -->
+<div class="p-4 border border-border-subtle rounded-lg qr-gradient mb-6">
+<div class="w-[200px] h-[200px] bg-white flex items-center justify-center relative border border-surface-container">
+<!-- Simulated QR Code Grid -->
+<div class="absolute inset-0 p-2 opacity-90 grid grid-cols-10 grid-rows-10 gap-0">
+<script>
+                                for(let i=0; i<100; i++) {
+                                    const rand = Math.random() > 0.5;
+                                    document.write(`<div class="${rand ? 'bg-primary' : 'bg-white'}"></div>`);
+                                }
+                            </script>
+</div>
+<!-- Logo Overlay -->
+<div class="z-10 bg-white p-1 rounded-sm shadow-sm border border-border-subtle">
+<span class="material-symbols-outlined text-primary text-[24px]" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+</div>
+</div>
+<p class="text-on-surface-variant font-body-md mb-8 max-w-[280px]">Scan with phone camera to open driver app and authenticate session.</p>
+<div class="w-full flex gap-3">
+<button class="flex-1 py-3 bg-primary text-white rounded font-title-sm hover:opacity-90 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="content_copy">content_copy</span>
+                        Copy Link
+                    </button>
+<button class="flex-1 py-3 border border-border-subtle text-primary rounded font-title-sm hover:bg-surface-container-low transition-all" onclick="closeQRModal()">
+                        Cancel
+                    </button>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 text-center">
+<p class="text-[11px] uppercase tracking-widest font-bold text-on-primary-container">Secure Authentication Protocol Active</p>
+</div>
+</div>
+<!-- PIN Generation Modal (Simplified for UI flow) -->
+<div class="bg-white w-full max-w-sm rounded-xl border border-border-subtle shadow-xl overflow-hidden transform transition-all scale-95 opacity-0 duration-300 hidden" id="pin-modal">
+<div class="p-6 border-b border-border-subtle flex justify-between items-center">
+<h3 class="font-headline-md text-[20px] font-bold text-primary">New Security PIN</h3>
+<button class="text-on-surface-variant hover:text-primary" onclick="togglePINModal()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="p-8 text-center">
+<p class="text-on-surface-variant mb-4">A temporary access PIN has been generated.</p>
+<div class="py-6 bg-surface-container-low rounded-lg mb-6">
+<span class="font-data-mono text-[40px] tracking-[0.25em] font-bold text-primary">829104</span>
+</div>
+<p class="text-label-caps text-danger-red uppercase font-bold mb-8">Expires in 15:00 minutes</p>
+<button class="w-full py-4 bg-primary text-white rounded font-title-sm" onclick="togglePINModal()">Done</button>
+</div>
+</div>
+</div>
+<script>
+        function openQRModal(name, id) {
+            const backdrop = document.getElementById('modal-backdrop');
+            const qrModal = document.getElementById('qr-modal');
+            const pinModal = document.getElementById('pin-modal');
+            
+            document.getElementById('modal-driver-name').textContent = name;
+            document.getElementById('modal-driver-id').textContent = id;
+            
+            backdrop.classList.remove('hidden');
+            qrModal.classList.remove('hidden');
+            pinModal.classList.add('hidden');
+            
+            setTimeout(() => {
+                qrModal.classList.remove('scale-95', 'opacity-0');
+                qrModal.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeQRModal() {
+            const backdrop = document.getElementById('modal-backdrop');
+            const qrModal = document.getElementById('qr-modal');
+            
+            qrModal.classList.remove('scale-100', 'opacity-100');
+            qrModal.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                backdrop.classList.add('hidden');
+            }, 300);
+        }
+
+        function togglePINModal() {
+            const backdrop = document.getElementById('modal-backdrop');
+            const pinModal = document.getElementById('pin-modal');
+            const qrModal = document.getElementById('qr-modal');
+
+            if(backdrop.classList.contains('hidden')) {
+                backdrop.classList.remove('hidden');
+                qrModal.classList.add('hidden');
+                pinModal.classList.remove('hidden');
+                setTimeout(() => {
+                    pinModal.classList.remove('scale-95', 'opacity-0');
+                    pinModal.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            } else {
+                pinModal.classList.remove('scale-100', 'opacity-100');
+                pinModal.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    backdrop.classList.add('hidden');
+                    pinModal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // Close on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeQRModal();
+                const pinModal = document.getElementById('pin-modal');
+                if(!pinModal.classList.contains('hidden')) togglePINModal();
+            }
+        });
+    </script>
+</body></html>

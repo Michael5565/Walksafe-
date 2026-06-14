@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+
+<html lang="en-GB"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<title>WalkSafe Operator Console - Billing &amp; Plans</title>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E5E0; border-radius: 10px; }
+        .active-indicator { position: absolute; left: 0; width: 2px; height: 100%; background-color: #fea619; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#1d1b16",
+                      "on-primary": "#ffffff",
+                      "surface-container-high": "#e8e8e6",
+                      "on-primary-fixed-variant": "#47464a",
+                      "inverse-on-surface": "#f1f1ef",
+                      "surface": "#f9f9f7",
+                      "tertiary-fixed": "#e8e2d9",
+                      "on-secondary-fixed": "#2a1700",
+                      "on-error-container": "#93000a",
+                      "surface-card": "#FFFFFF",
+                      "plate-blue": "#003399",
+                      "major-defect-orange": "#EA580C",
+                      "surface-container-low": "#f4f4f2",
+                      "primary": "#000000",
+                      "secondary-container": "#fea619",
+                      "surface-variant": "#e2e3e1",
+                      "tertiary": "#000000",
+                      "primary-fixed": "#e4e1e6",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "compliance-green": "#16A34A",
+                      "error": "#ba1a1a",
+                      "on-tertiary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-tertiary-container": "#88837c",
+                      "on-secondary-container": "#684000",
+                      "surface-container-lowest": "#ffffff",
+                      "border-subtle": "#E5E5E0",
+                      "on-secondary": "#ffffff",
+                      "background": "#f9f9f7",
+                      "surface-container": "#eeeeec",
+                      "on-primary-fixed": "#1b1b1e",
+                      "on-tertiary-fixed-variant": "#494640",
+                      "on-primary-container": "#858387",
+                      "outline-variant": "#c8c5cb",
+                      "inverse-primary": "#c8c5ca",
+                      "surface-bright": "#f9f9f7",
+                      "danger-red": "#DC2626",
+                      "secondary-fixed": "#ffddb8",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "surface-dim": "#dadad8",
+                      "tertiary-fixed-dim": "#cbc6bd",
+                      "surface-tint": "#5f5e61",
+                      "secondary": "#855300",
+                      "plate-yellow": "#FFDE00",
+                      "outline": "#77767b",
+                      "inverse-surface": "#2f3130",
+                      "on-surface-variant": "#47464b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sidebar-width": "240px",
+                      "margin-page": "32px",
+                      "gutter": "16px",
+                      "card-padding": "24px",
+                      "grid-unit": "8px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "title-sm": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "label-caps": ["Inter"],
+                      "plate-text": ["JetBrains Mono"],
+                      "headline-md": ["Inter"],
+                      "data-mono": ["JetBrains Mono"]
+              },
+              "fontSize": {
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                      "title-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "plate-text": ["20px", {"lineHeight": "24px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-secondary-container/30">
+<!-- Sidebar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full w-[240px] z-50 bg-primary text-on-primary flex flex-col border-r border-border-subtle">
+<div class="p-6 flex flex-col gap-1 border-b border-white/10">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-secondary-container rounded flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold tracking-tight">WalkSafe</h1>
+</div>
+<p class="font-label-caps text-label-caps opacity-60 tracking-[0.1em] uppercase">Fleet Management</p>
+</div>
+<nav class="flex-1 py-4 overflow-y-auto custom-scrollbar">
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined opacity-70">dashboard</span>
+<span class="font-body-md text-body-md">Today's Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined opacity-70">hub</span>
+<span class="font-body-md text-body-md">Operations &amp; Comms</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined opacity-70">event_upcoming</span>
+<span class="font-body-md text-body-md">Compliance Schedules</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined opacity-70">local_shipping</span>
+<span class="font-body-md text-body-md">Vehicle Fleet</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined opacity-70">badge</span>
+<span class="font-body-md text-body-md">Drivers &amp; PINs</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined opacity-70">report_problem</span>
+<span class="font-body-md text-body-md">Defect Triage</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined opacity-70">history_edu</span>
+<span class="font-body-md text-body-md">Compliance Log</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary bg-primary border-l-2 border-secondary-container scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="font-body-md text-body-md font-semibold">Billing &amp; Plans</span>
+</a>
+</div>
+</nav>
+<div class="mt-auto p-4 border-t border-white/10 bg-primary-container/20">
+<button class="w-full py-2.5 px-4 bg-secondary-container text-primary font-bold font-label-caps text-label-caps tracking-wider rounded-sm transition-transform active:scale-95">
+                DVSA MODE ACTIVE
+            </button>
+<div class="mt-4 flex items-center gap-3 px-2">
+<span class="material-symbols-outlined text-secondary-container">business</span>
+<span class="font-body-sm text-body-sm text-on-primary-container font-medium">Fleet Transport Ltd</span>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 h-[64px] z-40 bg-surface flex items-center justify-between px-margin-page w-[calc(100%-240px)] ml-[240px] border-b border-border-subtle">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Billing &amp; Plans</h2>
+<div class="flex items-center gap-6">
+<div class="flex flex-col items-end">
+<span class="font-data-mono text-data-mono text-[11px] opacity-60">SYSTEM STATUS</span>
+<span class="font-data-mono text-data-mono text-primary text-[13px] font-bold">DVSA REF: 8820-X</span>
+</div>
+<div class="h-8 w-px bg-border-subtle"></div>
+<div class="flex items-center gap-4">
+<span class="font-data-mono text-data-mono text-on-surface-variant">UTC 12:45:01</span>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined text-primary">sync</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-danger-red rounded-full border-2 border-surface"></span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] pt-[64px] min-h-screen">
+<div class="max-w-[1400px] mx-auto p-margin-page space-y-8">
+<!-- Top Row: Metric Cards -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Active Plan Card -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col justify-between min-h-[160px]">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Active Plan</p>
+<h3 class="font-headline-md text-headline-md text-primary mt-1">Growth Pro</h3>
+</div>
+<span class="material-symbols-outlined text-secondary-container text-3xl">verified</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="font-data-mono text-data-mono text-2xl font-bold">£499.00</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ month · Renews 12 Oct</span>
+</div>
+</div>
+<!-- Fleet Capacity Card -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col justify-between min-h-[160px]">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Fleet Capacity</p>
+<div class="mt-1 flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-primary">4 / 10</h3>
+<span class="font-body-sm text-body-sm text-compliance-green font-medium">60% Available</span>
+</div>
+</div>
+<div class="w-full bg-surface-container-low h-2 mt-4 rounded-full overflow-hidden">
+<div class="bg-primary h-full transition-all duration-700" style="width: 40%"></div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2">Active vehicle tracking licenses</p>
+</div>
+<!-- Payment Method Card -->
+<div class="bg-[#18181B] border border-black p-card-padding flex flex-col justify-between min-h-[160px] rounded-lg shadow-lg relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-32 h-32 bg-secondary-container opacity-5 rounded-full"></div>
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-10 h-6 bg-white/10 rounded flex items-center justify-center border border-white/5">
+<div class="w-5 h-5 bg-teal-400 rounded-full blur-[6px] opacity-20"></div>
+<span class="material-symbols-outlined text-white text-lg">contactless</span>
+</div>
+<span class="font-label-caps text-label-caps text-white font-bold tracking-widest">WalkSafe PAY</span>
+</div>
+<span class="font-data-mono text-data-mono text-teal-400 text-xs">PREFERRED</span>
+</div>
+<div class="mt-auto">
+<p class="font-data-mono text-data-mono text-white/80 text-lg tracking-widest">•••• •••• •••• 4022</p>
+<div class="flex justify-between items-end mt-2">
+<p class="font-label-caps text-label-caps text-white/40 uppercase">Fleet Transport Ltd</p>
+<p class="font-data-mono text-data-mono text-white/60 text-xs">EX 08/26</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Middle Section: 4-Column Plan Matrix -->
+<section>
+<div class="flex items-end justify-between mb-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary font-bold">Scaling Solutions</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Select a plan that matches your operational complexity.</p>
+</div>
+<div class="flex bg-surface-container-low p-1 rounded">
+<button class="px-4 py-1.5 font-label-caps text-label-caps bg-surface-card shadow-sm border border-border-subtle rounded-sm">Monthly</button>
+<button class="px-4 py-1.5 font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors">Yearly (-15%)</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Solo -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col h-full">
+<h4 class="font-title-sm text-title-sm text-primary">Solo</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant min-h-[40px] mt-1">For independent owner-operators.</p>
+<div class="mt-6">
+<span class="font-display-lg text-display-lg text-primary">£49</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<ul class="mt-8 space-y-3 flex-1">
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                1 Vehicle License
+                            </li>
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Basic Digital Logbook
+                            </li>
+<li class="flex items-center gap-2 text-body-sm opacity-40 line-through">
+<span class="material-symbols-outlined text-lg">cancel</span>
+                                DVSA Earned Recognition
+                            </li>
+</ul>
+<button class="mt-8 w-full py-3 border border-primary text-primary font-bold font-label-caps hover:bg-primary hover:text-on-primary transition-all">DOWNGRADE</button>
+</div>
+<!-- Starter -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col h-full">
+<h4 class="font-title-sm text-title-sm text-primary">Starter</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant min-h-[40px] mt-1">Small fleets growing their operations.</p>
+<div class="mt-6">
+<span class="font-display-lg text-display-lg text-primary">£149</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<ul class="mt-8 space-y-3 flex-1">
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Up to 5 Vehicles
+                            </li>
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Defect Triage System
+                            </li>
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Automated Comms
+                            </li>
+</ul>
+<button class="mt-8 w-full py-3 border border-primary text-primary font-bold font-label-caps hover:bg-primary hover:text-on-primary transition-all">DOWNGRADE</button>
+</div>
+<!-- Growth Pro (Featured) -->
+<div class="bg-surface-card border-2 border-primary p-card-padding flex flex-col h-full relative shadow-xl">
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-compliance-green text-white font-label-caps text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">Most Popular</div>
+<h4 class="font-title-sm text-title-sm text-primary flex items-center justify-between">
+                            Growth Pro
+                            <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">stars</span>
+</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant min-h-[40px] mt-1">The compliance standard for mid-sized haulage.</p>
+<div class="mt-6">
+<span class="font-display-lg text-display-lg text-primary">£499</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<ul class="mt-8 space-y-3 flex-1">
+<li class="flex items-center gap-2 text-body-sm font-semibold">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Up to 20 Vehicles
+                            </li>
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                ER Compliance Dashboard
+                            </li>
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Priority Support 24/7
+                            </li>
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Maintenance API access
+                            </li>
+</ul>
+<div class="mt-8 py-3 bg-surface-container-low text-primary text-center font-bold font-label-caps border border-primary/10">CURRENT PLAN</div>
+</div>
+<!-- Enterprise -->
+<div class="bg-surface-card border border-border-subtle p-card-padding flex flex-col h-full">
+<h4 class="font-title-sm text-title-sm text-primary">Enterprise</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant min-h-[40px] mt-1">Multi-site logistics &amp; large fleets.</p>
+<div class="mt-6">
+<span class="font-display-lg text-display-lg text-primary">POA</span>
+</div>
+<ul class="mt-8 space-y-3 flex-1">
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Unlimited Vehicles
+                            </li>
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Custom Integrations
+                            </li>
+<li class="flex items-center gap-2 text-body-sm">
+<span class="material-symbols-outlined text-compliance-green text-lg">check_circle</span>
+                                Dedicated Account Manager
+                            </li>
+</ul>
+<button class="mt-8 w-full py-3 bg-primary text-white font-bold font-label-caps hover:bg-primary/90 transition-all">TALK TO SALES</button>
+</div>
+</div>
+</section>
+<!-- Bottom Section: Fee Optimizer Calculator -->
+<section class="bg-[#18181B] text-white p-8 rounded-lg">
+<div class="flex items-start justify-between mb-8">
+<div>
+<h3 class="font-headline-md text-headline-md font-bold">Fee Optimizer Calculator</h3>
+<p class="text-white/60 font-body-md">See how moving to Direct Debit can reduce your monthly compliance overhead.</p>
+</div>
+<div class="bg-white/10 p-4 rounded border border-white/5">
+<p class="font-label-caps text-label-caps text-white/40 uppercase">Est. Monthly Saving</p>
+<p class="font-data-mono text-data-mono text-2xl text-secondary-container font-bold" id="saving-amount">£42.50</p>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<!-- Slider Left -->
+<div class="space-y-6">
+<div class="flex justify-between items-center mb-2">
+<label class="font-label-caps text-label-caps text-white/80">Projected Fleet Size</label>
+<span class="font-data-mono text-data-mono text-xl text-white" id="fleet-count">24 Vehicles</span>
+</div>
+<input class="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-secondary-container" id="fleet-slider" max="100" min="1" type="range" value="24"/>
+<div class="flex justify-between text-[10px] text-white/40 font-data-mono uppercase">
+<span>1 Unit</span>
+<span>50 Units</span>
+<span>100 Units</span>
+</div>
+</div>
+<!-- Comparison Right -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white/5 border border-white/10 p-5 rounded">
+<div class="flex items-center gap-2 mb-2">
+<div class="w-2 h-2 rounded-full bg-danger-red"></div>
+<p class="font-label-caps text-label-caps text-white/60">Paystack / Card</p>
+</div>
+<p class="font-data-mono text-data-mono text-lg font-bold" id="card-fee">£56.80</p>
+<p class="text-[11px] text-white/40 mt-1">2.9% + 20p Transaction Fee</p>
+</div>
+<div class="bg-secondary-container/10 border border-secondary-container/30 p-5 rounded relative overflow-hidden">
+<div class="absolute top-0 right-0">
+<span class="material-symbols-outlined text-secondary-container/20 text-5xl">verified</span>
+</div>
+<div class="flex items-center gap-2 mb-2">
+<div class="w-2 h-2 rounded-full bg-compliance-green"></div>
+<p class="font-label-caps text-label-caps text-secondary-container">BACS Direct Debit</p>
+</div>
+<p class="font-data-mono text-data-mono text-lg font-bold text-white" id="bacs-fee">£14.30</p>
+<p class="text-[11px] text-white/40 mt-1">1% (Capped at £2.00/unit)</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer: Invoice History -->
+<section class="bg-surface-card border border-border-subtle p-card-padding">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-title-sm text-title-sm text-primary">Invoice History</h3>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 border border-border-subtle rounded flex items-center gap-2 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span> Filter
+                        </button>
+<button class="px-3 py-1.5 border border-border-subtle rounded flex items-center gap-2 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-sm">download</span> Export CSV
+                        </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="border-b border-border-subtle">
+<th class="pb-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Invoice Ref</th>
+<th class="pb-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Period</th>
+<th class="pb-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Status</th>
+<th class="pb-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Amount</th>
+<th class="pb-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-subtle">
+<tr class="group hover:bg-surface-container-low transition-colors">
+<td class="py-4 font-data-mono text-data-mono font-bold">#INV-2023-0912</td>
+<td class="py-4 font-body-sm text-body-sm text-on-surface-variant">01 Sep - 30 Sep 2023</td>
+<td class="py-4">
+<span class="px-2 py-0.5 bg-compliance-green/10 text-compliance-green font-label-caps text-[10px] rounded uppercase border border-compliance-green/20">PAID</span>
+</td>
+<td class="py-4 font-data-mono text-data-mono">£499.00</td>
+<td class="py-4 text-right">
+<button class="text-primary hover:underline font-label-caps text-label-caps flex items-center gap-1 ml-auto">
+                                        Download VAT PDF <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-low transition-colors">
+<td class="py-4 font-data-mono text-data-mono font-bold">#INV-2023-0801</td>
+<td class="py-4 font-body-sm text-body-sm text-on-surface-variant">01 Aug - 31 Aug 2023</td>
+<td class="py-4">
+<span class="px-2 py-0.5 bg-compliance-green/10 text-compliance-green font-label-caps text-[10px] rounded uppercase border border-compliance-green/20">PAID</span>
+</td>
+<td class="py-4 font-data-mono text-data-mono">£499.00</td>
+<td class="py-4 text-right">
+<button class="text-primary hover:underline font-label-caps text-label-caps flex items-center gap-1 ml-auto">
+                                        Download VAT PDF <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-low transition-colors">
+<td class="py-4 font-data-mono text-data-mono font-bold">#INV-2023-0701</td>
+<td class="py-4 font-body-sm text-body-sm text-on-surface-variant">01 Jul - 31 Jul 2023</td>
+<td class="py-4">
+<span class="px-2 py-0.5 bg-compliance-green/10 text-compliance-green font-label-caps text-[10px] rounded uppercase border border-compliance-green/20">PAID</span>
+</td>
+<td class="py-4 font-data-mono text-data-mono">£149.00</td>
+<td class="py-4 text-right">
+<button class="text-primary hover:underline font-label-caps text-label-caps flex items-center gap-1 ml-auto">
+                                        Download VAT PDF <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-6 flex justify-center">
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors">Load Older Invoices</button>
+</div>
+</section>
+</div>
+</main>
+<script>
+        const slider = document.getElementById('fleet-slider');
+        const countDisplay = document.getElementById('fleet-count');
+        const cardFeeDisplay = document.getElementById('card-fee');
+        const bacsFeeDisplay = document.getElementById('bacs-fee');
+        const savingDisplay = document.getElementById('saving-amount');
+
+        slider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            countDisplay.innerText = `${val} ${val === 1 ? 'Vehicle' : 'Vehicles'}`;
+            
+            // Simulation logic
+            // Average Growth Pro cost per unit is roughly £25/unit
+            const revenue = val * 25;
+            const cardFee = (revenue * 0.029) + (val * 0.20);
+            const bacsFee = Math.min(revenue * 0.01, val * 2);
+            const saving = cardFee - bacsFee;
+
+            cardFeeDisplay.innerText = `£${cardFee.toFixed(2)}`;
+            bacsFeeDisplay.innerText = `£${bacsFee.toFixed(2)}`;
+            savingDisplay.innerText = `£${saving.toFixed(2)}`;
+        });
+    </script>
+</body></html>
