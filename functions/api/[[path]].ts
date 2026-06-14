@@ -1220,9 +1220,9 @@ app.post('/schedules', async (c) => {
   const createdAt = new Date().toISOString();
 
   await db.prepare(`
-    INSERT INTO schedules (id, companyId, title, vehicleId, dueDate, status, driverId, frequency, isRecurring, createdAt)
-    VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
-  `).bind(id, companyId, title, vehicleId, dueDate, driverId, frequency, isRecurring, createdAt).run();
+    INSERT INTO schedules (id, companyId, title, vehicleId, dueDate, status, driverId, frequency, isRecurring, templateId, createdAt)
+    VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
+  `).bind(id, companyId, title, vehicleId, dueDate, driverId, frequency, isRecurring, body.templateId || null, createdAt).run();
 
   // Schedule notification dispatch logic
   const veh: any = await db.prepare("SELECT registration FROM vehicles WHERE id = ?").bind(vehicleId).first();
@@ -1285,12 +1285,13 @@ app.put('/schedules/:id', async (c) => {
   const driverId = body.driverId !== undefined ? body.driverId : sch.driverId;
   const frequency = body.frequency !== undefined ? body.frequency : sch.frequency;
   const isRecurring = body.isRecurring !== undefined ? (body.isRecurring ? 1 : 0) : sch.isRecurring;
+  const templateId = body.templateId !== undefined ? body.templateId : sch.templateId;
 
   await db.prepare(`
     UPDATE schedules 
-    SET title = ?, vehicleId = ?, dueDate = ?, status = ?, driverId = ?, frequency = ?, isRecurring = ?
+    SET title = ?, vehicleId = ?, dueDate = ?, status = ?, driverId = ?, frequency = ?, isRecurring = ?, templateId = ?
     WHERE id = ? AND companyId = ?
-  `).bind(title, vehicleId, dueDate, status, driverId, frequency, isRecurring, id, companyId).run();
+  `).bind(title, vehicleId, dueDate, status, driverId, frequency, isRecurring, templateId, id, companyId).run();
 
   // Handle recurrence if transitioning to completed
   if (status === 'completed' && sch.status !== 'completed' && isRecurring === 1) {
@@ -1305,9 +1306,9 @@ app.put('/schedules/:id', async (c) => {
     const nextCreatedAt = new Date().toISOString();
 
     await db.prepare(`
-      INSERT INTO schedules (id, companyId, title, vehicleId, dueDate, status, driverId, frequency, isRecurring, createdAt)
-      VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, 1, ?)
-    `).bind(nextId, companyId, title, vehicleId, nextDueDateStr, driverId, freqVal, nextCreatedAt).run();
+      INSERT INTO schedules (id, companyId, title, vehicleId, dueDate, status, driverId, frequency, isRecurring, templateId, createdAt)
+      VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, 1, ?, ?)
+    `).bind(nextId, companyId, title, vehicleId, nextDueDateStr, driverId, freqVal, templateId, nextCreatedAt).run();
 
     // Trigger Notification of recurring schedule setup
     const veh: any = await db.prepare("SELECT registration FROM vehicles WHERE id = ?").bind(vehicleId).first();

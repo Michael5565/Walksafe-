@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS schedules (
   driverId TEXT,
   frequency TEXT,
   isRecurring INTEGER DEFAULT 0, -- 1 = true, 0 = false
+  templateId TEXT,
   createdAt TEXT
 );
 
