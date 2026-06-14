@@ -1976,7 +1976,7 @@ function LandingPage({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void; o
       </div>
       <div style={{ borderTop: '1px solid #E5E5E0', paddingTop: 24, width: '100%', maxWidth: 400 }}>
         <p style={{ fontSize: 11, color: '#77767b', margin: 0 }}>
-          <a href='https://www.getwalksafe.co.uk' style={{ color: '#77767b', textDecoration: 'underline' }}>getwalksafe.co.uk</a> &middot; &copy; 2026 WalkSafe
+          <a href='https://www.getwalksafe.co.uk' style={{ color: '#77767b', textDecoration: 'underline' }}>getwalksafe.co.uk</a> &middot; <a href='https://getwalksafe.co.uk/privacy.html' target='_blank' style={{ color: '#77767b', textDecoration: 'underline' }}>Privacy</a> &middot; <a href='https://getwalksafe.co.uk/terms.html' target='_blank' style={{ color: '#77767b', textDecoration: 'underline' }}>Terms</a> &middot; <a href='https://getwalksafe.co.uk/refund-policy.html' target='_blank' style={{ color: '#77767b', textDecoration: 'underline' }}>Refund Policy</a> &middot; &copy; 2026 WalkSafe
         </p>
       </div>
     </div>
