@@ -897,9 +897,9 @@ app.post('/checks', async (c) => {
       } catch (e) {}
       try {
         await db.prepare("ALTER TABLE checks ADD COLUMN miscDamagePhotoUrl TEXT").run();
+      } catch (e) {}
       try {
         await db.prepare("ALTER TABLE checks ADD COLUMN templateName TEXT").run();
-      } catch (e) {}
       } catch (e) {}
       
       await db.prepare(`
@@ -927,8 +927,8 @@ app.post('/checks', async (c) => {
       ).run();
     } catch (altErr) {
       await db.prepare(`
-        INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, templateName)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         checkId,
         vehicleId,
@@ -945,8 +945,7 @@ app.post('/checks', async (c) => {
         createdAt,
         latitude !== undefined ? latitude : null,
         longitude !== undefined ? longitude : null,
-        templateName !== undefined ? templateName : null
-      ).run();
+        ).run();
     }
   }
 

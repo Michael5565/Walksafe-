@@ -323,27 +323,26 @@ export default function App() {
       return;
     }
     
-    // Cold-start: hydrate from localStorage cache if in-memory state is still empty
-    const cid = wsSession.company.id;
+        // Cold-start: hydrate from localStorage cache if in-memory state is still empty
     try {
       if (vehicles.length === 0) {
-        const cached = localStorage.getItem(`walksafe_vehicles_${cid}`);
+        const cached = localStorage.getItem(`walksafe_vehicles_${wsSession.company.id}`);
         if (cached) setVehicles(JSON.parse(cached));
       }
       if (schedules.length === 0) {
-        const cached = localStorage.getItem(`walksafe_schedules_${cid}`);
+        const cached = localStorage.getItem(`walksafe_schedules_${wsSession.company.id}`);
         if (cached) setSchedules(JSON.parse(cached));
       }
       if (checks.length === 0) {
-        const cached = localStorage.getItem(`walksafe_checks_${cid}`);
+        const cached = localStorage.getItem(`walksafe_checks_${wsSession.company.id}`);
         if (cached) setChecks(JSON.parse(cached));
       }
       if (notifications.length === 0) {
-        const cached = localStorage.getItem(`walksafe_notifications_${cid}`);
+        const cached = localStorage.getItem(`walksafe_notifications_${wsSession.company.id}`);
         if (cached) setNotifications(JSON.parse(cached));
       }
       if (templates.length === 0) {
-        const cached = localStorage.getItem(`walksafe_templates_${cid}`);
+        const cached = localStorage.getItem(`walksafe_templates_${wsSession.company.id}`);
         if (cached) setTemplates(JSON.parse(cached));
       }
     } catch (_e) {}
