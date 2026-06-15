@@ -1261,48 +1261,22 @@ export default function ManagerDashboard({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-subtle">
-                      {vehicles.filter(v => !checks.some(c => c.vehicleId === v.id && c.checkDate === new Date().toISOString().split('T')[0])).length === 0 ? (
-                        <tr><td colSpan={5} className="px-6 py-12 text-center text-compliance-green font-body-md">✓ 100% FLEET COMPLIANCE LOGGED</td></tr>
-                      ) : (
-                        vehicles.filter(v => !checks.some(c => c.vehicleId === v.id && c.checkDate === new Date().toISOString().split('T')[0])).slice(0, 5).map(v => {
-                          const driver = drivers.find(d => d.defaultVehicleId === v.id || d.assignedVehicleIds?.includes(v.id));
-                          return (
-                            <tr key={v.id} className="hover:bg-surface-container-lowest transition-colors">
-                              <td className="px-6 py-4">
-                                <UkPlate registration={v.registration} size="sm" />
-                              </td>
-                              <td className="px-6 py-4 font-body-md">{driver?.fullName || '—'}</td>
-                              <td className="px-6 py-4 font-data-mono text-on-surface-variant">—</td>
-                              <td className="px-6 py-4">
-                                <StatusPill label="Pending" color="amber" />
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                <button className="material-symbols-outlined text-on-surface-variant cursor-pointer">more_vert</button>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                      {vehicles.filter(v => checks.some(c => c.vehicleId === v.id && c.checkDate === new Date().toISOString().split('T')[0])).slice(0, 3).map(v => {
-                        const lastCheck = checks.filter(c => c.vehicleId === v.id && c.checkDate === new Date().toISOString().split('T')[0]).sort((a, b) => b.checkDate.localeCompare(a.checkDate))[0];
-                        const driver = drivers.find(d => d.id === lastCheck?.driverId);
-                        const hasDefect = defects.some(d => d.vehicleId === v.id && d.status !== 'closed');
+                      {vehicles.slice(0, 5).map(v => {
+                        const lastCheck = [...checks].reverse().find(c => c.vehicleId === v.id);
+                        const hasOpenDefect = defects.some(d => d.vehicleId === v.id && d.status === "open");
                         return (
-                          <tr key={v.id} className="hover:bg-surface-container-lowest transition-colors">
-                            <td className="px-6 py-4">
-                              <UkPlate registration={v.registration} size="sm" />
-                            </td>
-                            <td className="px-6 py-4 font-body-md">{driver?.fullName || '—'}</td>
-                            <td className="px-6 py-4 font-data-mono text-on-surface-variant">{lastCheck ? new Date(lastCheck.startedAt || lastCheck.checkDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' Today' : '—'}</td>
-                            <td className="px-6 py-4">
-                              {hasDefect ? <StatusPill label="Defects" color="red" /> : <StatusPill label="Verified" color="green" />}
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <button className="material-symbols-outlined text-on-surface-variant cursor-pointer">more_vert</button>
-                            </td>
+                          <tr key={v.id} className="hover:bg-surface-container-low transition-colors group cursor-pointer" onClick={() => setActiveTab("vehicles")}>
+                            <td className="px-6 py-4"><span className="font-data-mono text-data-mono font-bold">{v.registration}</span><span className="block text-[11px] text-on-surface-variant">{v.make} {v.model}</span></td>
+                            <td className="px-6 py-4 font-body-sm text-body-sm text-on-surface-variant">{schedules.find(s => s.vehicleId === v.id && s.status === "pending")?.driverId ? drivers.find(d => d.id === schedules.find(s => s.vehicleId === v.id && s.status === "pending")?.driverId)?.fullName || "—" : "—"}</td>
+                            <td className="px-6 py-4 font-body-sm text-body-sm">{lastCheck ? new Date(lastCheck.startedAt).toLocaleDateString("en-GB") : "Never"}</td>
+                            <td className="px-6 py-4"><span className={`px-2 py-0.5 font-label-caps text-label-caps rounded ${hasOpenDefect ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>{hasOpenDefect ? "Open Defect" : "Compliant"}</span></td>
+                            <td className="px-6 py-4 text-right"><span className="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span></td>
                           </tr>
                         );
                       })}
+                      {vehicles.length === 0 && (
+                        <tr><td colSpan={5} className="py-8 text-center font-body-sm text-body-sm text-on-surface-variant">No vehicles registered yet.</td></tr>
+                      )}
                     </tbody>
                   </table>
                   <div className="p-4 bg-surface-container-lowest text-center border-t border-border-subtle">
@@ -2981,24 +2955,24 @@ export default function ManagerDashboard({
                   </div>
                 </div>
 
-                {/* Payment Card */}
-                <div className="bg-[#18181B] border border-black p-card-padding flex flex-col justify-between min-h-[160px] relative overflow-hidden">
-                  <div className="absolute -right-4 -top-4 w-32 h-32 bg-secondary-container opacity-5 rounded-full"></div>
+                {/* Payment Method */}
+                <div className="bg-surface-card border border-border-subtle p-card-padding flex flex-col justify-between min-h-[160px]">
                   <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                      <span className="font-label-caps text-label-caps text-white font-bold tracking-widest">WalkSafe PAY</span>
+                    <div>
+                      <p className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Payment Method</p>
+                      <h3 className="font-headline-md text-headline-md text-primary mt-1">Paddle</h3>
                     </div>
-                    <span className="font-data-mono text-data-mono text-teal-400 text-xs">PREFERRED</span>
+                    <span className="material-symbols-outlined text-secondary-container text-3xl">credit_card</span>
                   </div>
                   <div className="mt-auto">
-                    <p className="font-data-mono text-data-mono text-white/80 text-lg tracking-widest">”¢”¢”¢”¢ ”¢”¢”¢”¢ ”¢”¢”¢”¢ 4022</p>
-                    <div className="flex justify-between items-end mt-2">
-                      <p className="font-label-caps text-label-caps text-white/40 uppercase">{company.name}</p>
-                      <p className="font-data-mono text-data-mono text-white/60 text-xs">EX 08/26</p>
-                    </div>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">Billing is securely managed through Paddle.</p>
+                    <button onClick={() => window.open("https://getwalksafe.co.uk/refund-policy.html", "_blank")}
+                      className="mt-3 px-4 py-2 bg-primary text-white font-label-caps text-label-caps rounded hover:opacity-90 transition-opacity cursor-pointer w-full text-center">
+                      View Billing Info
+                    </button>
                   </div>
                 </div>
-              </div>
+                </div>
 
               {/* Plan Matrix */}
               <div>
@@ -3138,19 +3112,7 @@ export default function ManagerDashboard({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-subtle">
-                      {mockInvoices.map(inv => (
-                        <tr key={inv.invoiceId} className="group hover:bg-surface-container-low transition-colors">
-                          <td className="py-4 font-data-mono text-data-mono font-bold">#{inv.invoiceId}</td>
-                          <td className="py-4 font-body-sm text-body-sm text-on-surface-variant">{inv.issueDate}</td>
-                          <td className="py-4"><StatusPill label={inv.status} color="green" /></td>
-                          <td className="py-4 font-data-mono text-data-mono">{inv.amount}</td>
-                          <td className="py-4 text-right">
-                            <button onClick={() => triggerDownloadInvoice(inv)} className="text-primary hover:underline font-label-caps text-label-caps flex items-center gap-1 ml-auto cursor-pointer">
-                              Download VAT PDF <span className="material-symbols-outlined text-sm">picture_as_pdf</span>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                      <tr><td colSpan={5} className="py-8 text-center font-body-sm text-body-sm text-on-surface-variant">Invoices are managed through Paddle. Visit your Paddle dashboard for billing history.</td></tr>
                     </tbody>
                   </table>
                 </div>

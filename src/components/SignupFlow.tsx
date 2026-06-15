@@ -370,7 +370,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
               items: [{ priceId, quantity: 1 }],
               customer: { email: workEmail.trim().toLowerCase() },
               customData: { userId: data.company.id, plan: selectedPlan, vehicle_limit: String(currentPlan?.maxVehicles || 1) },
-              settings: { theme: 'light' }
+              settings: { theme: 'light', successUrl: window.location.origin + '/?payment_success=true&plan=' + selectedPlan + '&limit=' + (currentPlan?.maxVehicles || 1), allowLogout: true }
             });
           }
         } catch (e) {

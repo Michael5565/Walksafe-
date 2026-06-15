@@ -165,6 +165,7 @@ export default function App() {
   });
 
   const [currentRole, setCurrentRole] = useState<'driver' | 'manager'>('manager');
+  const [loginMode, setLoginMode] = useState("driver");
   const [magicDriver, setMagicDriver] = useState<Driver | null>(() => {
     try {
       const v = localStorage.getItem("walksafe_driver_session");
@@ -693,10 +694,7 @@ export default function App() {
             if (res.ok) {
               const data = await res.json();
               if (data.success && data.company) {
-                // Update React states
                 setCompany(data.company);
-                
-                // Update local storage session
                 if (currentSessionStr) {
                   try {
                     const sess = JSON.parse(currentSessionStr);
@@ -705,8 +703,8 @@ export default function App() {
                     setWsSession(sess);
                   } catch (e) {}
                 }
-                
-                alert(` ✓ Payment Successful! Your WalkSafe Workspace has been upgraded to the ${plan.toUpperCase()} Plan (Limit: ${limit} active vehicles) via secure checkout.`);
+                alert("Payment setup complete! Your subscription is being activated via Paddle. This may take a moment.");
+                loadDatabaseState(true);
               }
             }
           } catch (err) {
@@ -1708,42 +1706,98 @@ export default function App() {
 
           {/* Login card */}
           <div style={{width:'100%',maxWidth:400,background:'#fff',border:'1px solid #E5E5E0',borderRadius:16,padding:'24px 28px',boxShadow:'0 4px 24px rgba(0,0,0,0.04)'}}>
-            <h3 style={{fontSize:18,fontWeight:700,color:'#1a1c1b',marginBottom:20}}>Sign In</h3>
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              const form = e.target as HTMLFormElement;
-              const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-              const password = (form.elements.namedItem('password') as HTMLInputElement).value;
-              try {
-                const res = await fetch('/api/auth/login-manager', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ email, password })
-                });
-                if (!res.ok) { alert('Invalid credentials'); return; }
-                const data = await res.json();
-                if (data.success && data.company) {
-                  const session = { company: data.company, role: 'manager' as const };
-                  localStorage.setItem('walksafe_workspace_session', JSON.stringify(session));
-                  setWsSession(session);
-                  setCompany(data.company);
-                  setCurrentRole('manager');
-                }
-              } catch { alert('Connection error. Please try again.'); }
-            }}>
-              <div style={{marginBottom:12}}>
-                <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Work Email or Workspace Code</label>
-                <input type="text" name="email" required className="focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10" style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none'}} placeholder="you@company.co.uk" />
+            
+            {/* Tab switcher */}
+            <div style={{display:'flex',marginBottom:20,borderBottom:'1px solid #E5E5E0'}}>
+              <button onClick={() => setLoginMode("driver")} style={{flex:1,padding:'8px 0',border:'none',background:'none',fontWeight:loginMode==='driver'?700:400,fontSize:13,color:loginMode==='driver'?'#000':'#77767b',borderBottom:loginMode==='driver'?'2px solid #fea619':'2px solid transparent',cursor:'pointer'}}>Driver</button>
+              <button onClick={() => setLoginMode("manager")} style={{flex:1,padding:'8px 0',border:'none',background:'none',fontWeight:loginMode==='manager'?700:400,fontSize:13,color:loginMode==='manager'?'#000':'#77767b',borderBottom:loginMode==='manager'?'2px solid #fea619':'2px solid transparent',cursor:'pointer'}}>Manager</button>
+            </div>
+
+            {loginMode === 'driver' ? (
+              /* Driver Login: email + PIN */
+              <div>
+                <h3 style={{fontSize:16,fontWeight:700,color:'#1a1c1b',marginBottom:16}}>Driver Sign In</h3>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  const form = e.target as HTMLFormElement;
+                  const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+                  const pin = (form.elements.namedItem('pin') as HTMLInputElement).value;
+                  try {
+                    const res = await fetch('/api/auth/login-driver', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email, pin })
+                    });
+                    if (!res.ok) { const err = await res.json(); alert(err.error || 'Invalid credentials'); return; }
+                    const data = await res.json();
+                    if (data.success && data.company && data.driver) {
+                      const session = { company: data.company, role: 'driver' as const };
+                      localStorage.setItem('walksafe_workspace_session', JSON.stringify(session));
+                      localStorage.setItem('walksafe_driver_session', JSON.stringify(data.driver));
+                      localStorage.setItem('walksafe_last_cid', data.company.id);
+                      setWsSession(session);
+                      setCompany(data.company);
+                      setMagicDriver(data.driver);
+                      setCurrentRole('driver');
+                    }
+                  } catch { alert('Connection error. Please try again.'); }
+                }}>
+                  <div style={{marginBottom:12}}>
+                    <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Work Email</label>
+                    <input type="email" name="email" required style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none'}} placeholder="driver@company.co.uk" />
+                  </div>
+                  <div style={{marginBottom:16}}>
+                    <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Driver PIN</label>
+                    <input type="password" name="pin" required maxLength={6} inputMode="numeric" style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none',letterSpacing:'0.2em',fontWeight:700}} placeholder="Enter PIN" />
+                  </div>
+                  <button type="submit" style={{width:'100%',padding:'12px 0',background:'#000',color:'#fff',border:'none',borderRadius:8,fontWeight:600,fontSize:13,cursor:'pointer'}}>Sign In</button>
+                  <p style={{textAlign:'center',marginTop:12,fontSize:11,color:'#77767b'}}>
+                    Or use your magic link or QR code from your fleet manager.
+                  </p>
+                </form>
               </div>
-              <div style={{marginBottom:16}}>
-                <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Manager Password</label>
-                <input type="password" name="password" required className="focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10" style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none'}} placeholder="Enter password" />
+            ) : (
+              /* Manager Login: email + password */
+              <div>
+                <h3 style={{fontSize:16,fontWeight:700,color:'#1a1c1b',marginBottom:16}}>Manager Sign In</h3>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  const form = e.target as HTMLFormElement;
+                  const email = (form.elements.namedItem('mgr_email') as HTMLInputElement).value;
+                  const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+                  try {
+                    const res = await fetch('/api/auth/login-manager', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email, password })
+                    });
+                    if (!res.ok) { alert('Invalid credentials'); return; }
+                    const data = await res.json();
+                    if (data.success && data.company) {
+                      const session = { company: data.company, role: 'manager' as const };
+                      localStorage.setItem('walksafe_workspace_session', JSON.stringify(session));
+                      setWsSession(session);
+                      setCompany(data.company);
+                      setCurrentRole('manager');
+                    }
+                  } catch { alert('Connection error. Please try again.'); }
+                }}>
+                  <div style={{marginBottom:12}}>
+                    <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Work Email or Workspace Code</label>
+                    <input type="text" name="mgr_email" required style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none'}} placeholder="you@company.co.uk" />
+                  </div>
+                  <div style={{marginBottom:16}}>
+                    <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Manager Password</label>
+                    <input type="password" name="password" required style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none'}} placeholder="Enter password" />
+                  </div>
+                  <button type="submit" style={{width:'100%',padding:'12px 0',background:'#000',color:'#fff',border:'none',borderRadius:8,fontWeight:600,fontSize:13,cursor:'pointer'}}>Sign In</button>
+                </form>
               </div>
-              <button type="submit" style={{width:'100%',padding:'12px 0',background:'#000',color:'#fff',border:'none',borderRadius:8,fontWeight:600,fontSize:13,cursor:'pointer',transition:'all 0.15s'}}>Sign In</button>
-              <p style={{textAlign:'center',marginTop:12,fontSize:12,color:'#77767b'}}>
-                New here? <button type="button" onClick={() => navigateTo('/signup')} style={{background:'none',border:'none',color:'#fea619',cursor:'pointer',fontWeight:600,fontSize:12,padding:0}}>Start Free Trial</button>
-              </p>
-            </form>
+            )}
+
+            <p style={{textAlign:'center',marginTop:12,fontSize:12,color:'#77767b'}}>
+              New here? <button type="button" onClick={() => navigateTo('/signup')} style={{background:'none',border:'none',color:'#fea619',cursor:'pointer',fontWeight:600,fontSize:12,padding:0}}>Start Free Trial</button>
+            </p>
           </div>
         </div>
       </div>

@@ -1696,63 +1696,22 @@ app.post('/billing/verify-session', async (c) => {
   const companyId = c.req.header('x-company-id');
   if (!companyId) return c.json({ error: "X-Company-Id header is required" }, 401);
 
-  const { sessionId, plan, limit } = await c.req.json();
+  const { plan, limit } = await c.req.json();
   const company: any = await db.prepare("SELECT * FROM company WHERE id = ?").bind(companyId).first();
   if (!company) {
     return c.json({ error: "Workspace company not found" }, 404);
   }
 
-  const paystackKey = c.env.PAYSTACK_SECRET_KEY;
+  // Activation happens via Paddle webhook only.
+  // This endpoint just confirms the company and returns current status.
+  // The Paddle webhook (/api/billing/paddle-webhook) handles subscription events
+  // and sets isSubscribed accordingly.
 
-  if (paystackKey && sessionId && sessionId !== "direct_activation") {
-    try {
-      const response = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(sessionId)}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${paystackKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data: any = await response.json();
-      if (!data.status || data.data.status !== "success") {
-        return c.json({ error: "Paystack transaction verification failed or transaction is unsuccessful" }, 400);
-      }
-
-      const verifiedCompanyId = data.data.metadata?.companyId;
-      const verifiedPlan = data.data.metadata?.plan || plan;
-      const verifiedLimit = Number(data.data.metadata?.limit || limit);
-
-      if (verifiedCompanyId !== companyId) {
-        return c.json({ error: "Transaction workspace owner mismatch" }, 400);
-      }
-
-      await db.prepare(`
-        UPDATE company 
-        SET plan = ?, vehicleLimit = ?, isSubscribed = 1, updatedAt = ?
-        WHERE id = ?
-      `).bind(verifiedPlan, verifiedLimit, new Date().toISOString(), companyId).run();
-
-      const updated = await db.prepare("SELECT * FROM company WHERE id = ?").bind(companyId).first();
-      return c.json({ success: true, company: mapCompanyDbToClient(updated) });
-    } catch (err: any) {
-      console.error("[Paystack Cloudflare Verification Error] ", err);
-      return c.json({ error: `Paystack API Verification Error: ${err.message}` }, 500);
-    }
-  } else {
-    // Sandbox / Direct fallback mode
-    await db.prepare(`
-      UPDATE company 
-      SET plan = ?, vehicleLimit = ?, isSubscribed = 1, updatedAt = ?
-      WHERE id = ?
-    `).bind(plan, Number(limit), new Date().toISOString(), companyId).run();
-
-    const updated = await db.prepare("SELECT * FROM company WHERE id = ?").bind(companyId).first();
-    return c.json({ success: true, company: mapCompanyDbToClient(updated) });
-  }
+  const updated = await db.prepare("SELECT * FROM company WHERE id = ?").bind(companyId).first();
+  return c.json({ success: true, company: mapCompanyDbToClient(updated) });
 });
 
-// 32. POST /api/billing/webhook
+// 32. POST /api/billing/webhook// 32. POST /api/billing/webhook
 app.post('/billing/webhook', async (c) => {
   const paystackKey = c.env.PAYSTACK_SECRET_KEY;
   if (!paystackKey) {
@@ -1825,6 +1784,110 @@ app.post('/billing/webhook', async (c) => {
   } catch (err: any) {
     console.error("[Paystack Webhook Process Failure] ", err);
     return c.json({ error: `Webhook trigger error: ${err.message}` }, 500);
+  }
+});
+
+// 33. POST /api/billing/paddle-webhook
+app.post('/billing/paddle-webhook', async (c) => {
+  try {
+    const rawBody = await c.req.text();
+    const signatureHeader = c.req.header("Paddle-Signature");
+    const paddleSecret = c.env.PADDLE_WEBHOOK_SECRET;
+
+    if (!paddleSecret) {
+      // No secret configured — silently accept (dev mode)
+      console.warn("[Paddle Webhook] PADDLE_WEBHOOK_SECRET not set, accepting webhook without verification");
+    } else if (signatureHeader) {
+      // Verify Paddle v2 signature: ts=...;h1=v1=...
+      const parts = signatureHeader.split(";").reduce((acc, part) => {
+        const [key, ...vals] = part.split("=");
+        acc[key.trim()] = vals.join("=");
+        return acc;
+      }, {} as Record<string, string>);
+
+      const ts = parts["ts"];
+      const h1 = parts["h1"] || "";
+      const h1Value = h1.startsWith("v1=") ? h1.substring(3) : h1;
+
+      if (ts && h1Value) {
+        const signedPayload = ts + ":" + rawBody;
+        const encoder = new TextEncoder();
+        const keyData = encoder.encode(paddleSecret);
+        const key = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
+        const sigBytes = new Uint8Array(h1Value.match(/.{1,2}/g)!.map((b: string) => parseInt(b, 16)));
+        const isValid = await crypto.subtle.verify("HMAC", key, sigBytes, encoder.encode(signedPayload));
+        if (!isValid) {
+          console.error("[Paddle Webhook] Signature verification failed");
+          return c.json({ error: "Invalid signature" }, 401);
+        }
+      }
+    }
+
+    const payload = JSON.parse(rawBody);
+    const eventType = payload.event_type;
+    const eventData = payload.data || {};
+
+    if (!eventType) {
+      return c.json({ error: "Missing event_type" }, 400);
+    }
+
+    const customData = eventData.custom_data || eventData.customData || {};
+    const companyId = customData.userId || customData.companyId;
+    if (!companyId) {
+      // No companyId to update — this might be a test event
+      console.log("[Paddle Webhook] No companyId in event, skipping:", eventType);
+      return c.json({ success: true });
+    }
+
+    const plan = customData.plan || "starter";
+    const limit = Number(customData.vehicle_limit || customData.vehicleLimit || 5);
+
+    const db = getDbOrThrow(c);
+    const company = await db.prepare("SELECT id FROM company WHERE id = ?").bind(companyId).first();
+
+    if (!company) {
+      console.warn("[Paddle Webhook] Company not found:", companyId);
+      return c.json({ success: true }); // Acknowledge but don't error
+    }
+
+    // Determine subscription status based on event
+    let isSubscribed = false;
+    switch (eventType) {
+      case "subscription.created":
+      case "subscription.activated":
+      case "transaction.paid":
+      case "transaction.completed":
+        isSubscribed = true;
+        break;
+      case "subscription.updated":
+        isSubscribed = eventData.status === "active" || eventData.status === "trialing";
+        break;
+      case "subscription.cancelled":
+      case "subscription.past_due":
+      case "subscription.expired":
+        isSubscribed = false;
+        break;
+      default:
+        // Try to infer from status if available
+        if (eventData.status) {
+          isSubscribed = eventData.status === "active" || eventData.status === "trialing";
+        }
+    }
+
+    if (isSubscribed) {
+      await db.prepare("UPDATE company SET plan = ?, vehicleLimit = ?, isSubscribed = 1, updatedAt = ? WHERE id = ?")
+        .bind(plan, limit, new Date().toISOString(), companyId).run();
+      console.log("[Paddle Webhook] Subscribed company", companyId, "plan:", plan);
+    } else {
+      await db.prepare("UPDATE company SET isSubscribed = 0, updatedAt = ? WHERE id = ?")
+        .bind(new Date().toISOString(), companyId).run();
+      console.log("[Paddle Webhook] Unsubscribed company", companyId);
+    }
+
+    return c.json({ success: true });
+  } catch (err: any) {
+    console.error("[Paddle Webhook Error]", err);
+    return c.json({ error: err.message }, 500);
   }
 });
 
