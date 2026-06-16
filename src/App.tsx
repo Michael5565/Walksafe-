@@ -109,7 +109,7 @@ const FALLBACK_DRIVERS: Driver[] = [
 ];
 
 // Helper for slow networks (exhausted data) so it fails fast into offline mode instead of hanging
-const safeStringify = (obj: any): string => { try { const seen = new WeakSet(); return JSON.stringify(obj, (key, val) => { if (typeof val === "object" && val !== null) { if (seen.has(val)) return; seen.add(val); } return val; }); } catch { return JSON.stringify({ error: "Failed to serialize" }); } };
+const safeStringify = (obj: any): string => { try { return JSON.stringify(JSON.parse(JSON.stringify(obj))); } catch { return "{}"; } };
 
 const fetchWithTimeout = async (url: string, options: any = {}, timeoutMs = 5000) => {
   const controller = new AbortController();
