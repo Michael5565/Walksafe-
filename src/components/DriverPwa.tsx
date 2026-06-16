@@ -2721,7 +2721,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                 <div className="mt-4 bg-surface p-4 rounded border border-border-subtle space-y-3">
                   <div className="flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4 text-secondary-container shrink-0" />
-                    <span className="text-xs font-bold text-on-primary uppercase tracking-wide">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wide">
                       Miscellaneous Damage & Notes (Optional)
                     </span>
                   </div>
