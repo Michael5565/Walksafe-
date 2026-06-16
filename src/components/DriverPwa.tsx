@@ -1025,7 +1025,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
           <div className="p-3 bg-surface-container-high border border-border-subtle text-secondary-container rounded-full mb-3.5">
             <Image className="w-8 h-8 opacity-60 animate-pulse" />
           </div>
-          <h4 className="font-sans font-bold text-sm tracking-wide text-on-primary uppercase">No Compliance Media Logged</h4>
+          <h4 className="font-sans font-bold text-sm tracking-wide text-primary uppercase">No Compliance Media Logged</h4>
           <p className="text-[11px] leading-relaxed mt-1 max-w-[280px]">
             Photos relative to defect failures or miscellaneous cosmetic damage taken during your Walkaround checks will automatically sync here with their categories, dates, and operator notes.
           </p>
@@ -1038,7 +1038,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
         {images.map(img => (
           <div 
             key={img.id} 
-            className="relative bg-surface border border-border-subtle/90 rounded shadow-sm flex flex-col text-on-primary overflow-hidden group hover:border-border-subtle transition-all duration-300 animate-fadeIn"
+            className="relative bg-surface border border-border-subtle/90 rounded shadow-sm flex flex-col text-primary overflow-hidden group hover:border-border-subtle transition-all duration-300 animate-fadeIn"
           >
             {/* Image Section - occupying full top row */}
             <div className="relative w-full h-48 sm:h-56 bg-surface-container overflow-hidden border-b border-border-subtle flex items-center justify-center shrink-0">
@@ -1050,7 +1050,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                   setSelectedZoomImage(img);
                 }}
                 referrerPolicy="no-referrer"
-              onError={() => setQrCodeError(true)} />
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               
               {/* Overlay Glass Badge on image */}
               <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap z-10">
@@ -1149,7 +1149,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
               <div className="inline-flex p-4 bg-secondary-container/10 rounded-full border border-secondary-container/20 mb-4">
                 <Lock className="w-10 h-10 text-secondary-container" />
               </div>
-              <h1 className="font-sans text-2xl font-bold tracking-tight text-on-primary uppercase">
+              <h1 className="font-sans text-2xl font-bold tracking-tight text-primary uppercase">
                 Secure Session Required
               </h1>
               <p className="text-sm text-on-surface-variant mt-2 max-w-[240px]">
@@ -2984,7 +2984,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                     
                     <button
                       onClick={() => downloadDriverPDF(selectedHistoryCheck)}
-                      className="w-full mt-2.5 bg-surface-container text-on-primary font-mono text-[11px] font-bold py-1.5 rounded flex items-center justify-center gap-1"
+                      className="w-full mt-2.5 bg-primary text-white font-mono text-[11px] font-bold py-1.5 rounded flex items-center justify-center gap-1"
                     >
                       <Download className="w-3.5 h-3.5 text-secondary-container" /> DOWNLOAD PDF RECORD
                     </button>
@@ -3158,7 +3158,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
 
           {/* 8. SCREEN: Driver Photo Gallery */}
           {phase === 'media' && currentDriver && (
-            <div className="flex-1 bg-surface-container p-4 text-on-primary flex flex-col justify-between overflow-hidden">
+            <div className="flex-1 bg-surface-container p-4 text-primary flex flex-col justify-between overflow-hidden">
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="flex justify-between items-center mb-3 pb-2 border-b border-border-subtle shrink-0 font-sans">
                   <div className="flex items-center gap-1.5">
