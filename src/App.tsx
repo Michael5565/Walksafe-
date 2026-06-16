@@ -241,7 +241,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem(`walksafe_sync_queue`, safeStringify(syncQueue));
+    localStorage.setItem(`walksafe_sync_queue`, JSON.stringify(syncQueue));
   }, [syncQueue]);
 
   useEffect(() => {
@@ -376,15 +376,15 @@ const loadDatabaseState = async (silently = false) => {
           try {
             let res;
             if (item.type === 'submit_check') {
-              res = await fetchWithTimeout("/api/checks", { method: "POST", headers: reqHeaders, body: safeStringify(item.payload) }, 3000);
+              res = await fetchWithTimeout("/api/checks", { method: "POST", headers: reqHeaders, body: JSON.stringify(item.payload) }, 3000);
             } else if (item.type === 'close_defect') {
-              res = await fetchWithTimeout(`/api/defects/${item.payload.defectId}/close`, { method: "PUT", headers: reqHeaders, body: safeStringify(item.payload.repairLog) }, 3000);
+              res = await fetchWithTimeout(`/api/defects/${item.payload.defectId}/close`, { method: "PUT", headers: reqHeaders, body: JSON.stringify(item.payload.repairLog) }, 3000);
             } else if (item.type === 'add_vehicle') {
-              res = await fetchWithTimeout("/api/vehicles", { method: "POST", headers: reqHeaders, body: safeStringify(item.payload) }, 3000);
+              res = await fetchWithTimeout("/api/vehicles", { method: "POST", headers: reqHeaders, body: JSON.stringify(item.payload) }, 3000);
             } else if (item.type === 'add_driver') {
-              res = await fetchWithTimeout("/api/drivers", { method: "POST", headers: reqHeaders, body: safeStringify(item.payload) }, 3000);
+              res = await fetchWithTimeout("/api/drivers", { method: "POST", headers: reqHeaders, body: JSON.stringify(item.payload) }, 3000);
             } else if (item.type === 'update_company') {
-              res = await fetchWithTimeout("/api/company", { method: "PUT", headers: reqHeaders, body: safeStringify(item.payload) }, 3000);
+              res = await fetchWithTimeout("/api/company", { method: "PUT", headers: reqHeaders, body: JSON.stringify(item.payload) }, 3000);
             }
             
             if (res && res.ok && res.headers.get("content-type")?.includes("application/json")) {
@@ -548,7 +548,7 @@ const loadDatabaseState = async (silently = false) => {
           const res = await fetchWithTimeout("/api/checks", {
             method: "POST",
             headers: reqHeaders,
-            body: safeStringify(item.payload)
+            body: JSON.stringify(item.payload)
           });
           if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
             remaining = remaining.filter(i => i.id !== item.id);
@@ -558,7 +558,7 @@ const loadDatabaseState = async (silently = false) => {
           const res = await fetchWithTimeout(`/api/defects/${item.payload.defectId}/close`, {
             method: "PUT",
             headers: reqHeaders,
-            body: safeStringify(item.payload.repairLog)
+            body: JSON.stringify(item.payload.repairLog)
           });
           if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
             remaining = remaining.filter(i => i.id !== item.id);
@@ -568,7 +568,7 @@ const loadDatabaseState = async (silently = false) => {
           const res = await fetchWithTimeout("/api/vehicles", {
             method: "POST",
             headers: reqHeaders,
-            body: safeStringify(item.payload)
+            body: JSON.stringify(item.payload)
           });
           if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
             remaining = remaining.filter(i => i.id !== item.id);
@@ -578,7 +578,7 @@ const loadDatabaseState = async (silently = false) => {
           const res = await fetchWithTimeout("/api/drivers", {
             method: "POST",
             headers: reqHeaders,
-            body: safeStringify(item.payload)
+            body: JSON.stringify(item.payload)
           });
           if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
             remaining = remaining.filter(i => i.id !== item.id);
@@ -588,7 +588,7 @@ const loadDatabaseState = async (silently = false) => {
           const res = await fetchWithTimeout("/api/company", {
             method: "PUT",
             headers: reqHeaders,
-            body: safeStringify(item.payload)
+            body: JSON.stringify(item.payload)
           });
           if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
             remaining = remaining.filter(i => i.id !== item.id);
@@ -691,7 +691,7 @@ const loadDatabaseState = async (silently = false) => {
                 "Content-Type": "application/json",
                 "X-Company-Id": activeCid
               },
-              body: safeStringify({ plan, vehicleLimit: Number(limit), isSubscribed: true })
+              body: JSON.stringify({ plan, vehicleLimit: Number(limit), isSubscribed: true })
             });
 
             if (res.ok) {
@@ -788,7 +788,7 @@ const loadDatabaseState = async (silently = false) => {
                     await fetchWithTimeout("/api/push/register", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: safeStringify({
+                      body: JSON.stringify({
                         companyId: cid,
                         subscription: sub,
                         fcmToken: fcmTokenToReg
@@ -1072,7 +1072,7 @@ const loadDatabaseState = async (silently = false) => {
       const res = await fetchWithTimeout("/api/vehicles", {
         method: "POST",
         headers: reqHeaders,
-        body: safeStringify(vehPayload)
+        body: JSON.stringify(vehPayload)
       });
       if (!res.ok) {
         const err = await res.json();
@@ -1118,7 +1118,7 @@ const loadDatabaseState = async (silently = false) => {
       const res = await fetchWithTimeout("/api/drivers", {
         method: "POST",
         headers: reqHeaders,
-        body: safeStringify(drvPayload)
+        body: JSON.stringify(drvPayload)
       });
       if (res.ok) {
         await loadDatabaseState(true);
@@ -1180,7 +1180,7 @@ const loadDatabaseState = async (silently = false) => {
       const res = await fetchWithTimeout(`/api/drivers/${driverId}`, {
         method: "PUT",
         headers: reqHeaders,
-        body: safeStringify(drvPayload)
+        body: JSON.stringify(drvPayload)
       });
       if (res.ok) {
         await loadDatabaseState(true);
@@ -1210,7 +1210,7 @@ const loadDatabaseState = async (silently = false) => {
       const res = await fetchWithTimeout(`/api/vehicles/${vehicleId}`, {
         method: "PUT",
         headers: reqHeaders,
-        body: safeStringify(vehPayload)
+        body: JSON.stringify(vehPayload)
       });
       if (res.ok) {
         await loadDatabaseState(true);
@@ -1317,7 +1317,7 @@ const loadDatabaseState = async (silently = false) => {
         const res = await fetchWithTimeout("/api/checks", {
           method: "POST",
           headers: reqHeaders,
-          body: safeStringify({ id: checkPayload.id, vehicleId: checkPayload.vehicleId, driverId: checkPayload.driverId, startedAt: checkPayload.startedAt, items: checkPayload.items, driverSignature: String(checkPayload.driverSignature || "").substring(0, 50000), results: checkPayload.results || [], latitude: checkPayload.latitude, longitude: checkPayload.longitude, miscDamageNotes: String(checkPayload.miscDamageNotes || ""), miscDamagePhotoUrl: String(checkPayload.miscDamagePhotoUrl || ""), scheduleId: checkPayload.scheduleId, templateName: String(checkPayload.templateName || "") })
+          body: JSON.stringify({ id: checkPayload.id, vehicleId: checkPayload.vehicleId, driverId: checkPayload.driverId, startedAt: checkPayload.startedAt, items: checkPayload.items, driverSignature: String(checkPayload.driverSignature || "").substring(0, 50000), results: checkPayload.results || [], latitude: checkPayload.latitude, longitude: checkPayload.longitude, miscDamageNotes: String(checkPayload.miscDamageNotes || ""), miscDamagePhotoUrl: String(checkPayload.miscDamagePhotoUrl || ""), scheduleId: checkPayload.scheduleId, templateName: String(checkPayload.templateName || "") })
         });
         if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
           loadDatabaseState(true);
@@ -1380,7 +1380,7 @@ const loadDatabaseState = async (silently = false) => {
         const res = await fetchWithTimeout(`/api/defects/${defectId}/close`, {
           method: "PUT",
           headers: reqHeaders,
-          body: safeStringify(repairLog)
+          body: JSON.stringify(repairLog)
         });
         if (res.ok) {
           loadDatabaseState(true);
@@ -1412,7 +1412,7 @@ const loadDatabaseState = async (silently = false) => {
       const res = await fetchWithTimeout("/api/company", {
         method: "PUT",
         headers: reqHeaders,
-        body: safeStringify(compPayload)
+        body: JSON.stringify(compPayload)
       });
       if (res.ok) {
         await loadDatabaseState(true);
@@ -1445,7 +1445,7 @@ const loadDatabaseState = async (silently = false) => {
       const res = await fetchWithTimeout("/api/announcements", {
         method: "POST",
         headers: reqHeaders,
-        body: safeStringify(annPayload)
+        body: JSON.stringify(annPayload)
       });
       if (res.ok) {
         await loadDatabaseState(true);
@@ -1477,7 +1477,7 @@ const loadDatabaseState = async (silently = false) => {
       const res = await fetchWithTimeout("/api/schedules", {
         method: "POST",
         headers: reqHeaders,
-        body: safeStringify(schPayload)
+        body: JSON.stringify(schPayload)
       });
       if (res.ok) {
         await loadDatabaseState(true);
@@ -1508,7 +1508,7 @@ const loadDatabaseState = async (silently = false) => {
       const res = await fetchWithTimeout(url, {
         method,
         headers: { 'Content-Type': 'application/json', 'X-Company-Id': cid },
-        body: safeStringify(tplPayload)
+        body: JSON.stringify(tplPayload)
       });
       if (res.ok) {
         await loadDatabaseState(true);
@@ -1550,7 +1550,7 @@ const loadDatabaseState = async (silently = false) => {
       const res = await fetchWithTimeout(`/api/drivers/${driverId}/reset-pin`, {
         method: "PUT",
         headers: reqHeaders,
-        body: safeStringify({ pin: newPin })
+        body: JSON.stringify({ pin: newPin })
       });
       if (res.ok) {
         await loadDatabaseState(true);
@@ -1722,7 +1722,7 @@ const loadDatabaseState = async (silently = false) => {
                   const res = await fetch('/api/auth/login-driver', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: safeStringify({ email, pin })
+                    body: JSON.stringify({ email, pin })
                   });
                   if (!res.ok) { const err = await res.json(); alert(err.error || 'Invalid credentials'); return; }
                   const data = await res.json();
@@ -1765,7 +1765,7 @@ const loadDatabaseState = async (silently = false) => {
                   const res = await fetch('/api/auth/login-manager', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: safeStringify({ email, password })
+                    body: JSON.stringify({ email, password })
                   });
                   if (!res.ok) { alert('Invalid credentials'); return; }
                   const data = await res.json();
