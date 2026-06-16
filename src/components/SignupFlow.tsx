@@ -679,7 +679,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                     matchesSelected
                       ? 'border-[#fea619] bg-[#fef7e6] shadow-xl shadow-[#fea619]/5'
                       : 'border-[#E5E5E0] bg-black/35 hover:border-[#c8c5cb]'
-                  } ${matchesSelected ? 'flex' : 'hidden md:flex'}`}
+                  } ${matchesSelected ? 'flex' : 'flex'}`}
                 >
                   {/* Selected indicators */}
                   {matchesSelected && (
@@ -688,11 +688,6 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                     </div>
                   )}
 
-                  {plan.highlight && (
-                    <span className="absolute top-3 left-3 bg-[#fea619] text-[#684000] text-[10px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
-                      MOST POPULAR
-                    </span>
-                  )}
 
                   <div>
                     <h3 className=" font-bold text-[#1a1c1b] text-sm uppercase tracking-wider">{plan.name}</h3>
