@@ -1327,11 +1327,40 @@ const loadDatabaseState = async (silently = false) => {
         "X-Company-Id": cid
       };
 
+      // Build safe wire payload using ONLY primitive extraction — never touch checkPayload as a whole
+      const safeItems: any[] = [];
+      if (Array.isArray(checkPayload.items)) {
+        for (const it of checkPayload.items) {
+          safeItems.push({ itemKey: String(it?.itemKey ?? ""), itemLabel: String(it?.itemLabel ?? ""), result: it?.result === "fail" ? "fail" : "pass", sequenceOrder: Number(it?.sequenceOrder ?? 0) });
+        }
+      }
+      const safeResults: any[] = [];
+      if (Array.isArray(checkPayload.results)) {
+        for (const r of checkPayload.results) {
+          safeResults.push({ itemKey: String(r?.itemKey ?? ""), itemLabel: String(r?.itemLabel ?? ""), severity: String(r?.severity ?? "major"), description: String(r?.description ?? ""), photoUrl: typeof r?.photoUrl === "string" ? r.photoUrl.substring(0, 500000) : "" });
+        }
+      }
+      const wirePayload = {
+        id: String(checkPayload.id ?? ""),
+        vehicleId: String(checkPayload.vehicleId ?? ""),
+        driverId: String(checkPayload.driverId ?? ""),
+        startedAt: String(checkPayload.startedAt ?? new Date().toISOString()),
+        driverSignature: typeof checkPayload.driverSignature === "string" ? checkPayload.driverSignature.substring(0, 50000) : "",
+        items: safeItems,
+        results: safeResults,
+        latitude: typeof checkPayload.latitude === "number" ? checkPayload.latitude : null,
+        longitude: typeof checkPayload.longitude === "number" ? checkPayload.longitude : null,
+        miscDamageNotes: String(checkPayload.miscDamageNotes ?? ""),
+        miscDamagePhotoUrl: typeof checkPayload.miscDamagePhotoUrl === "string" ? checkPayload.miscDamagePhotoUrl : "",
+        scheduleId: checkPayload.scheduleId != null ? String(checkPayload.scheduleId) : null,
+        templateName: String(checkPayload.templateName ?? "")
+      };
+
       try {
         const res = await fetchWithTimeout("/api/checks", {
           method: "POST",
           headers: reqHeaders,
-          body: JSON.stringify({ id: checkPayload.id, vehicleId: checkPayload.vehicleId, driverId: checkPayload.driverId, startedAt: checkPayload.startedAt, items: checkPayload.items, driverSignature: String(checkPayload.driverSignature || "").substring(0, 50000), results: checkPayload.results || [], latitude: checkPayload.latitude, longitude: checkPayload.longitude, miscDamageNotes: String(checkPayload.miscDamageNotes || ""), miscDamagePhotoUrl: String(checkPayload.miscDamagePhotoUrl || ""), scheduleId: checkPayload.scheduleId, templateName: String(checkPayload.templateName || "") })
+          body: JSON.stringify(wirePayload)
         });
         if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
           loadDatabaseState(true);
@@ -1341,42 +1370,12 @@ const loadDatabaseState = async (silently = false) => {
         }
       } catch (err) {
         console.warn("Saving walkaround check locally & queuing for background sync:", err);
-        try {
-        const safeItems: any[] = [];
-        if (Array.isArray(checkPayload.items)) {
-          for (const it of checkPayload.items) {
-            safeItems.push({ itemKey: String(it?.itemKey ?? ""), itemLabel: String(it?.itemLabel ?? ""), result: it?.result === "fail" ? "fail" : "pass", sequenceOrder: Number(it?.sequenceOrder ?? 0) });
-          }
-        }
-        const safeResults: any[] = [];
-        if (Array.isArray(checkPayload.results)) {
-          for (const r of checkPayload.results) {
-            safeResults.push({ itemKey: String(r?.itemKey ?? ""), itemLabel: String(r?.itemLabel ?? ""), severity: String(r?.severity ?? "major"), description: String(r?.description ?? ""), photoUrl: typeof r?.photoUrl === "string" ? r.photoUrl.substring(0, 500000) : "" });
-          }
-        }
-        const safePayload2 = {
-          id: String(checkPayload.id ?? ""),
-          vehicleId: String(checkPayload.vehicleId ?? ""),
-          driverId: String(checkPayload.driverId ?? ""),
-          startedAt: String(checkPayload.startedAt ?? new Date().toISOString()),
-          driverSignature: typeof checkPayload.driverSignature === "string" ? checkPayload.driverSignature.substring(0, 50000) : "",
-          items: safeItems,
-          results: safeResults,
-          latitude: typeof checkPayload.latitude === "number" ? checkPayload.latitude : null,
-          longitude: typeof checkPayload.longitude === "number" ? checkPayload.longitude : null,
-          miscDamageNotes: String(checkPayload.miscDamageNotes ?? ""),
-          miscDamagePhotoUrl: typeof checkPayload.miscDamagePhotoUrl === "string" ? checkPayload.miscDamagePhotoUrl : "",
-          scheduleId: checkPayload.scheduleId != null ? String(checkPayload.scheduleId) : null,
-          templateName: String(checkPayload.templateName ?? "")
-        };
         setSyncQueue(prev => [...prev, {
           id: "sync-" + Date.now() + Math.random().toString(36).substr(2, 5),
-          type: 'submit_check',
-          payload: safePayload2
+          type: "submit_check",
+          payload: wirePayload
         }]);
-      } catch (serializeErr) {
-        console.error("Check payload could not be queued:", serializeErr);
-      }
+        console.log("[SyncQueue] Check queued for background sync.");
       }
     })();
     
