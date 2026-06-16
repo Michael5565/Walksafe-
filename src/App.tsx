@@ -317,7 +317,12 @@ export default function App() {
   };
 
   // Load database state from server side
-  const loadDatabaseState = async (silently = false) => {
+  let _loadDbLastCall = 0;
+const loadDatabaseState = async (silently = false) => {
+    // Debounce: skip if called within 300ms of the last call
+    const now = Date.now();
+    if (now - _loadDbLastCall < 300) { return; }
+    _loadDbLastCall = now;
     if (!wsSession) {
       setLoading(false);
       return;

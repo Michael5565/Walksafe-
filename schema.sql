@@ -125,3 +125,16 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
   subscription TEXT,
   createdAt TEXT
 );
+
+-- Performance indexes for company-scoped queries
+CREATE INDEX IF NOT EXISTS idx_vehicles_company ON vehicles(companyId);
+CREATE INDEX IF NOT EXISTS idx_drivers_company ON drivers(companyId);
+CREATE INDEX IF NOT EXISTS idx_checks_company ON checks(companyId);
+CREATE INDEX IF NOT EXISTS idx_defects_company ON defects(companyId);
+CREATE INDEX IF NOT EXISTS idx_announcements_company ON announcements(companyId);
+CREATE INDEX IF NOT EXISTS idx_schedules_company ON schedules(companyId);
+CREATE INDEX IF NOT EXISTS idx_notifications_company ON notifications(companyId);
+CREATE INDEX IF NOT EXISTS idx_templates_company ON templates(companyId);
+CREATE INDEX IF NOT EXISTS idx_checks_vehicle ON checks(vehicleId);
+CREATE INDEX IF NOT EXISTS idx_defects_check ON defects(checkId);
+CREATE INDEX IF NOT EXISTS idx_schedules_vehicle ON schedules(vehicleId);
