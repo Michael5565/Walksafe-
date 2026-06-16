@@ -892,6 +892,10 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       
       // Auto-jump to the main active screen
       setPhase('roadside');
+      // Immediately ground the vehicle if dangerous defect was reported
+      if (reportedFailures.some(r => r.severity === 'dangerous')) {
+        setAssignedVehicle(prev => prev ? { ...prev, isGrounded: true } : prev);
+      }
       // The associated schedule is now marked as completed by the backend 
       // when the check is submitted (see scheduleId in checkPayload).
       if (pendingScheduleId) {
