@@ -326,7 +326,7 @@ const mapCompanyDbToClient = (company: any) => {
     trialStartedAt: company.trialStartedAt || company.createdAt || new Date(createdAtTime).toISOString(),
     trialEndsAt: company.trialEndsAt || new Date(createdAtTime + 30 * 24 * 3600 * 1000).toISOString(),
     isSubscribed: company.isSubscribed === undefined ? false : (company.isSubscribed === 1 || company.isSubscribed === true || company.isSubscribed === "1"),
-    isSoloOperator: company.plan === 'owner-driver',
+    isSoloOperator: company.plan === 'solo' || company.plan === 'owner-driver',
     minDurationLgv: company.minDurationLgv !== undefined ? Number(company.minDurationLgv) : 5,
     minDurationHgv: company.minDurationHgv !== undefined ? Number(company.minDurationHgv) : 10,
     minDurationHgvTrailer: company.minDurationHgvTrailer !== undefined ? Number(company.minDurationHgvTrailer) : 15
