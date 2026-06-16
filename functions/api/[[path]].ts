@@ -274,11 +274,11 @@ app.post('/auth/register', async (c) => {
     plan: plan || 'starter',
     vehicleLimit: oLicenceLimit,
     createdAt,
-    isSoloOperator: isSoloOperator || plan === 'owner-driver'
+    isSoloOperator: isSoloOperator || plan === 'solo' || plan === 'owner-driver'
   };
 
   let defaultDriver = null;
-  if (isSoloOperator) {
+  if (isSoloOperator || plan === 'solo' || plan === 'owner-driver') {
     const driverId = "drv-" + Math.floor(100000 + Math.random() * 900000);
     const pin = "1111"; // Standard easy default PIN for solo operator
     const installToken = "token-" + Math.random().toString(36).substring(2, 11);
