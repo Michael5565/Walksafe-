@@ -1017,6 +1017,7 @@ app.post('/checks', async (c) => {
   }
 
   // --- MARK SCHEDULE AS COMPLETED ---
+  try {
   let completedScheduleId = null;
   if (scheduleId) {
     // Mark the specific schedule that triggered this check
@@ -1066,6 +1067,8 @@ app.post('/checks', async (c) => {
       }
     }
   }
+
+  } catch (_schErr) { console.error("[Schedule] Completion error:", _schErr); }
 
   // --- TRIGGER PUSH SYNC ---
   // This notifies all registered devices in the workspace.
