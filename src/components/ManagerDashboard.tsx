@@ -342,7 +342,7 @@ export default function ManagerDashboard({
   // Plan-based feature gating
   const planTier = company.plan || 'starter';
   const allowedTabs: Record<string, string[]> = {
-    'solo': ['overview', 'defects', 'vehicles', 'drivers', 'settings'],
+    'solo': ['overview', 'defects', 'vehicles', 'drivers', 'billing', 'settings'],
     'owner-driver': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'settings', 'billing'],
     'starter': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'operations', 'schedules', 'settings', 'billing'],
     'growth': ['overview', 'analytics', 'fleetmap', 'vehicles', 'maintenance', 'fuel', 'parts', 'workorders', 'schedules', 'defects', 'records', 'operations', 'drivers', 'templates', 'billing', 'settings'],
@@ -1664,7 +1664,7 @@ export default function ManagerDashboard({
                         </div>
                         <div className="space-y-3 mb-6">
                           <div className="flex justify-between items-center pb-2 border-b border-surface-container">
-                            <span className="font-label-caps text-label-caps text-on-surface-variant">MOT Expiry</span>
+                            <span className="font-label-caps text-label-caps text-on-surface-variant">MOT (Coming Soon)</span>
                             <span className={`font-data-mono text-data-mono ${v.isGrounded && v.motExpiry && v.motExpiry < new Date().toISOString().split('T')[0] ? 'text-danger-red font-bold' : 'text-primary'}`}>{v.motExpiry || '—'}</span>
                           </div>
                           <div className="flex justify-between items-center pb-2 border-b border-surface-container">
@@ -2605,13 +2605,13 @@ export default function ManagerDashboard({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
                 {[{status:"open",label:"Open",color:"bg-blue-500/10 text-blue-600"},{status:"in_progress",label:"In Progress",color:"bg-amber-500/10 text-amber-600"},{status:"awaiting_parts",label:"Awaiting Parts",color:"bg-purple-500/10 text-purple-600"},{status:"completed",label:"Completed",color:"bg-emerald-500/10 text-emerald-600"}].map(col => {
                   const items = workOrders.filter(w => w.status === col.status);
-                  return (<div key={col.status} className="bg-surface-container-low border border-border-subtle p-3">
+                  return (<div key={col.status} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/wo-id"); if (id && col.status !== workOrders.find(w => w.id === id)?.status) handleWOStatus(id, col.status); }} className="bg-surface-container-low border border-border-subtle p-3">
                       <div className={"text-xs font-bold px-2 py-1 rounded mb-3 " + col.color}>{col.label} ({items.length})</div>
                       <div className="space-y-2 min-h-[120px]">
                         {items.length === 0 ? <div className="text-xs text-on-surface-variant text-center py-4 italic">Empty</div>
                         : items.slice(0, 10).map(wo => {
                           const veh = vehicles.find(v => v.id === wo.vehicleId);
-                          return (<div key={wo.id} className="bg-white border border-border-subtle p-3 text-xs hover:border-primary transition-colors cursor-pointer" onClick={() => { if (wo.status !== "completed") { const next = wo.status === "open" ? "in_progress" : wo.status === "in_progress" ? "awaiting_parts" : "completed"; handleWOStatus(wo.id, next); }}}>
+                          return (<div key={wo.id} draggable onDragStart={(e) => e.dataTransfer.setData("text/wo-id", wo.id)} className="bg-white border border-border-subtle p-3 text-xs hover:border-primary transition-colors cursor-pointer" onClick={() => { if (wo.status !== "completed") { const next = wo.status === "open" ? "in_progress" : wo.status === "in_progress" ? "awaiting_parts" : "completed"; handleWOStatus(wo.id, next); }}}>
                               <div className="flex justify-between items-start mb-1"><span className="font-bold text-primary">{wo.title}</span></div>
                               {veh && <div className="mb-1"><UkPlate registration={veh.registration} size="sm" /></div>}
                               {wo.assignedMechanic && <div className="text-on-surface-variant mb-1">Mechanic: {wo.assignedMechanic}</div>}

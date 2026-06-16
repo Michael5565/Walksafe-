@@ -2312,9 +2312,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                   <ArrowLeft className="w-3.5 h-3.5" /> Back
                 </button>
                 
-                <span className="font-body-sm text-on-surface-variant font-data-mono">
-                  {currentItemIndex + 1} of {getRelevantChecklist(assignedVehicle, activeTemplateId).length} Checked
-                </span>
+                
 
                 {activeCheckResults.some(r => r.itemKey === getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex]?.key) ? (
                   <button
@@ -2324,8 +2322,8 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                     Next <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
-                  <span className="font-body-sm text-on-surface-variant font-data-mono flex items-center gap-1 select-none">
-                    Answer Required
+                  <span className="font-body-sm text-on-surface-variant/30 font-data-mono flex items-center gap-1 select-none">
+                    <ArrowRight className="w-3.5 h-3.5 opacity-30" />
                   </span>
                 )}
               </div>
