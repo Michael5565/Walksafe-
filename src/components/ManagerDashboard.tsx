@@ -406,7 +406,7 @@ export default function ManagerDashboard({
   const [engineerSignature, setEngineerSignature] = useState("");
 
   // Defect gallery filters
-  const [defectViewMode, setDefectViewMode] = useState<'list' | 'gallery'>('gallery');
+  const [defectViewMode, setDefectViewMode] = useState<'list' | 'gallery' | 'kanban'>('gallery');
   const [gallerySeverityFilter, setGallerySeverityFilter] = useState<'all' | 'dangerous' | 'major' | 'minor'>('all');
   const [galleryStatusFilter, setGalleryStatusFilter] = useState<'all' | 'open' | 'in_repair' | 'closed'>('all');
   const [selectedGalleryDefect, setSelectedGalleryDefect] = useState<Defect | null>(null);
@@ -1855,6 +1855,11 @@ export default function ManagerDashboard({
                     <span className="material-symbols-outlined text-[18px]">list</span>
                     LIST VIEW
                   </button>
+                  <button onClick={() => setDefectViewMode('kanban')}
+                    className={`px-4 py-2 font-label-caps text-label-caps flex items-center gap-2 cursor-pointer ${defectViewMode === 'kanban' ? 'bg-primary text-on-primary' : 'border border-border-subtle text-on-surface-variant hover:bg-surface-container transition-colors'}`}>
+                    <span className="material-symbols-outlined text-[18px]">view_column</span>
+                    KANBAN
+                  </button>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <div className="flex bg-surface-container rounded-sm p-1 border border-border-subtle">
@@ -1992,7 +1997,59 @@ export default function ManagerDashboard({
               })()}
 
               {/* List View */}
-              {defectViewMode === 'list' && (
+              {defectViewMode === 'kanban' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[400px]">
+                {(['open', 'in_repair', 'closed'] as const).map(columnStatus => {
+                  const columnDefs = defects.filter(d => d.status === columnStatus);
+                  const columnLabel = columnStatus === 'open' ? 'OPEN' : columnStatus === 'in_repair' ? 'IN PROGRESS' : 'CLOSED';
+                  const columnColor = columnStatus === 'open' ? 'border-danger-red/30 bg-danger-red/5' : columnStatus === 'in_repair' ? 'border-major-defect-orange/30 bg-major-defect-orange/5' : 'border-compliance-green/30 bg-compliance-green/5';
+                  return (
+                    <div key={columnStatus}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={async (e) => {
+                        e.preventDefault();
+                        const defectId = e.dataTransfer.getData("text/defect-id");
+                        if (defectId && columnStatus !== defects.find(d => d.id === defectId)?.status) {
+                          const targetStatus = columnStatus;
+                          if (targetStatus === "closed") {
+                            try { await fetch("/api/defects/" + defectId + "/close", { method: "PUT", headers: { "Content-Type": "application/json", "X-Company-Id": company.id }, body: JSON.stringify({ closedBy: "Fleet Manager" }) }); } catch (e) {}
+                          } else if (targetStatus === "open") {
+                            try { await fetch("/api/defects/" + defectId + "/reopen", { method: "PUT", headers: { "Content-Type": "application/json", "X-Company-Id": company.id } }); } catch (e) {}
+                          }
+                          onTriggerRefresh();
+                        }
+                      }}
+                      className={`border-2 border-dashed ${columnColor} rounded-xl p-4 flex flex-col gap-3 min-h-[300px]`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest font-bold">{columnLabel}</h3>
+                        <span className="font-data-mono text-data-mono text-on-surface-variant bg-surface-container-low px-2 py-0.5 rounded">{columnDefs.length}</span>
+                      </div>
+                      {columnDefs.length === 0 && (
+                        <div className="flex-1 flex items-center justify-center text-on-surface-variant/50 font-body-sm text-sm">Drop defects here</div>
+                      )}
+                      {columnDefs.map(def => {
+                        const veh = vehicles.find(v => v.id === def.vehicleId);
+                        const isDangerous = def.severity === 'dangerous';
+                        return (
+                          <div key={def.id} draggable onDragStart={(e) => e.dataTransfer.setData("text/defect-id", def.id)}
+                            className="bg-surface-card border border-border-subtle rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${isDangerous ? 'bg-danger-red text-white' : def.severity === 'major' ? 'bg-major-defect-orange text-white' : 'bg-secondary-container text-primary'}`}>{def.severity.toUpperCase()}</span>
+                              {veh && <UkPlate registration={veh.registration} size="sm" />}
+                            </div>
+                            <p className="font-body-sm text-body-sm font-bold text-primary mb-1">{def.itemLabel}</p>
+                            <p className="text-[11px] text-on-surface-variant line-clamp-2">{def.description}</p>
+                            <p className="text-[10px] text-on-surface-variant/60 mt-2">{new Date(def.createdAt).toLocaleDateString("en-GB")}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {defectViewMode === 'list' && (
                 <div className="flex flex-col gap-3">
                   {defects.filter(def => {
                     const severityMatches = gallerySeverityFilter === 'all' || def.severity === gallerySeverityFilter;

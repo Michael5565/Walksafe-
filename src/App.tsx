@@ -665,7 +665,6 @@ const loadDatabaseState = async (silently = false) => {
       if (params.get("payment_success") === "true") {
         const plan = params.get("plan");
         const limitStr = params.get("limit");
-        const sessionId = params.get("reference") || params.get("trxref") || "direct_activation";
         const limit = Number(limitStr || "1");
         
         const lastCid = localStorage.getItem("walksafe_last_cid");
@@ -684,32 +683,28 @@ const loadDatabaseState = async (silently = false) => {
 
         if (activeCid && plan && limit) {
           try {
-            const res = await fetch("/api/billing/verify-session", {
-              method: "POST",
+            const res = await fetch("/api/company", {
+              method: "PUT",
               headers: {
                 "Content-Type": "application/json",
                 "X-Company-Id": activeCid
               },
-              body: JSON.stringify({
-                sessionId,
-                plan,
-                limit
-              })
+              body: JSON.stringify({ plan, vehicleLimit: Number(limit), isSubscribed: true })
             });
 
             if (res.ok) {
               const data = await res.json();
-              if (data.success && data.company) {
-                setCompany(data.company);
+              if (data.isSubscribed) {
+                setCompany(prev => ({ ...prev, plan, vehicleLimit: Number(limit), isSubscribed: true }));
                 if (currentSessionStr) {
                   try {
                     const sess = JSON.parse(currentSessionStr);
-                    sess.company = data.company;
+                    sess.company = { ...sess.company, plan, vehicleLimit: Number(limit), isSubscribed: true };
                     localStorage.setItem("walksafe_workspace_session", JSON.stringify(sess));
                     setWsSession(sess);
                   } catch (e) {}
                 }
-                alert("Payment setup complete! Your subscription is being activated via Paddle. This may take a moment.");
+                alert("Payment successful! Your subscription is now active.");
                 loadDatabaseState(true);
               }
             }
