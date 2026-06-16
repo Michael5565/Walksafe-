@@ -264,7 +264,7 @@ app.post('/auth/register', async (c) => {
   await db.prepare(`
     INSERT INTO company (id, name, email, oLicence, plan, vehicleLimit, managerPassword, createdAt, trialStartedAt, trialEndsAt, isSubscribed)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(cleanId, name, emailToUse, oLicence || null, plan || 'starter', oLicenceLimit, managerPassword, createdAt).run();
+  `).bind(cleanId, name, emailToUse, oLicence || null, plan || 'starter', oLicenceLimit, managerPassword, createdAt, createdAt, body.trialEndsAt || null, 0).run();
 
   const newCompany = {
     id: cleanId,

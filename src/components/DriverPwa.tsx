@@ -1117,7 +1117,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   };
 
    return (
-    <div className="fixed inset-0 flex flex-col bg-surface-container text-on-surface overflow-hidden">
+    <div className="fixed inset-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-[420px] md:max-h-[90vh] md:rounded-2xl md:shadow-2xl flex flex-col bg-surface-container text-on-surface overflow-hidden">
       {/* Active Navigation Header (Fixed) */}
       <div className="bg-[#0f172a] border-b border-[#2a2a30] px-4 py-3 flex items-center justify-between shrink-0 z-20">
         <div className="flex items-center gap-2">
