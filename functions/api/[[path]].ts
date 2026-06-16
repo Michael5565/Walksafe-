@@ -258,7 +258,7 @@ app.post('/auth/register', async (c) => {
     return c.json({ error: "This email address is already registered on the WalkSafe platform." }, 400);
   }
 
-  const oLicenceLimit = plan === 'owner-driver' ? 1 : plan === 'starter' ? 3 : 10;
+  const oLicenceLimit = plan === 'solo' || plan === 'owner-driver' ? 1 : plan === 'starter' ? 3 : 10;
   const createdAt = new Date().toISOString();
 
   await db.prepare(`

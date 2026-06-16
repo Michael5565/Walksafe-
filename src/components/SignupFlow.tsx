@@ -381,7 +381,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
           onLoginSuccess(
             {
               company: data.company,
-              role: selectedPlan === 'solo' ? 'driver' : 'manager',
+              role: 'manager',
             },
             data.driver
           );
