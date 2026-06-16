@@ -728,7 +728,6 @@ export default function ManagerDashboard({
     setSavingTemplate(false);
   };
 
-  const [calcVehicles, setCalcVehicles] = useState(5);
 
   const mockInvoices = [
     { invoiceId: "INV-2026-004", issueDate: "01/06/2026", amount: company.plan === "owner-driver" ? "£4.99" : company.plan === "starter" ? "£14.99" : company.plan === "growth" ? "£34.99" : "POA", planName: company.plan === "owner-driver" ? "SOLO" : company.plan === "starter" ? "STARTER" : company.plan === "growth" ? "GROWTH PRO" : "ENTERPRISE", paymentMethod: "4242", status: "PAID" },
@@ -2940,6 +2939,7 @@ export default function ManagerDashboard({
                     </span>
                     <span className="font-body-sm text-body-sm text-on-surface-variant">/ month</span>
                   </div>
+
                 </div>
 
                 <div className="bg-surface-card border border-border-subtle p-card-padding flex flex-col justify-between min-h-[160px]">
@@ -2972,7 +2972,7 @@ export default function ManagerDashboard({
                     </button>
                   </div>
                 </div>
-                </div>
+              </div>
 
               {/* Plan Matrix */}
               <div>
@@ -3044,49 +3044,6 @@ export default function ManagerDashboard({
                 </div>
               </div>
 
-              {/* Fee Optimizer Calculator */}
-              <div className="bg-[#18181B] text-white p-8 rounded">
-                <div className="flex items-start justify-between mb-8">
-                  <div>
-                    <h3 className="font-headline-md text-headline-md font-bold">Fee Optimizer Calculator</h3>
-                    <p className="text-white/60 font-body-md">See how moving to Direct Debit can reduce your monthly compliance overhead.</p>
-                  </div>
-                  <div className="bg-white/10 p-4 border border-white/5">
-                    <p className="font-label-caps text-label-caps text-white/40 uppercase">Est. Monthly Saving</p>
-                    <p className="font-data-mono text-2xl text-secondary-container font-bold">£{(() => {
-                      const revenue = calcVehicles * 25;
-                      const cardFee = (revenue * 0.029) + (calcVehicles * 0.20);
-                      const bacsFee = Math.min(revenue * 0.01, calcVehicles * 2);
-                      return (cardFee - bacsFee).toFixed(2);
-                    })()}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="font-label-caps text-label-caps text-white/80">Projected Fleet Size</label>
-                      <span className="font-data-mono text-xl text-white">{calcVehicles} Vehicles</span>
-                    </div>
-                    <input type="range" min={1} max={100} value={calcVehicles} onChange={e => setCalcVehicles(Number(e.target.value))}
-                      className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-secondary-container" />
-                    <div className="flex justify-between text-[10px] text-white/40 font-data-mono uppercase">
-                      <span>1 Unit</span><span>50 Units</span><span>100 Units</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/5 border border-white/10 p-5">
-                      <div className="flex items-center gap-2 mb-2"><div className="w-2 h-2 rounded-full bg-danger-red"></div><p className="font-label-caps text-label-caps text-white/60">Paystack / Card</p></div>
-                      <p className="font-data-mono text-lg font-bold">£{((calcVehicles * 25 * 0.029) + (calcVehicles * 0.20)).toFixed(2)}</p>
-                      <p className="text-[11px] text-white/40 mt-1">2.9% + 20p Transaction Fee</p>
-                    </div>
-                    <div className="bg-secondary-container/10 border border-secondary-container/30 p-5 relative overflow-hidden">
-                      <div className="flex items-center gap-2 mb-2"><div className="w-2 h-2 rounded-full bg-compliance-green"></div><p className="font-label-caps text-label-caps text-secondary-container">BACS Direct Debit</p></div>
-                      <p className="font-data-mono text-lg font-bold text-white">£{Math.min(calcVehicles * 25 * 0.01, calcVehicles * 2).toFixed(2)}</p>
-                      <p className="text-[11px] text-white/40 mt-1">1% (Capped at £2.00/unit)</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
               {/* Invoice History */}
               <div className="bg-surface-card border border-border-subtle p-card-padding hover:shadow-sm transition-shadow">
                 <div className="flex items-center justify-between mb-6">

@@ -404,14 +404,14 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
   const cardMaxWidthClass = step === 'plan' ? 'max-w-4xl' : 'max-w-lg';
 
   return (
-    <div className={`w-full ${cardMaxWidthClass} mx-auto bg-white border border-[#E5E5E0] hover:border-[#E5E5E0] rounded-2xl p-3 sm:p-6 shadow-2xl transition-all duration-300 space-y-3 sm:space-y-4 select-text text-left`}>
+    <div className={`w-full ${cardMaxWidthClass} mx-auto bg-white border border-[#E5E5E0] rounded-2xl p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all duration-300 space-y-5 select-text text-left`}>
       
       {/* Visual Identity Title */}
       <div>
-        <h2 className=" text-xl sm:text-3xl font-black text-[#1a1c1b] leading-none text-left">
+        <h2 className="text-xl sm:text-2xl font-bold text-[#1a1c1b] leading-tight text-left">
           Register Fleet
         </h2>
-        <p className="text-[#47464b] text-[13px] sm:text-xs mt-1 sm:mt-1.5 leading-normal">
+        <p className="text-[#47464b] text-[13px] mt-1 leading-relaxed">
           Create your customized compliance workspace & configure digital checklists in minutes.
         </p>
       </div>
@@ -442,13 +442,13 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
             const isActive = s.key === step;
             return (
               <div key={s.key} className="relative z-10 flex flex-col items-center">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
                   isCompleted ? 'bg-[#fea619] text-[#684000]' :
                   isActive ? 'bg-[#fea619] text-[#684000] ring-4 ring-[#fea619]/20' : 'bg-[#f4f4f2] border border-[#E5E5E0] text-[#77767b]'
                 }`}>
                   {isCompleted ? <Check className="w-3.5 h-3.5" /> : idx + 1}
                 </div>
-                <span className={`text-[13px] font-bold uppercase tracking-wider mt-1.5 transition-colors ${
+                <span className={`text-[11px] font-bold uppercase tracking-wider mt-1.5 transition-colors ${
                   isActive ? 'text-[#1a1c1b]' : 'text-[#77767b]'
                 }`}>
                   {s.label}
@@ -486,7 +486,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Kenneth Sutherland"
-                className="w-full pl-10 pr-4 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b] focus:outline-none transition-all "
+                className="w-full pl-10 pr-4 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b]/50 focus:outline-none transition-all "
               />
             </div>
           </div>
@@ -506,7 +506,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
                 placeholder="e.g. Clydeside Haulage Ltd"
-                className="w-full pl-10 pr-4 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b] focus:outline-none transition-all "
+                className="w-full pl-10 pr-4 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b]/50 focus:outline-none transition-all "
               />
             </div>
           </div>
@@ -526,7 +526,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 value={workEmail}
                 onChange={(e) => setWorkEmail(e.target.value)}
                 placeholder="e.g. manager@clydeside.co.uk"
-                className="w-full pl-10 pr-4 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b] focus:outline-none transition-all "
+                className="w-full pl-10 pr-4 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b]/50 focus:outline-none transition-all "
               />
             </div>
           </div>
@@ -546,7 +546,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enforce password requirements"
-                className="w-full pl-10 pr-10 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b] focus:outline-none transition-all "
+                className="w-full pl-10 pr-10 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b]/50 focus:outline-none transition-all "
               />
               <button
                 type="button"
@@ -641,7 +641,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
           )}
           
           {/* Mobile Space-saving Segmented Slider */}
-          <div className="md:hidden grid grid-cols-3 gap-1 p-1 bg-[#e8e8e6] border border-[#E5E5E0]/80 rounded-xl relative select-none">
+          <div className="md:hidden grid grid-cols-3 gap-1 p-1 bg-[#f4f4f2] border border-[#E5E5E0] rounded-xl relative select-none">
             {plans.filter(p => p.id !== 'enterprise').map((p) => {
               const isActive = selectedPlan === p.id;
               return (
@@ -675,7 +675,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                       setSelectedPlan(plan.id);
                     }
                   }}
-                  className={`text-left p-4 sm:p-5 rounded-xl border-2 transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
+                  className={`text-left p-5 rounded-xl border-2 transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
                     matchesSelected
                       ? 'border-[#fea619] bg-[#fef7e6] shadow-xl shadow-[#fea619]/5'
                       : 'border-[#E5E5E0] bg-black/35 hover:border-[#c8c5cb]'
@@ -689,7 +689,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                   )}
 
                   {plan.highlight && (
-                    <span className="absolute top-3.5 right-3.5 bg-[#fea619]/10 text-[#fea619] text-[12px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider border border-[#fea619]/20">
+                    <span className="absolute top-3 left-3 bg-[#fea619] text-[#684000] text-[10px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
                       MOST POPULAR
                     </span>
                   )}
