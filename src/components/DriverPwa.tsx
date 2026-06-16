@@ -891,11 +891,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       setLastSubmittedCheck(newlyCreated);
       
       // Auto-jump to the main active screen
-      if (isGroundedAlert) {
-        // Vehicle is locked / grounded, driver stays on warning sign-off alert
-      } else {
-        setPhase('roadside');
-      }
+      setPhase('roadside');
       // The associated schedule is now marked as completed by the backend 
       // when the check is submitted (see scheduleId in checkPayload).
       if (pendingScheduleId) {
@@ -2867,8 +2863,8 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                   <div className="mt-4 flex flex-col gap-3 font-data-mono text-body-sm border-t border-border-subtle pt-4 text-left">
                     <div className="flex justify-between border-b border-border-subtle pb-1.5">
                       <span className="text-on-surface-variant">Result:</span>
-                      <span className={`font-bold ${lastSubmittedCheck?.result === 'nil_defect' || checks[0]?.result === 'nil_defect' ? 'text-compliance-green' : 'text-major-defect-orange'}`}>
-                        {lastSubmittedCheck?.result === 'nil_defect' || checks[0]?.result === 'nil_defect' ? 'NIL DEFECTS' : 'FAULTS REPORTED'}
+                      <span className={`font-bold ${(lastSubmittedCheck || checks[0])?.result === 'nil_defect' ? 'text-compliance-green' : 'text-major-defect-orange'}`}>
+                        {(lastSubmittedCheck || checks[0])?.result === 'nil_defect' ? 'NIL DEFECTS' : 'FAULTS REPORTED'}
                       </span>
                     </div>
 
