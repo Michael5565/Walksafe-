@@ -1083,7 +1083,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
             <div className="p-4 flex flex-col gap-3">
               {/* Category Header */}
               <div className="flex justify-between items-start gap-2">
-                <h4 className="font-sans font-extrabold text-[#F5F5F5] uppercase tracking-wide leading-snug text-xs sm:text-sm">
+                <h4 className="font-sans font-extrabold text-primary uppercase tracking-wide leading-snug text-xs sm:text-sm">
                   {img.category}
                 </h4>
                 <span className="text-on-surface-variant font-mono text-[9px] bg-surface-container px-1.5 py-0.5 rounded shrink-0">
@@ -1534,7 +1534,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                           ) : (
                             <>
                               <div className="min-w-0 flex-1">
-                                <span className="font-sans font-extrabold text-[#F5F5F5] text-xs block truncate">{d.itemLabel}</span>
+                                <span className="font-sans font-extrabold text-primary text-xs block truncate">{d.itemLabel}</span>
                                 <span className="text-[10px] text-zinc-400 mt-0.5 block truncate">{d.description}</span>
                               </div>
                               
@@ -1572,7 +1572,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                   <div className="flex gap-3 mt-3 w-full">
                     <button
                       onClick={() => setPhase('roadside')}
-                      className="flex-1 bg-surface-container text-on-primary font-mono text-xs py-2 px-1 rounded-lg hover:bg-surface-container-high flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="flex-1 bg-surface-container text-primary font-mono text-xs py-2 px-1 rounded-lg hover:bg-surface-container-high flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <Shield className="w-3" />
                       ROADSIDE DVSA
@@ -1594,7 +1594,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                 </button>
                 <button
                     onClick={() => setPhase('media')}
-                    className="w-full mt-2 bg-surface-container-high hover:bg-surface-container-high text-on-primary font-sans text-xs py-2.5 px-3 rounded flex items-center justify-center gap-2 cursor-pointer font-bold transition-all border border-border-subtle"
+                    className="w-full mt-2 bg-surface-container-high hover:bg-surface-container-high text-primary font-sans text-xs py-2.5 px-3 rounded flex items-center justify-center gap-2 cursor-pointer font-bold transition-all border border-border-subtle"
                   >
                     <Image className="w-3.5 h-3.5 text-secondary-container" />
                     VEHICLE PHOTO GALLERY
@@ -1631,7 +1631,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
               {/* Solo Operator Active Defect Panel UI */}
               {company.isSoloOperator && activeSoloTab === 'vehicles' && (
                 <div className="flex-1 flex flex-col gap-4 font-sans text-xs">
-                  <div className="bg-surface-container text-on-primary rounded p-4 shadow">
+                  <div className="bg-surface-container text-primary rounded p-4 shadow">
                     <h3 className="text-sm font-bold tracking-tight uppercase">Asset Inventory Control</h3>
                     <p className="text-[11px] text-on-surface-variant mt-1">Directly register or remove vehicle licenses in your fleet.</p>
                   </div>
@@ -1725,7 +1725,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                             type="button"
                             onClick={handleDvlaLookup}
                             disabled={dvlaLoading}
-                            className="bg-surface-container text-on-primary px-4 py-2 rounded font-bold uppercase tracking-wide text-[10px] hover:bg-surface-container-high disabled:bg-slate-300"
+                            className="bg-surface-container text-primary px-4 py-2 rounded font-bold uppercase tracking-wide text-[10px] hover:bg-surface-container-high disabled:bg-slate-300"
                           >
                             {dvlaLoading ? 'SEARCHING...' : 'DVLA LOOKUP'}
                           </button>
@@ -1859,7 +1859,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                   {defects.filter(d => d.status !== 'closed').length === 0 ? (
                     <div className="text-center py-8 text-on-surface-variant font-body-sm">
                       <span className="material-symbols-outlined text-3xl block mb-2 opacity-30">check_circle</span>
-                      No open defects. All clear!
+                      No open defects!
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -1876,15 +1876,18 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                               <span className="text-[10px] text-on-surface-variant">{new Date(d.createdAt).toLocaleDateString('en-GB')}</span>
                             </div>
                             <p className="font-bold text-sm text-primary mb-1">{d.itemLabel}</p>
-                            <p className="text-xs text-on-surface-variant mb-3">{d.description}</p>
+                            {d.photoUrl && (
+                              <div className="mb-3 rounded-lg overflow-hidden border border-border-subtle cursor-pointer" onClick={() => setSelectedZoomImage({ url: d.photoUrl, category: d.itemLabel, notes: d.description })}>
+                                <img src={d.photoUrl} alt={d.itemLabel} className="w-full h-40 object-cover hover:opacity-90 transition-opacity" referrerPolicy="no-referrer" />
+                              </div>
+                            )}
                             <button onClick={async () => {
                               try {
-                                const notes = prompt("Repair notes (optional):");
-                                await onCloseDefect(d.id, { engineerName: currentDriver?.fullName || "Solo Operator", repairDescription: notes || "Closed by operator", partsUsed: "", engineerSignature: "solo-close" });
+                                await onCloseDefect(d.id, { engineerName: currentDriver?.fullName || "Solo Operator", repairDescription: "Closed by operator", partsUsed: "", engineerSignature: "solo-close" });
                                 onTriggerRefresh();
-                                alert("Defect closed successfully.");
-                              } catch(e) { alert("Failed to close defect."); }
-                            }} className="w-full py-2 bg-primary text-white text-xs font-bold rounded flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 transition-opacity">
+                                triggerAlert("Defect has been closed successfully.", "Defect Closed");
+                              } catch(e) { triggerAlert("Failed to close defect.", "Error"); }
+                            }} className="w-full py-2.5 bg-primary text-white text-xs font-bold rounded flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 transition-opacity">
                               <span className="material-symbols-outlined text-sm">check</span> CLOSE DEFECT
                             </button>
                           </div>
@@ -1896,7 +1899,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
               )}
 {company.isSoloOperator && activeSoloTab === 'profile' && (
                 <div className="flex-1 flex flex-col gap-4 font-sans text-xs">
-                  <div className="bg-surface-container text-on-primary p-4 rounded flex items-center justify-between">
+                  <div className="bg-surface-container text-primary p-4 rounded flex items-center justify-between">
                     <div>
                       <span className="text-[10px] text-secondary-container font-black tracking-widest block uppercase">DVSA compliance rating</span>
                       <h4 className="text-sm font-bold mt-0.5 uppercase">EXCELLENT - GREEN ZONE</h4>
@@ -1944,7 +1947,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                           <label className="text-[10px] text-on-surface-variant font-bold uppercase block mb-1">O-Licence Code</label>
                           <input required value={orgLicence} onChange={e => setOrgLicence(e.target.value)} className="w-full font-mono border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-500 text-xs uppercase" />
                         </div>
-                        <button type="submit" className="w-full bg-surface-container text-on-primary font-bold text-xs uppercase py-2 rounded-lg">Save Changes</button>
+                        <button type="submit" className="w-full bg-primary text-white font-bold text-xs uppercase py-2 rounded-lg">Save Changes</button>
                       </form>
                     ) : (
                       <div className="grid grid-cols-2 gap-2 text-xs">
@@ -2030,7 +2033,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                             </div>
                           )}
                         </div>
-                        <button type="submit" className="w-full bg-surface-container text-on-primary font-bold text-xs uppercase py-2 rounded-lg cursor-pointer">Save Profile</button>
+                        <button type="submit" className="w-full bg-surface-container text-primary font-bold text-xs uppercase py-2 rounded-lg cursor-pointer">Save Profile</button>
                       </form>
                     ) : (
                       <div className="space-y-2 text-xs">
@@ -2980,7 +2983,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                 <div className="flex justify-between items-center mb-3 pb-2 border-b border-border-subtle shrink-0 font-sans">
                   <div className="flex items-center gap-1.5">
                     <Image className="w-4 h-4 text-compliance-green animate-pulse" />
-                    <h3 className="font-sans text-sm font-bold tracking-wider uppercase text-on-primary">CAPTURED WALKAROUND MEDIA</h3>
+                    <h3 className="font-sans text-sm font-bold tracking-wider uppercase text-primary">CAPTURED WALKAROUND MEDIA</h3>
                   </div>
                   <button 
                     onClick={() => setPhase('home')} 
@@ -3010,8 +3013,8 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
         {(phase === 'home' || phase === 'history' || phase === 'media' || phase === 'profile' || phase === 'schedules') && currentDriver && (
           <div className="bg-surface-card border-t border-border-subtle h-16 flex items-center justify-around z-50 shrink-0 relative w-full">
             <button 
-              onClick={() => setPhase('home')}
-              className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer ${phase === 'home' ? 'text-secondary-container font-black' : 'text-on-surface-variant'}`}
+              onClick={() => { setPhase('home'); setActiveSoloTab('check'); }}
+              className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer ${phase === 'home' && activeSoloTab === 'check' ? 'text-secondary-container font-black' : 'text-on-surface-variant'}`}
             >
               <CheckSquare className="w-5 h-5" />
               <span className="text-[9px] mt-0.5 uppercase tracking-wider font-mono">Checks</span>
@@ -3055,7 +3058,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
             <p className="text-sm text-on-surface-variant mb-6">{messageModal.message}</p>
             <button
               onClick={() => setMessageModal(null)}
-              className="w-full py-2.5 px-4 bg-surface-container text-on-primary font-semibold text-xs rounded hover:bg-surface-container-high transition-colors cursor-pointer"
+              className="w-full py-2.5 px-4 bg-surface-container text-primary font-semibold text-xs rounded hover:bg-surface-container-high transition-colors cursor-pointer"
             >
               OK
             </button>
@@ -3109,7 +3112,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                   navigator.clipboard.writeText(qrCodeModalLink);
                   alert("Copied custom connection link to clipboard.");
                 }}
-                className="w-full py-2.5 px-4 bg-surface-container hover:bg-surface-container-high text-[#F5F5F5] font-semibold text-xs rounded shadow-sm transition-colors cursor-pointer border-0"
+                className="w-full py-2.5 px-4 bg-surface-container hover:bg-surface-container-high text-primary font-semibold text-xs rounded shadow-sm transition-colors cursor-pointer border-0"
               >
                 Copy Link Rather
               </button>
@@ -3278,7 +3281,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
 
             <div>
               <span className="text-[10px] text-secondary-container uppercase font-black block tracking-wider font-mono">Category Label</span>
-              <h4 className="text-sm font-bold text-[#F5F5F5] uppercase tracking-normal leading-tight mt-0.5">
+              <h4 className="text-sm font-bold text-primary uppercase tracking-normal leading-tight mt-0.5">
                 {selectedZoomImage.category}
               </h4>
             </div>
