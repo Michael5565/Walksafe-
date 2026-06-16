@@ -1586,8 +1586,15 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                     </button>
                   </div>
                   <button
+                    onClick={() => setActiveSoloTab('defects')}
+                    className="w-full mt-2 bg-surface-card border border-danger-red/30 text-danger-red font-sans text-xs py-2.5 px-3 rounded flex items-center justify-center gap-2 cursor-pointer font-bold transition-all hover:bg-danger-red/5"
+                  >
+                  <span className="material-symbols-outlined text-sm">warning</span>
+                  VIEW DEFECTS
+                </button>
+                <button
                     onClick={() => setPhase('media')}
-                    className="w-full mt-2.5 bg-surface-container-high hover:bg-surface-container-high text-on-primary font-sans text-xs py-2.5 px-3 rounded flex items-center justify-center gap-2 cursor-pointer font-bold transition-all border border-border-subtle"
+                    className="w-full mt-2 bg-surface-container-high hover:bg-surface-container-high text-on-primary font-sans text-xs py-2.5 px-3 rounded flex items-center justify-center gap-2 cursor-pointer font-bold transition-all border border-border-subtle"
                   >
                     <Image className="w-3.5 h-3.5 text-secondary-container" />
                     VEHICLE PHOTO GALLERY
@@ -3010,11 +3017,11 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
               <span className="text-[9px] mt-0.5 uppercase tracking-wider font-mono">Checks</span>
             </button>
             <button 
-              onClick={() => setPhase('schedules')}
-              className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer ${phase === 'schedules' ? 'text-secondary-container font-black' : 'text-on-surface-variant'}`}
+              onClick={() => company.isSoloOperator ? setActiveSoloTab('defects') : setPhase('schedules')}
+              className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer ${company.isSoloOperator ? (activeSoloTab === 'defects' ? 'text-secondary-container font-black' : 'text-on-surface-variant') : (phase === 'schedules' ? 'text-secondary-container font-black' : 'text-on-surface-variant')}`}
             >
-              <Calendar className="w-5 h-5" />
-              <span className="text-[9px] mt-0.5 uppercase tracking-wider font-mono">Schedule</span>
+              {company.isSoloOperator ? <span className="material-symbols-outlined w-5 h-5">warning</span> : <Calendar className="w-5 h-5" />}
+              <span className="text-[9px] mt-0.5 uppercase tracking-wider font-mono">{company.isSoloOperator ? 'Defects' : 'Schedule'}</span>
             </button>
             <button 
               onClick={() => setPhase('history')}
