@@ -422,7 +422,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Solo Operator Manager Tab States
-  const [activeSoloTab, setActiveSoloTab] = useState<'check' | 'vehicles' | 'profile' | 'schedules' | 'media'>('check');
+  const [activeSoloTab, setActiveSoloTab] = useState<'check' | 'vehicles' | 'profile' | 'defects' | 'media'>('check');
 
   // Solo Operator Company form states
   const [orgFormName, setOrgFormName] = useState(company.name);
@@ -1842,238 +1842,52 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                 </div>
               )}
 
-              {/* Solo Operator Active Schedules Panel UI */}
-              {company.isSoloOperator && activeSoloTab === 'schedules' && (
-                <div className="flex-1 flex flex-col gap-4 font-sans text-xs">
-                  <div className="bg-surface-container text-on-primary rounded p-4 shadow">
-                    <h3 className="text-sm font-bold tracking-tight uppercase">Audit Tasks Scheduler</h3>
-                    <p className="text-[11px] text-on-surface-variant mt-1">Schedule mandatory periodic walkaround tasks and compliance checklist targets for your fleet registration plates.</p>
+              {/* Solo Operator Defects Panel UI */}
+              {company.isSoloOperator && activeSoloTab === 'defects' && (
+                <div className="px-4 py-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-sm text-primary uppercase tracking-wider">Open Defects</h3>
+                    <span className="text-xs text-on-surface-variant">{defects.filter(d => d.status !== 'closed').length} open</span>
                   </div>
-
-                  {/* Add Schedule Block */}
-                  <div className="bg-white p-4 rounded border border-border-subtle text-primary">
-                    <span className="font-bold text-primary uppercase tracking-wide block mb-3">Schedule New Mandatory Audit</span>
-                    
-                    <form onSubmit={async (e) => {
-                      e.preventDefault();
-                      const form = e.currentTarget;
-                      const formData = new FormData(form);
-                      const title = formData.get('title')?.toString().trim();
-                      const vId = formData.get('vehicleId')?.toString();
-                      const due = formData.get('dueDate')?.toString();
-
-                      if (!title || !vId || !due) {
-                        alert("Please fill out all task details.");
-                        return;
-                      }
-
-                      const targetVeh = vehicles.find(v => v.id === vId);
-                      if (!targetVeh) return;
-
-                      if (onAddSchedule) {
-                        try {
-                          await onAddSchedule({
-                            title,
-                            vehicleId: vId,
-                            registration: targetVeh.registration,
-                            dueDate: due,
-                            status: 'pending',
-                            isRecurring,
-                            frequency,
-                            dayOfWeek: isRecurring && frequency === 'weekly' ? dayOfWeek : undefined,
-                            dayOfMonth: isRecurring && frequency === 'monthly' ? dayOfMonth : undefined
-                          });
-                          alert("Mandated checklist schedule generated successfully.");
-                          form.reset();
-                          setIsRecurring(false);
-                          setFrequency('once');
-                          onTriggerRefresh();
-                        } catch (err) {
-                           alert("Failed to create audit schedule.");
-                        }
-                      } else {
-                        const res = await fetch("/api/schedules", {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                            "x-company-id": company.id
-                          },
-                          body: JSON.stringify({
-                            title,
-                            vehicleId: vId,
-                            registration: targetVeh.registration,
-                            dueDate: due,
-                            status: 'pending',
-                            isRecurring,
-                            frequency,
-                            dayOfWeek: isRecurring && frequency === 'weekly' ? dayOfWeek : undefined,
-                            dayOfMonth: isRecurring && frequency === 'monthly' ? dayOfMonth : undefined
-                          })
-                        });
-
-                        if (res.ok) {
-                          alert("Mandated checklist schedule generated successfully.");
-                          form.reset();
-                          setIsRecurring(false);
-                          setFrequency('once');
-                          onTriggerRefresh();
-                        } else {
-                          alert("Failed to create audit schedule.");
-                        }
-                      }
-                    }} className="space-y-3">
-                      <div>
-                        <label className="text-[10px] text-on-surface-variant font-bold uppercase block mb-1">Audit Mandate Title</label>
-                        <input required name="title" placeholder="e.g. Periodic HGV Brake Audit Check" className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-500 text-xs" />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-[10px] text-on-surface-variant font-bold uppercase block mb-1">Target Asset</label>
-                          <CustomSelect 
-                            value={selectedVehicleId} 
-                            onChange={setSelectedVehicleId} 
-                            options={vehicles.map(v => ({ value: v.id, label: `${v.registration} (${v.make})` }))} 
-                          />
-                          <input type="hidden" name="vehicleId" value={selectedVehicleId} />
-                        </div>
-                        <div>
-                          <label className="text-[10px] text-on-surface-variant font-bold uppercase block mb-1">Mandate Due</label>
-                          <input type="date" required name="dueDate" defaultValue={new Date().toISOString().split('T')[0]}  min={new Date().toISOString().split('T')[0]} className="w-full border border-slate-300 rounded px-2 py-1 bg-white text-xs" />
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} className="rounded text-secondary-container" />
-                          <span className="text-xs font-bold text-on-surface uppercase">Is Recurring Schedule?</span>
-                        </label>
-
-                        {isRecurring && (
-                          <div className="grid grid-cols-2 gap-2 p-2 bg-surface-container-low rounded border border-border-subtle">
-                            <div>
-                                <label className="text-[10px] text-on-surface-variant font-bold uppercase block mb-1">Frequency</label>
-                                <CustomSelect 
-                                  value={frequency} 
-                                  onChange={(val) => setFrequency(val as any)} 
-                                  options={[
-                                    { value: 'daily', label: 'Daily' },
-                                    { value: 'weekly', label: 'Weekly' },
-                                    { value: 'monthly', label: 'Monthly' }
-                                  ]} 
-                                />
-                            </div>
-                            {frequency === 'weekly' && (
+                  {defects.filter(d => d.status !== 'closed').length === 0 ? (
+                    <div className="text-center py-8 text-on-surface-variant font-body-sm">
+                      <span className="material-symbols-outlined text-3xl block mb-2 opacity-30">check_circle</span>
+                      No open defects. All clear!
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {defects.filter(d => d.status !== 'closed').map(d => {
+                        const veh = vehicles.find(v => v.id === d.vehicleId);
+                        const isDangerous = d.severity === 'dangerous';
+                        return (
+                          <div key={d.id} className="bg-surface-card border border-border-subtle rounded-lg p-4 shadow-sm">
+                            <div className="flex items-start justify-between mb-2">
                               <div>
-                                <label className="text-[10px] text-on-surface-variant font-bold uppercase block mb-1">Day of Week</label>
-                                <CustomSelect 
-                                  value={dayOfWeek.toString()} 
-                                  onChange={(val) => setDayOfWeek(parseInt(val))} 
-                                  options={[
-                                    { value: '0', label: 'Sunday' },
-                                    { value: '1', label: 'Monday' },
-                                    { value: '2', label: 'Tuesday' },
-                                    { value: '3', label: 'Wednesday' },
-                                    { value: '4', label: 'Thursday' },
-                                    { value: '5', label: 'Friday' },
-                                    { value: '6', label: 'Saturday' }
-                                  ]} 
-                                />
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${isDangerous ? "bg-danger-red text-white" : d.severity === 'major' ? "bg-major-defect-orange text-white" : "bg-secondary-container text-primary"}`}>{d.severity.toUpperCase()}</span>
+                                {veh && <span className="text-[10px] text-on-surface-variant ml-2">{veh.registration}</span>}
                               </div>
-                            )}
-                            {frequency === 'monthly' && (
-                              <div>
-                                <label className="text-[10px] text-on-surface-variant font-bold uppercase block mb-1">Day of Month</label>
-                                <CustomSelect 
-                                  value={dayOfMonth.toString()} 
-                                  onChange={(val) => setDayOfMonth(parseInt(val))} 
-                                  options={[...Array(31)].map((_, i) => ({ value: (i + 1).toString(), label: (i + 1).toString() }))} 
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <button type="submit" className="w-full bg-secondary-container/100 hover:bg-amber-600 text-primary font-bold uppercase py-2 rounded text-xs tracking-wide transition-all cursor-pointer">
-                        Schedule Task ✓
-                      </button>
-                    </form>
-                  </div>
-
-                  {/* Schedules Display */}
-                  <div className="space-y-2">
-                    <span className="font-bold text-on-surface uppercase tracking-widest text-[10px] block">Mandated Tasks Calendar</span>
-                    {schedules && schedules.filter(s => isScheduleDueToday(s) || s.status === 'completed').length > 0 ? (
-                      schedules.filter(s => isScheduleDueToday(s) || s.status === 'completed').map((s) => (
-                        <div key={s.id} className="bg-white border border-border-subtle rounded p-3 flex justify-between items-center text-primary">
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-bold text-[#111827] text-xs leading-tight block">{s.title}</span>
+                              <span className="text-[10px] text-on-surface-variant">{new Date(d.createdAt).toLocaleDateString('en-GB')}</span>
                             </div>
-                            <span className="text-[10px] block font-mono">
-                              Reg Plate: <span className="font-bold text-on-surface">{vehicles.find(v => v.id === s.vehicleId)?.registration || "Unknown"}</span> • Due: {s.dueDate}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase font-mono ${s.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
-                              {s.status.toUpperCase()}
-                            </span>
-                            
-                            {s.status === 'pending' && (
-                              <button
-                                onClick={async () => {
-                                  const res = await fetch(`/api/schedules/${s.id}`, {
-                                    method: "PUT",
-                                    headers: {
-                                      "Content-Type": "application/json",
-                                      "x-company-id": company.id
-                                    },
-                                    body: JSON.stringify({ status: 'completed' })
-                                  });
-                                  if (res.ok) {
-                                    alert("Checklist marked completed!");
-                                    onTriggerRefresh();
-                                  }
-                                }}
-                                className="bg-surface-container text-on-primary px-2 py-1 rounded text-[10px] font-bold tracking-tight hover:bg-surface-container-high cursor-pointer"
-                              >
-                                Mark Done
-                              </button>
-                            )}
-
-                            <button
-                              onClick={async () => {
-                                if (confirm("Proceed to delete this audit schedule entirely?")) {
-                                  const res = await fetch(`/api/schedules/${s.id}`, {
-                                    method: "DELETE",
-                                    headers: {
-                                      "x-company-id": company.id
-                                    }
-                                  });
-                                  if (res.ok) {
-                                    onTriggerRefresh();
-                                  }
-                                }
-                              }}
-                              className="p-1.5 text-danger-red hover:bg-danger-red/10 rounded-lg transition-colors cursor-pointer"
-                              title="Delete Schedule"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
+                            <p className="font-bold text-sm text-primary mb-1">{d.itemLabel}</p>
+                            <p className="text-xs text-on-surface-variant mb-3">{d.description}</p>
+                            <button onClick={async () => {
+                              try {
+                                const notes = prompt("Repair notes (optional):");
+                                await onCloseDefect(d.id, { engineerName: currentDriver?.fullName || "Solo Operator", repairDescription: notes || "Closed by operator", partsUsed: "", engineerSignature: "solo-close" });
+                                onTriggerRefresh();
+                                alert("Defect closed successfully.");
+                              } catch(e) { alert("Failed to close defect."); }
+                            }} className="w-full py-2 bg-primary text-white text-xs font-bold rounded flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 transition-opacity">
+                              <span className="material-symbols-outlined text-sm">check</span> CLOSE DEFECT
                             </button>
                           </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-6 text-on-surface-variant bg-white border border-slate-150 rounded font-sans">No periodic compliance mandates defined.</div>
-                    )}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
-
-              {/* Solo Operator Profile Panel UI */}
-              {company.isSoloOperator && activeSoloTab === 'profile' && (
+{company.isSoloOperator && activeSoloTab === 'profile' && (
                 <div className="flex-1 flex flex-col gap-4 font-sans text-xs">
                   <div className="bg-surface-container text-on-primary p-4 rounded flex items-center justify-between">
                     <div>
