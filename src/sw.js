@@ -1,6 +1,6 @@
 import { precacheAndRoute } from 'workbox-precaching';
 
-// VERSION: 1.0.8 - Auto-Update On Deploy
+// VERSION: 1.0.9 - Auto-Update On Deploy
 // Injected manifest by VitePWA
 precacheAndRoute(self.__WB_MANIFEST || []);
 

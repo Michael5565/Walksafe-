@@ -868,7 +868,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       driverId: currentDriver.id,
       startedAt: checkStartedAt,
       driverSignature: driverSignature || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='30'></svg>",
-      items: wizardItems,
+      items: wizardItems.map(w => { const r = activeCheckResults.find(a => a.itemKey === w.itemKey); return { itemKey: w.itemKey, itemLabel: w.itemLabel, result: r ? r.result : "pass", sequenceOrder: w.sequenceOrder }; }),
       latitude: gpsCoords?.latitude || null,
       longitude: gpsCoords?.longitude || null,
       miscDamageNotes,
