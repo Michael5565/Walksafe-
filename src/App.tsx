@@ -241,7 +241,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem(`walksafe_sync_queue`, JSON.stringify(syncQueue));
+    localStorage.setItem(`walksafe_sync_queue`, safeStringify(syncQueue));
   }, [syncQueue]);
 
   useEffect(() => {
