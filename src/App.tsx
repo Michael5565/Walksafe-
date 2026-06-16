@@ -242,13 +242,19 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(`walksafe_sync_queue`, JSON.stringify(syncQueue));
+      const serialized = JSON.stringify(syncQueue);
+      localStorage.setItem(`walksafe_sync_queue`, serialized);
     } catch (e) {
-      console.warn("[SyncQueue] Could not persist:", e);
-      try {
-        const safeCopy = syncQueue.filter((item: any) => { try { JSON.stringify(item); return true; } catch { return false; } });
-        localStorage.setItem(`walksafe_sync_queue`, JSON.stringify(safeCopy));
-      } catch {}
+      console.warn("[SyncQueue] Dirty item detected, scrubbing:", e);
+      const cleanQueue = syncQueue.filter((item: any) => {
+        if (!item || typeof item !== "object") return false;
+        if (!item.type || !item.id) return false;
+        if (item.type === "submit_check") {
+          return item.payload && typeof item.payload.vehicleId === "string" && typeof item.payload.driverId === "string" && Array.isArray(item.payload.items);
+        }
+        return ["close_defect", "add_vehicle", "add_driver", "update_company"].includes(item.type);
+      });
+      try { localStorage.setItem(`walksafe_sync_queue`, JSON.stringify(cleanQueue)); } catch { localStorage.setItem(`walksafe_sync_queue`, "[]"); }
     }
   }, [syncQueue]);
 
@@ -1336,25 +1342,37 @@ const loadDatabaseState = async (silently = false) => {
       } catch (err) {
         console.warn("Saving walkaround check locally & queuing for background sync:", err);
         try {
-        const safePayload = JSON.parse(JSON.stringify({
-          id: checkPayload.id,
-          vehicleId: checkPayload.vehicleId,
-          driverId: checkPayload.driverId,
-          startedAt: checkPayload.startedAt,
-          items: (checkPayload.items || []).map((i: any) => ({ itemKey: i.itemKey, itemLabel: i.itemLabel, result: i.result, sequenceOrder: i.sequenceOrder })),
-          driverSignature: String(checkPayload.driverSignature || "").substring(0, 50000),
-          results: (checkPayload.results || []).map((r: any) => ({ itemKey: r.itemKey, itemLabel: r.itemLabel, severity: r.severity, description: r.description, photoUrl: r.photoUrl })),
-          latitude: checkPayload.latitude,
-          longitude: checkPayload.longitude,
-          miscDamageNotes: String(checkPayload.miscDamageNotes || ""),
-          miscDamagePhotoUrl: String(checkPayload.miscDamagePhotoUrl || ""),
-          scheduleId: checkPayload.scheduleId,
-          templateName: String(checkPayload.templateName || "")
-        }));
+        const safeItems: any[] = [];
+        if (Array.isArray(checkPayload.items)) {
+          for (const it of checkPayload.items) {
+            safeItems.push({ itemKey: String(it?.itemKey ?? ""), itemLabel: String(it?.itemLabel ?? ""), result: it?.result === "fail" ? "fail" : "pass", sequenceOrder: Number(it?.sequenceOrder ?? 0) });
+          }
+        }
+        const safeResults: any[] = [];
+        if (Array.isArray(checkPayload.results)) {
+          for (const r of checkPayload.results) {
+            safeResults.push({ itemKey: String(r?.itemKey ?? ""), itemLabel: String(r?.itemLabel ?? ""), severity: String(r?.severity ?? "major"), description: String(r?.description ?? ""), photoUrl: typeof r?.photoUrl === "string" ? r.photoUrl.substring(0, 500000) : "" });
+          }
+        }
+        const safePayload2 = {
+          id: String(checkPayload.id ?? ""),
+          vehicleId: String(checkPayload.vehicleId ?? ""),
+          driverId: String(checkPayload.driverId ?? ""),
+          startedAt: String(checkPayload.startedAt ?? new Date().toISOString()),
+          driverSignature: typeof checkPayload.driverSignature === "string" ? checkPayload.driverSignature.substring(0, 50000) : "",
+          items: safeItems,
+          results: safeResults,
+          latitude: typeof checkPayload.latitude === "number" ? checkPayload.latitude : null,
+          longitude: typeof checkPayload.longitude === "number" ? checkPayload.longitude : null,
+          miscDamageNotes: String(checkPayload.miscDamageNotes ?? ""),
+          miscDamagePhotoUrl: typeof checkPayload.miscDamagePhotoUrl === "string" ? checkPayload.miscDamagePhotoUrl : "",
+          scheduleId: checkPayload.scheduleId != null ? String(checkPayload.scheduleId) : null,
+          templateName: String(checkPayload.templateName ?? "")
+        };
         setSyncQueue(prev => [...prev, {
           id: "sync-" + Date.now() + Math.random().toString(36).substr(2, 5),
           type: 'submit_check',
-          payload: safePayload
+          payload: safePayload2
         }]);
       } catch (serializeErr) {
         console.error("Check payload could not be queued:", serializeErr);
