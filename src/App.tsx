@@ -1315,7 +1315,7 @@ const loadDatabaseState = async (silently = false) => {
         const res = await fetchWithTimeout("/api/checks", {
           method: "POST",
           headers: reqHeaders,
-          body: JSON.stringify(checkPayload)
+          body: JSON.stringify({ id: checkPayload.id, vehicleId: checkPayload.vehicleId, driverId: checkPayload.driverId, startedAt: checkPayload.startedAt, items: checkPayload.items, driverSignature: String(checkPayload.driverSignature || "").substring(0, 50000), results: checkPayload.results || [], latitude: checkPayload.latitude, longitude: checkPayload.longitude, miscDamageNotes: String(checkPayload.miscDamageNotes || ""), miscDamagePhotoUrl: String(checkPayload.miscDamagePhotoUrl || ""), scheduleId: checkPayload.scheduleId, templateName: String(checkPayload.templateName || "") })
         });
         if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
           loadDatabaseState(true);

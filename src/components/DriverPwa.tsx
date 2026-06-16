@@ -1117,7 +1117,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   };
 
    return (
-    <div className="fixed inset-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-[420px] md:max-h-[90vh] md:rounded-2xl md:shadow-2xl flex flex-col bg-surface-container text-on-surface overflow-hidden">
+    <div className="fixed inset-0 md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-[420px] md:max-h-[90vh] md:min-h-[600px] md:rounded-2xl md:shadow-2xl flex flex-col bg-surface-container text-on-surface overflow-hidden">
       {/* Active Navigation Header (Fixed) */}
       <div className="bg-[#0f172a] border-b border-[#2a2a30] px-4 py-3 flex items-center justify-between shrink-0 z-20">
         <div className="flex items-center gap-2">
@@ -2381,7 +2381,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
 
           {/* 4. SCREEN: Checklist Wizard 27 Items */}
           {phase === 'wizard' && assignedVehicle && (
-            <div className="flex-1 bg-surface-container flex flex-col justify-between">
+            <div className="flex-1 min-h-0 bg-surface-container flex flex-col justify-between">
               
               {/* Wizard Status bar */}
               <div className="bg-surface-card px-4 py-3 border-b border-border-subtle flex items-center justify-between text-body-sm text-on-surface-variant">
@@ -2669,7 +2669,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
           {phase === 'complete' && assignedVehicle && currentDriver && (
             <div className="flex-1 bg-surface-container px-5 py-6 flex flex-col justify-between text-on-surface">
               <div>
-                <h3 className="font-sans text-xl font-bold text-on-primary uppercase text-center tracking-wide">
+                <h3 className="font-sans text-xl font-bold text-primary uppercase text-center tracking-wide">
                   {activeCheckResults.some(r => r.result === 'fail') ? "WALKAROUND DEFECT SUMMARY" : "NIL DEFECT INSPECTION SUCCESS"}
                 </h3>
 
