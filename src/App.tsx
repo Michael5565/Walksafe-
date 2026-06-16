@@ -15,6 +15,7 @@ import { signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerif
 const DriverPwa = lazy(() => import("./components/DriverPwa"));
 const ManagerDashboard = lazy(() => import("./components/ManagerDashboard"));
 const SignupFlow = lazy(() => import("./components/SignupFlow"));
+const AuthAction = lazy(() => import("./pages/AuthAction"));
 
 // Backup fallback states in case Express server is compiling/initializing in background
 
@@ -1653,6 +1654,9 @@ const loadDatabaseState = async (silently = false) => {
   }, [wsSession, currentPath]);
 
   if (!wsSession) {
+    if (currentPath.startsWith("/auth/")) {
+      return <AuthAction />;
+    }
     if (currentPath === "/") {
       return (
         <LandingPage 
