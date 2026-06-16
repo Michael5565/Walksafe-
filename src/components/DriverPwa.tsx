@@ -2471,13 +2471,13 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                     className="w-full h-18 bg-danger-red text-on-primary font-bold text-xl rounded shadow-sm hover:bg-danger-red/90 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <X className="w-6 h-6 shrink-0" />
-                    FAIL / ITEM DEFECT OUTSTANDING
+                    FAIL / DEFECT
                   </button>
                 </div>
               </div>
 
               {/* Wizard Nav Controls footer */}
-              <div className="bg-surface-card px-4 py-3 border-t border-border-subtle flex justify-between">
+              <div className="bg-surface-card px-5 py-4 border-t border-border-subtle flex justify-between items-center">
                 <button
                   onClick={() => {
                     if (currentItemIndex > 0) {
@@ -2512,7 +2512,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
 
               {/* DEFECT REPORTING MODAL Overlay */}
               {isReportingDefect && (
-                <div className="absolute inset-0 bg-surface/95 z-40 p-4 overflow-y-auto flex flex-col justify-between">
+                <div className="absolute inset-0 bg-white z-40 p-4 overflow-y-auto flex flex-col">
                   <div>
                     <div className="flex justify-between items-center border-b border-border-subtle pb-3">
                       <h4 className="font-sans text-lg font-bold text-danger-red flex items-center gap-1.5 uppercase">
