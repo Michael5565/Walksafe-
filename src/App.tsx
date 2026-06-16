@@ -241,7 +241,15 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem(`walksafe_sync_queue`, JSON.stringify(syncQueue));
+    try {
+      localStorage.setItem(`walksafe_sync_queue`, JSON.stringify(syncQueue));
+    } catch (e) {
+      console.warn("[SyncQueue] Could not persist:", e);
+      try {
+        const safeCopy = syncQueue.filter((item: any) => { try { JSON.stringify(item); return true; } catch { return false; } });
+        localStorage.setItem(`walksafe_sync_queue`, JSON.stringify(safeCopy));
+      } catch {}
+    }
   }, [syncQueue]);
 
   useEffect(() => {
@@ -1327,11 +1335,30 @@ const loadDatabaseState = async (silently = false) => {
         }
       } catch (err) {
         console.warn("Saving walkaround check locally & queuing for background sync:", err);
+        try {
+        const safePayload = JSON.parse(JSON.stringify({
+          id: checkPayload.id,
+          vehicleId: checkPayload.vehicleId,
+          driverId: checkPayload.driverId,
+          startedAt: checkPayload.startedAt,
+          items: (checkPayload.items || []).map((i: any) => ({ itemKey: i.itemKey, itemLabel: i.itemLabel, result: i.result, sequenceOrder: i.sequenceOrder })),
+          driverSignature: String(checkPayload.driverSignature || "").substring(0, 50000),
+          results: (checkPayload.results || []).map((r: any) => ({ itemKey: r.itemKey, itemLabel: r.itemLabel, severity: r.severity, description: r.description, photoUrl: r.photoUrl })),
+          latitude: checkPayload.latitude,
+          longitude: checkPayload.longitude,
+          miscDamageNotes: String(checkPayload.miscDamageNotes || ""),
+          miscDamagePhotoUrl: String(checkPayload.miscDamagePhotoUrl || ""),
+          scheduleId: checkPayload.scheduleId,
+          templateName: String(checkPayload.templateName || "")
+        }));
         setSyncQueue(prev => [...prev, {
           id: "sync-" + Date.now() + Math.random().toString(36).substr(2, 5),
           type: 'submit_check',
-          payload: checkPayload
+          payload: safePayload
         }]);
+      } catch (serializeErr) {
+        console.error("Check payload could not be queued:", serializeErr);
+      }
       }
     })();
     
