@@ -1035,11 +1035,11 @@ app.post('/checks', async (c) => {
         const nextDue = nextDate.toISOString().split("T")[0];
         try {
         await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,templateId,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?,?)")
-          .bind(nextId, companyId, targetSch.title, targetSch.vehicleId, nextDue, targetSch.driverId, targetSch.frequency, targetSch.templateId, new Date().toISOString()).run();
+          .bind(nextId, companyId, String(targetSch.title||""), String(targetSch.vehicleId||""), String(nextDue), String(targetSch.driverId||""), String(targetSch.frequency||""), String(targetSch.templateId||""), new Date().toISOString()).run();
       } catch (_e) {
         try { await db.prepare("ALTER TABLE schedules ADD COLUMN templateId TEXT").run(); } catch (__e) {}
         await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?)")
-          .bind(nextId, companyId, targetSch.title, targetSch.vehicleId, nextDue, targetSch.driverId, targetSch.frequency, new Date().toISOString()).run();
+          .bind(nextId, companyId, String(targetSch.title||""), String(targetSch.vehicleId||""), String(nextDue), String(targetSch.driverId||""), String(targetSch.frequency||""), new Date().toISOString()).run();
       }
       }
     }
@@ -1058,11 +1058,11 @@ app.post('/checks', async (c) => {
         const nextDue = nextDate.toISOString().split("T")[0];
         try {
         await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,templateId,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?,?)")
-          .bind(nextId, companyId, autoSch.title, autoSch.vehicleId, nextDue, autoSch.driverId, autoSch.frequency, autoSch.templateId, new Date().toISOString()).run();
+          .bind(nextId, companyId, String(autoSch.title||""), String(autoSch.vehicleId||""), String(nextDue), String(autoSch.driverId||""), String(autoSch.frequency||""), String(autoSch.templateId||""), new Date().toISOString()).run();
       } catch (_e) {
         try { await db.prepare("ALTER TABLE schedules ADD COLUMN templateId TEXT").run(); } catch (__e) {}
         await db.prepare("INSERT INTO schedules (id,companyId,title,vehicleId,dueDate,status,driverId,frequency,isRecurring,createdAt) VALUES (?,?,?,?,?,'pending',?,?,1,?)")
-          .bind(nextId, companyId, autoSch.title, autoSch.vehicleId, nextDue, autoSch.driverId, autoSch.frequency, new Date().toISOString()).run();
+          .bind(nextId, companyId, String(autoSch.title||""), String(autoSch.vehicleId||""), String(nextDue), String(autoSch.driverId||""), String(autoSch.frequency||""), new Date().toISOString()).run();
       }
       }
     }
