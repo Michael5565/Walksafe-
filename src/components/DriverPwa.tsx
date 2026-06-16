@@ -2543,14 +2543,14 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                           onClick={() => setDefectSeverity('dangerous')}
                           className={`p-3 text-left rounded-lg border text-xs flex gap-2 transition-colors ${
                             defectSeverity === 'dangerous' 
-                              ? 'border-red-600 bg-red-950/40 text-red-300' 
-                              : 'border-border-subtle bg-surface-container text-on-surface-variant hover:border-border-subtle'
+                              ? 'border-red-600 bg-danger-red/10 text-danger-red' 
+                              : 'border-border-subtle bg-white text-on-surface-variant hover:border-red-300'
                           }`}
                         >
                           <span className="shrink-0 font-bold text-danger-red font-mono">DANGEROUS</span>
                           <div>
                             <span className="font-bold block">Vehicle Grounded Immediate Lock</span>
-                            <span className="text-[10px] opacity-80">Immediate safety risk. Vehicle is legally barred from public roads.</span>
+                            <span className="text-[10px] ">Immediate safety risk. Vehicle is legally barred from public roads.</span>
                           </div>
                         </button>
 
@@ -2559,14 +2559,14 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                           onClick={() => setDefectSeverity('major')}
                           className={`p-3 text-left rounded-lg border text-xs flex gap-2 transition-colors ${
                             defectSeverity === 'major' 
-                              ? 'border-orange-500 bg-orange-950/30 text-orange-300' 
-                              : 'border-border-subtle bg-surface-container text-on-surface-variant hover:border-border-subtle'
+                              ? 'border-orange-500 bg-major-defect-orange/10 text-major-defect-orange' 
+                              : 'border-border-subtle bg-white text-on-surface-variant hover:border-orange-300'
                           }`}
                         >
                           <span className="shrink-0 font-bold text-major-defect-orange font-mono">MAJOR FAULT</span>
                           <div>
                             <span className="font-bold block">Significant defect requiring engineer triage</span>
-                            <span className="text-[10px] opacity-80">Requires repair. Driver may operate with special caution to local depot.</span>
+                            <span className="text-[10px] ">Requires repair. Driver may operate with special caution to local depot.</span>
                           </div>
                         </button>
 
@@ -2575,14 +2575,14 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                           onClick={() => setDefectSeverity('minor')}
                           className={`p-3 text-left rounded-lg border text-xs flex gap-2 transition-colors ${
                             defectSeverity === 'minor' 
-                              ? 'border-yellow-500 bg-yellow-950/30 text-yellow-300' 
-                              : 'border-border-subtle bg-surface-container text-on-surface-variant hover:border-border-subtle'
+                              ? 'border-yellow-500 bg-yellow-100 text-yellow-800' 
+                              : 'border-border-subtle bg-white text-on-surface-variant hover:border-yellow-300'
                           }`}
                         >
                           <span className="shrink-0 font-bold text-secondary font-mono">MINOR / ADVISORY</span>
                           <div>
                             <span className="font-bold block">Minor wear / Cosmetic discrepancy</span>
-                            <span className="text-[10px] opacity-80">Notate for record. Repair before next annual scheduled servicing.</span>
+                            <span className="text-[10px] ">Notate for record. Repair before next annual scheduled servicing.</span>
                           </div>
                         </button>
                       </div>
@@ -2590,7 +2590,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
 
                     {/* Fault description */}
                     <div className="mt-4">
-                      <label className="text-xs font-bold text-on-surface block uppercase tracking-wider mb-1">
+                      <label className="text-xs font-bold text-gray-800 block uppercase tracking-wider mb-1.5">
                         Describe the Fault Logged
                       </label>
                       <textarea
@@ -2598,7 +2598,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                         onChange={(e) => setDefectDescription(e.target.value)}
                         placeholder='e.g., "Nearside outer tail lamp has direct structural crack and is blowing moisture."'
                         rows={2}
-                        className="w-full bg-surface-container border border-border-subtle rounded-lg p-2.5 text-xs text-on-primary focus:outline-hidden focus:border-red-500"
+                        className="w-full bg-white border-2 border-gray-300 rounded-lg p-3 text-sm text-gray-900 focus:outline-hidden focus:border-red-500 placeholder-gray-500"
                       />
                     </div>
 
