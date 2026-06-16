@@ -165,6 +165,8 @@ export default function App() {
   });
 
   const [currentRole, setCurrentRole] = useState<'driver' | 'manager'>('manager');
+  const [lockScreenPlan, setLockScreenPlan] = useState<string>("starter");
+  const [lockPaddleLoading, setLockPaddleLoading] = useState(false);
   const [magicDriver, setMagicDriver] = useState<Driver | null>(() => {
     try {
       const v = localStorage.getItem("walksafe_driver_session");
@@ -1838,33 +1840,61 @@ const loadDatabaseState = async (silently = false) => {
             </span>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-              <div className="bg-black/40 hover:bg-black/70 border border-[#262626] p-3 rounded-xl transition-all">
+              <button onClick={() => setLockScreenPlan("owner-driver")} className={`bg-black/40 hover:bg-black/70 border p-3 rounded-xl transition-all cursor-pointer text-left ${lockScreenPlan === "owner-driver" ? "border-amber-500" : "border-[#262626]"}`}>
                 <span className="text-[10px] font-bold text-amber-500 block uppercase">Owner-Driver</span>
                 <span className="text-base font-bold text-[#F5F5F5] block mt-1">£4.99<span className="text-[9.5px] font-normal text-neutral-500 block">/mo</span></span>
-                <span className="text-[9.5px] text-neutral-400 block leading-snug mt-1">1 Logistics Asset, 1 Secure Driver PIN.</span>
-              </div>
-              <div className="bg-black/95 border-2 border-amber-500 p-3 rounded-xl transition-all relative">
+                <span className="text-[9.5px] text-neutral-400 block leading-snug mt-1">1 Vehicle, Driver PIN.</span>
+              </button>
+              <button onClick={() => setLockScreenPlan("starter")} className={`bg-black/95 border-2 p-3 rounded-xl transition-all relative cursor-pointer text-left ${lockScreenPlan === "starter" ? "border-amber-500" : "border-amber-500/50"}`}>
                 <span className="bg-amber-500 text-black font-sans font-extrabold text-[8px] uppercase px-1 rounded absolute -top-2 right-2">Popular</span>
                 <span className="text-[10px] font-bold text-amber-500 block uppercase">Starter Fleet</span>
                 <span className="text-base font-bold text-[#F5F5F5] block mt-1">£14.99<span className="text-[9.5px] font-normal text-neutral-500 block">/mo</span></span>
                 <span className="text-[9.5px] text-neutral-400 block leading-snug mt-1">3 Vehicles, Scheduled Audits.</span>
-              </div>
-              <div className="bg-black/40 hover:bg-black/70 border border-[#262626] p-3 rounded-xl transition-all">
+              </button>
+              <button onClick={() => setLockScreenPlan("growth")} className={`bg-black/40 hover:bg-black/70 border p-3 rounded-xl transition-all cursor-pointer text-left ${lockScreenPlan === "growth" ? "border-amber-500" : "border-[#262626]"}`}>
                 <span className="text-[10px] font-bold text-amber-500 block uppercase">Growth Fleet</span>
                 <span className="text-base font-bold text-[#F5F5F5] block mt-1">£34.99<span className="text-[9.5px] font-normal text-slate-500 block">/mo</span></span>
                 <span className="text-[9.5px] text-neutral-400 block leading-snug mt-1">10 Vehicles, Operator Notices.</span>
-              </div>
+              </button>
             </div>
 
             <button
               onClick={async () => {
-                await handleUpdateCompany({ isSubscribed: true });
-                await loadDatabaseState(true);
+                setLockPaddleLoading(true);
+                try {
+                  const planMap: Record<string, string> = {
+                    "owner-driver": "pri_01kv3ad64hkb1f6gpjxa5av4mx",
+                    starter: "pri_01kv3bhykfmhk0m61g7r2tv1vt",
+                    growth: "pri_01kv3ap1zk2vszmaj822vppyj2",
+                  };
+                  const priceId = planMap[lockScreenPlan];
+                  if (!priceId) { alert("Invalid plan selected"); setLockPaddleLoading(false); return; }
+                  const P = (window as any).Paddle;
+                  if (P && P.Checkout) {
+                    P.Checkout.open({
+                      items: [{ priceId, quantity: 1 }],
+                      customer: { email: company.email || "" },
+                      customData: { userId: company.id, plan: lockScreenPlan, vehicle_limit: String(lockScreenPlan === "owner-driver" ? 1 : lockScreenPlan === "starter" ? 3 : 10) },
+                      settings: { theme: "dark", successUrl: window.location.origin + "/?payment_success=true&plan=" + lockScreenPlan + "&limit=" + (lockScreenPlan === "owner-driver" ? 1 : lockScreenPlan === "starter" ? 3 : 10), allowLogout: true }
+                    });
+                  } else {
+                    alert("Payment system not loaded yet. Please refresh.");
+                  }
+                } catch (e) {
+                  console.warn("[Paddle] Checkout error:", e);
+                }
+                setLockPaddleLoading(false);
               }}
               className="w-full mt-4 bg-[#fea619] hover:bg-[#e89500] text-[#684000] font-display font-black text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl shadow-xl hover:shadow-[#fea619]/10 flex items-center justify-center gap-2 transition-all cursor-pointer font-bold"
             >
-              <Check className="w-4 h-4 text-black font-black stroke-[3]" />
-              Activate Subscription & Resume Inspections
+              {lockPaddleLoading ? (
+                <span className="animate-pulse">Loading Payment...</span>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 text-black font-black stroke-[3]" />
+                  Subscribe & Resume Inspections
+                </>
+              )}
             </button>
             
             <button
@@ -1879,7 +1909,7 @@ const loadDatabaseState = async (silently = false) => {
               }}
               className="text-[11px] text-amber-500 hover:text-amber-400 transition-colors font-mono font-bold block mt-4 mx-auto cursor-pointer"
             >
-               ⚠️ Sandbox Override: Reset Trial and Grant 15 Days
+               Retry Activation Check
             </button>
           </div>
         </div>

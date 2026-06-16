@@ -262,8 +262,8 @@ app.post('/auth/register', async (c) => {
   const createdAt = new Date().toISOString();
 
   await db.prepare(`
-    INSERT INTO company (id, name, email, oLicence, plan, vehicleLimit, managerPassword, createdAt)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO company (id, name, email, oLicence, plan, vehicleLimit, managerPassword, createdAt, trialStartedAt, trialEndsAt, isSubscribed)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(cleanId, name, emailToUse, oLicence || null, plan || 'starter', oLicenceLimit, managerPassword, createdAt).run();
 
   const newCompany = {

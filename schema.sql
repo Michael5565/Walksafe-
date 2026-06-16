@@ -138,3 +138,14 @@ CREATE INDEX IF NOT EXISTS idx_templates_company ON templates(companyId);
 CREATE INDEX IF NOT EXISTS idx_checks_vehicle ON checks(vehicleId);
 CREATE INDEX IF NOT EXISTS idx_defects_check ON defects(checkId);
 CREATE INDEX IF NOT EXISTS idx_schedules_vehicle ON schedules(vehicleId);
+
+-- Additional performance indexes for high-read tables
+CREATE INDEX IF NOT EXISTS idx_vehicle_positions_company ON vehicle_positions(companyId, recordedAt);
+CREATE INDEX IF NOT EXISTS idx_parts_company ON parts(companyId);
+CREATE INDEX IF NOT EXISTS idx_maintenance_company ON maintenance(companyId);
+CREATE INDEX IF NOT EXISTS idx_fuel_company ON fuel(companyId);
+CREATE INDEX IF NOT EXISTS idx_expenses_company ON expenses(companyId);
+CREATE INDEX IF NOT EXISTS idx_work_orders_company ON work_orders(companyId);
+CREATE INDEX IF NOT EXISTS idx_documents_company ON documents(companyId);
+CREATE INDEX IF NOT EXISTS idx_driver_scores_company ON driver_scores(companyId);
+CREATE INDEX IF NOT EXISTS idx_alert_rules_company ON alert_rules(companyId);
