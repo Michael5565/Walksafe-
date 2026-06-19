@@ -1,0 +1,924 @@
+[
+  {
+    "companyNumber": "10534198",
+    "companyName": "K1 TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "69 Coltsfoot Path",
+      "locality": "Romford",
+      "postal_code": "RM3 8BE",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49410",
+      "49420",
+      "52290"
+    ]
+  },
+  {
+    "companyNumber": "12078215",
+    "companyName": "DPD TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "66 Exwick Road",
+      "locality": "Exeter",
+      "postal_code": "EX4 2BJ",
+      "region": "Devon",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "13112727",
+    "companyName": "HAPPY TRANSPORT SERVICES LTD.",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Flat 15 Ross House",
+      "address_line_2": "Ross Way",
+      "locality": "Folkestone",
+      "postal_code": "CT20 3UJ",
+      "region": "Kent",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "10306746",
+    "companyName": "CUMBRIA TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "23 Mill Street",
+      "locality": "Whitehaven",
+      "postal_code": "CA28 7QS",
+      "region": "Cumbria",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "14864378",
+    "companyName": "KOUROS TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "45 Perivale",
+      "address_line_2": "Monkston Park",
+      "locality": "Milton Keynes",
+      "postal_code": "MK10 9PE",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "02617558",
+    "companyName": "JARRETTS TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "115-121 Waterworks Road",
+      "locality": "Norwich",
+      "postal_code": "NR2 4DE",
+      "region": "Norfolk"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "11359502",
+    "companyName": "VANGUARD TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Ysgwyn Fach",
+      "address_line_2": "Capel Isaac",
+      "locality": "Llandeilo",
+      "postal_code": "SA19 7UD",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "13748924",
+    "companyName": "BENNETT'S TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "9b Alton Street",
+      "locality": "Ross-On-Wye",
+      "postal_code": "HR9 5AB",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "11304985",
+    "companyName": "PIO TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "11 Baring Street",
+      "locality": "Plymouth",
+      "postal_code": "PL4 8NF",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49390",
+      "49410",
+      "49420",
+      "53202"
+    ]
+  },
+  {
+    "companyNumber": "12305974",
+    "companyName": "YO-YO TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "19 Wood Street",
+      "locality": "Fleetwood",
+      "postal_code": "FY7 7PX",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "09457408",
+    "companyName": "PMA TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "16 Thames Avenue",
+      "address_line_2": "Perivale",
+      "locality": "Greenford",
+      "postal_code": "UB6 8JL",
+      "region": "Middlesex",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420",
+      "53202"
+    ]
+  },
+  {
+    "companyNumber": "12182106",
+    "companyName": "MGB TRANSPORT AND REMOVALS LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Unit 11 Howard Road Howard Road",
+      "address_line_2": "Park Farm Industrial Estate",
+      "locality": "Redditch",
+      "postal_code": "B98 7SE",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "14334149",
+    "companyName": "JZ TRANSPORT & REMOVAL LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "62 Harrison Way",
+      "locality": "Cardiff",
+      "postal_code": "CF11 7PE",
+      "country": "Wales"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "15795369",
+    "companyName": "REMOVAL & TRANSPORT FIRM LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "15 Cudd Y Coed",
+      "locality": "Barry",
+      "postal_code": "CF63 1FE",
+      "country": "Wales"
+    },
+    "sicCodes": [
+      "38110",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "11550520",
+    "companyName": "LEBOURN TRANSPORT SERVICES LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "9 Desborough Road",
+      "locality": "Eastleigh",
+      "postal_code": "SO50 5NY",
+      "region": "Hampshire",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420",
+      "52290"
+    ]
+  },
+  {
+    "companyNumber": "12605272",
+    "companyName": "ADI TRANSPORT 2019 LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "39d Argyle Road",
+      "locality": "Ilford",
+      "postal_code": "IG1 3BJ",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420",
+      "52242",
+      "52290"
+    ]
+  },
+  {
+    "companyNumber": "13080354",
+    "companyName": "BOB'S TRANSPORT (SUSSEX) LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "94 Wicklands Avenue",
+      "address_line_2": "Saltdean",
+      "locality": "Brighton",
+      "postal_code": "BN2 8EP",
+      "region": "East Sussex",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "13625404",
+    "companyName": "TBR TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Marshall House, Suite 21/25 124 Middleton Road",
+      "locality": "Morden",
+      "postal_code": "SM4 6RW",
+      "country": "England"
+    },
+    "sicCodes": [
+      "38110",
+      "49410",
+      "49420",
+      "53202"
+    ]
+  },
+  {
+    "companyNumber": "10497425",
+    "companyName": "TNK TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Censeo House",
+      "address_line_2": "6, St. Peters Street",
+      "locality": "St. Albans",
+      "postal_code": "AL1 3LF",
+      "region": "Hertfordshire"
+    },
+    "sicCodes": [
+      "49420",
+      "52290"
+    ]
+  },
+  {
+    "companyNumber": "14960494",
+    "companyName": "TRANSPORT & STORAGE LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "2 Manor Farm Cottages Bottom Pond Road",
+      "address_line_2": "Wormshill",
+      "locality": "Sittingbourne",
+      "postal_code": "ME9 0TR",
+      "region": "Kent",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "12244428",
+    "companyName": "TRANSPORT BRIDGE LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "187a, Canley Road Canley Gardens",
+      "locality": "Coventry",
+      "postal_code": "CV5 6AS",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "06484451",
+    "companyName": "JERDAN TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "585a Fulham Road",
+      "address_line_2": "Fulham",
+      "locality": "London",
+      "postal_code": "SW6 5UA"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "15944010",
+    "companyName": "MR BROTHERS TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Flat 1 1 Morley Road",
+      "locality": "Southport",
+      "postal_code": "PR9 9JS",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "14526383",
+    "companyName": "SELECT SERVICE TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "128 City Road",
+      "locality": "London",
+      "postal_code": "EC1V 2NX",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "14571167",
+    "companyName": "FIDELITY TRANSPORT & DRIVER SERVICES LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Unit 82a James Carter Road",
+      "address_line_2": "Mildenhall",
+      "locality": "Bury St. Edmunds",
+      "postal_code": "IP28 7DE",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420",
+      "53201"
+    ]
+  },
+  {
+    "companyNumber": "11502523",
+    "companyName": "G&C TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "376 Stourbridge Road",
+      "locality": "Kidderminster",
+      "postal_code": "DY10 2QE",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "NI614361",
+    "companyName": "OMAN TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Forsyth House",
+      "address_line_2": "Cromac Square",
+      "locality": "Belfast",
+      "postal_code": "BT2 8LA",
+      "region": "Northern Ireland"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "08847386",
+    "companyName": "OWN TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "28 Lyndhurst Avenue",
+      "locality": "Surbiton",
+      "postal_code": "KT5 9LL",
+      "region": "Surrey",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "18129",
+      "49420",
+      "93290"
+    ]
+  },
+  {
+    "companyNumber": "01515420",
+    "companyName": "ARROWPAK (TRANSPORT AND WAREHOUSING) LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Sherwood House",
+      "address_line_2": "Norwood Road",
+      "locality": "Brandon",
+      "postal_code": "IP27 0PB",
+      "region": "Suffolk"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "12961481",
+    "companyName": "CROWN SQUARE TRANSPORT AND REMOVALS LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "7 Collingwood Crescent",
+      "locality": "Matlock",
+      "postal_code": "DE4 3TB",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "11566055",
+    "companyName": "DAV TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "10a Windsor Drive Windsor Drive",
+      "locality": "Kidderminster",
+      "postal_code": "DY10 2NB",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49410",
+      "49420",
+      "52290"
+    ]
+  },
+  {
+    "companyNumber": "15487311",
+    "companyName": "ELITE TRANSPORT-20 LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "42 Brook Crescent",
+      "locality": "London",
+      "postal_code": "E4 9EP",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420",
+      "96090"
+    ]
+  },
+  {
+    "companyNumber": "11356593",
+    "companyName": "A2B& ZEE TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "1b Cunningham Road",
+      "locality": "London",
+      "postal_code": "N15 4DS",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "09504070",
+    "companyName": "TRANSPORT ETA LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "167-169 Great Portland Street",
+      "address_line_2": "5th Floor",
+      "locality": "London",
+      "postal_code": "W1W 5PF",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "12962335",
+    "companyName": "UK EU TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "63 Loveridge Road",
+      "locality": "London",
+      "postal_code": "NW6 2DR",
+      "country": "England"
+    },
+    "sicCodes": [
+      "47990",
+      "49410",
+      "49420",
+      "52243"
+    ]
+  },
+  {
+    "companyNumber": "11609675",
+    "companyName": "INDEPENDENT FREELANCE TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "112 Shakespeare Street Sinfin",
+      "locality": "Derby",
+      "postal_code": "DE24 9HD",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "11787797",
+    "companyName": "ANTONE TRANSPORT SERVICES LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "5th Floor 14-16 Dowgate Hill",
+      "locality": "London",
+      "postal_code": "EC4R 2SU",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "09956964",
+    "companyName": "MARK ALLAN TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Unit 7, Ips Innovate Chartermark Way",
+      "address_line_2": "Colburn Business Park",
+      "locality": "Catterick Garrison",
+      "postal_code": "DL9 4QL",
+      "region": "North Yorkshire",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "16033476",
+    "companyName": "SADATE TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "71-75 Shelton Street",
+      "address_line_2": "Covent Garden",
+      "locality": "London",
+      "postal_code": "WC2H 9JQ",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49420",
+      "52290"
+    ]
+  },
+  {
+    "companyNumber": "10015539",
+    "companyName": "DAVIDSON TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "23 Araglen Avenue",
+      "locality": "South Ockendon",
+      "postal_code": "RM15 5DG",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49320",
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "15182262",
+    "companyName": "DIRECT23 TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "18 Wimborne Road",
+      "locality": "Luton",
+      "postal_code": "LU1 1PD",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420",
+      "81210",
+      "81299"
+    ]
+  },
+  {
+    "companyNumber": "14827094",
+    "companyName": "OPTIMA TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "14a Church Street",
+      "address_line_2": "Boston Spa",
+      "locality": "Wetherby",
+      "postal_code": "LS23 6DN",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "11732779",
+    "companyName": "A&C TRANSPORT SOLUTIONS LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "435 Victoria Road",
+      "locality": "Stoke-On-Trent",
+      "postal_code": "ST1 3JF",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "05164499",
+    "companyName": "M & G TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "17 Stockfield Road",
+      "address_line_2": "Acocks Green",
+      "locality": "Birmingham",
+      "postal_code": "B27 6AP",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "SC563512",
+    "companyName": "EXTREME TRANSPORT SERVICES LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "1 Rydal Grove",
+      "locality": "East Kilbride",
+      "postal_code": "G75 8YS",
+      "country": "Scotland"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "03346488",
+    "companyName": "MOVERS TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Unit 6a Battersea Road",
+      "address_line_2": "Heaton Mersey",
+      "locality": "Stockport",
+      "postal_code": "SK4 3EA",
+      "region": "Cheshire"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "16224685",
+    "companyName": "AG REMOVALS & TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "1 Engine Row",
+      "address_line_2": "Penclawdd",
+      "locality": "Swansea",
+      "postal_code": "SA4 3LB",
+      "country": "Wales"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "11319880",
+    "companyName": "BT TRANSPORT AND CLEANING LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "19 Ernest Road",
+      "locality": "Dudley",
+      "postal_code": "DY2 7QU",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420",
+      "81299"
+    ]
+  },
+  {
+    "companyNumber": "NI622577",
+    "companyName": "COLIN DONNELLY TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "38 Ballyscandal Road",
+      "locality": "Armagh",
+      "postal_code": "BT61 8BL"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "13211847",
+    "companyName": "BRACKNELL TRANSPORT SERVICES LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "61 Bridge Street",
+      "locality": "Kington",
+      "postal_code": "HR5 3DJ",
+      "region": "Herefordshire",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "15278987",
+    "companyName": "A & M GOODS TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "123 Moat Road",
+      "locality": "Oldbury",
+      "postal_code": "B68 8EE",
+      "region": "West Midlands",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49420",
+      "52290",
+      "53100"
+    ]
+  },
+  {
+    "companyNumber": "16162411",
+    "companyName": "METODI TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "Flat 6 St. Marys Hall Road",
+      "locality": "Manchester",
+      "postal_code": "M8 4NN",
+      "region": "Greater Manchester",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420",
+      "52243"
+    ]
+  },
+  {
+    "companyNumber": "16254328",
+    "companyName": "TRANSITDIRECT TRANSPORT REMOVALS AND STORAGE LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "5 Fitz Close",
+      "locality": "Macclesfield",
+      "postal_code": "SK10 2HZ",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420",
+      "52103"
+    ]
+  },
+  {
+    "companyNumber": "16269092",
+    "companyName": "LURANCE TRANSPORT LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "441 Barlow Moor Road",
+      "locality": "Manchester",
+      "postal_code": "M21 8AU",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "16133257",
+    "companyName": "SRS TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "139 Somerville Road",
+      "locality": "Birmingham",
+      "postal_code": "B10 9EY",
+      "region": "West Midlands",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "16351427",
+    "companyName": "ANAYSU TRANSPORT LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "167 Crown Street",
+      "locality": "Peterborough",
+      "postal_code": "PE1 3JA",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420",
+      "53202"
+    ]
+  },
+  {
+    "companyNumber": "16409450",
+    "companyName": "S&S TRANSPORT & REMOVALS LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "4 Benson Drive",
+      "locality": "Witham",
+      "postal_code": "CM8 2ZR",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "09933795",
+    "companyName": "CONNECTED TRANSPORT SYSTEMS LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "167-169 Great Portland Street",
+      "locality": "London",
+      "postal_code": "W1W 5PF",
+      "country": "England"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "16145590",
+    "companyName": "GEORGE TRANSPORT 2001 LTD",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "33 Jenkins Street",
+      "locality": "Newport",
+      "postal_code": "NP19 0GQ",
+      "country": "Wales"
+    },
+    "sicCodes": [
+      "49410",
+      "49420"
+    ]
+  },
+  {
+    "companyNumber": "15390944",
+    "companyName": "CLEAN TRANSPORT JAPAN LIMITED",
+    "companyStatus": "active",
+    "address": {
+      "address_line_1": "71-75 Shelton Street",
+      "address_line_2": "Covent Garden",
+      "locality": "London",
+      "postal_code": "WC2H 9JQ",
+      "country": "United Kingdom"
+    },
+    "sicCodes": [
+      "49420"
+    ]
+  }
+]
