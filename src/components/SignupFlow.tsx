@@ -404,24 +404,30 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
   const cardMaxWidthClass = step === 'plan' ? 'max-w-4xl' : 'max-w-lg';
 
   return (
-    <div className={`w-full ${cardMaxWidthClass} mx-auto bg-white border border-[#E5E5E0] rounded-2xl p-6 sm:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all duration-300 space-y-5 select-text text-left`}>
+    <div className={`w-full ${cardMaxWidthClass} mx-auto bg-white border border-[#e8e8e4] rounded-2xl p-7 sm:p-10 shadow-[0_8px_40px_rgba(0,0,0,0.07),0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 space-y-6 select-text text-left`}>
       
       {/* Visual Identity Title */}
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-[#1a1c1b] leading-tight text-left">
-          Register Fleet
+        <div className="inline-flex items-center gap-2 bg-[#fea619]/10 border border-[#fea619]/20 rounded-full px-3 py-1 mb-3">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#fea619] inline-block"></span>
+          <span className="text-[11px] font-bold text-[#c07200] uppercase tracking-wider">Fleet Registration</span>
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1a1c1b] leading-tight tracking-tight">
+          Create your workspace
         </h2>
-        <p className="text-[#47464b] text-[13px] mt-1 leading-relaxed">
-          Create your customized compliance workspace & configure digital checklists in minutes.
+        <p className="text-[#77767b] text-sm mt-1.5 leading-relaxed">
+          Set up your DVSA-compliant compliance platform in minutes.
         </p>
       </div>
 
       {/* Horizontal Multi-Step Circle Stepper */}
-      <div className="py-0.5 select-none mt-0.5">
+      <div className="py-1 select-none">
         <div className="flex items-center justify-between relative">
-          <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-[#E5E5E0] -translate-y-1/2 z-0" />
+          {/* Track background */}
+          <div className="absolute top-4 left-4 right-4 h-0.5 bg-[#eeeeec] -translate-y-1/2 z-0" />
+          {/* Animated progress fill */}
           <div 
-            className="absolute top-1/2 left-4 h-0.5 bg-[#fea619] -translate-y-1/2 z-0 transition-all duration-300" 
+            className="absolute top-4 left-4 h-0.5 bg-gradient-to-r from-[#fea619] to-[#f08000] -translate-y-1/2 z-0 transition-all duration-500 ease-out" 
             style={{ 
               width: 
                 step === 'details' ? '0%' : 
@@ -443,13 +449,14 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
             return (
               <div key={s.key} className="relative z-10 flex flex-col items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                  isCompleted ? 'bg-[#fea619] text-[#684000]' :
-                  isActive ? 'bg-[#fea619] text-[#684000] ring-4 ring-[#fea619]/20' : 'bg-[#f4f4f2] border border-[#E5E5E0] text-[#77767b]'
+                  isCompleted ? 'bg-gradient-to-br from-[#fea619] to-[#f08000] text-white shadow-md shadow-[#fea619]/25' :
+                  isActive ? 'bg-white border-2 border-[#fea619] text-[#c07200] shadow-[0_0_0_4px_rgba(254,166,25,0.12)]' : 
+                  'bg-[#f4f4f2] border border-[#e0e0dc] text-[#a0a09a]'
                 }`}>
-                  {isCompleted ? <Check className="w-3.5 h-3.5" /> : idx + 1}
+                  {isCompleted ? <Check className="w-3.5 h-3.5" /> : <span className="text-xs font-extrabold">{idx + 1}</span>}
                 </div>
-                <span className={`text-[11px] font-bold uppercase tracking-wider mt-1.5 transition-colors ${
-                  isActive ? 'text-[#1a1c1b]' : 'text-[#77767b]'
+                <span className={`text-[10px] font-bold uppercase tracking-widest mt-1.5 transition-colors ${
+                  isActive ? 'text-[#c07200]' : isCompleted ? 'text-[#1a1c1b]' : 'text-[#a0a09a]'
                 }`}>
                   {s.label}
                 </span>
@@ -463,21 +470,21 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
 
       {/* Step 1: Account details form */}
       {step === 'details' && (
-        <form onSubmit={handleDetailsSubmit} className="space-y-3.5 animate-in fade-in duration-200">
+        <form onSubmit={handleDetailsSubmit} className="space-y-4 animate-in fade-in duration-200">
           {error && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/15 rounded-xl flex items-start gap-2 text-xs text-rose-400 animate-in fade-in duration-200">
+            <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-sm text-rose-600 animate-in fade-in duration-200">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Manager Full name */}
-          <div className="space-y-1">
-            <label className="text-[13px] font-semibold uppercase tracking-normal text-[#47464b]">
-              Fleet Manager Name
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-widest text-[#77767b]">
+              Your Full Name
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#77767b]">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#c8c5cb]">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -486,18 +493,18 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Kenneth Sutherland"
-                className="w-full pl-10 pr-4 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b]/50 focus:outline-none transition-all "
+                className="w-full pl-10 pr-4 py-3 bg-[#fafaf8] border-[1.5px] border-[#e8e8e4] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/12 rounded-xl text-sm text-[#1a1c1b] placeholder-[#c0bfc4] focus:outline-none transition-all"
               />
             </div>
           </div>
 
           {/* Fleet organization name */}
-          <div className="space-y-1">
-            <label className="text-[13px] font-semibold uppercase tracking-normal text-[#47464b]">
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-widest text-[#77767b]">
               Company / Fleet Name
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#77767b]">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#c8c5cb]">
                 <Building className="w-4 h-4" />
               </div>
               <input
@@ -506,18 +513,18 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
                 placeholder="e.g. Clydeside Haulage Ltd"
-                className="w-full pl-10 pr-4 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b]/50 focus:outline-none transition-all "
+                className="w-full pl-10 pr-4 py-3 bg-[#fafaf8] border-[1.5px] border-[#e8e8e4] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/12 rounded-xl text-sm text-[#1a1c1b] placeholder-[#c0bfc4] focus:outline-none transition-all"
               />
             </div>
           </div>
 
           {/* Work Email address */}
-          <div className="space-y-1">
-            <label className="text-[13px] font-semibold uppercase tracking-normal text-[#47464b]">
-              Authorized Corp Email
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-widest text-[#77767b]">
+              Work Email
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#77767b]">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#c8c5cb]">
                 <Mail className="w-4 h-4" />
               </div>
               <input
@@ -526,18 +533,18 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 value={workEmail}
                 onChange={(e) => setWorkEmail(e.target.value)}
                 placeholder="e.g. manager@clydeside.co.uk"
-                className="w-full pl-10 pr-4 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b]/50 focus:outline-none transition-all "
+                className="w-full pl-10 pr-4 py-3 bg-[#fafaf8] border-[1.5px] border-[#e8e8e4] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/12 rounded-xl text-sm text-[#1a1c1b] placeholder-[#c0bfc4] focus:outline-none transition-all"
               />
             </div>
           </div>
 
           {/* Manager Password creation */}
           <div className="space-y-1.5">
-            <label className="text-[13px] font-semibold uppercase tracking-normal text-[#47464b]">
-              Enforce Account Password
+            <label className="text-[11px] font-bold uppercase tracking-widest text-[#77767b]">
+              Password
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#77767b]">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#c8c5cb]">
                 <Lock className="w-4 h-4" />
               </div>
               <input
@@ -545,13 +552,13 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enforce password requirements"
-                className="w-full pl-10 pr-10 py-2.5 bg-[#f9f9f7] border border-[#E5E5E0] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/10 rounded-lg text-sm text-[#1a1c1b] placeholder-[#77767b]/50 focus:outline-none transition-all "
+                placeholder="Min. 6 chars, upper, lower & special"
+                className="w-full pl-10 pr-10 py-3 bg-[#fafaf8] border-[1.5px] border-[#e8e8e4] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/12 rounded-xl text-sm text-[#1a1c1b] placeholder-[#c0bfc4] focus:outline-none transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(prev => !prev)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#77767b] hover:text-[#47464b]"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#c8c5cb] hover:text-[#47464b] transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -559,38 +566,24 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
 
             {/* Interactive Password Requirements Checklist */}
             {password.length > 0 && (
-              <div className="p-3 border border-[#E5E5E0] rounded-xl mt-1.5 text-[12px] space-y-1.5 animate-in fade-in duration-200">
-                <span className="text-[12px] font-bold uppercase tracking-wider text-[#77767b] block">
-                  Firebase Password Policy Enforcement:
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all ${password.length >= 6 ? 'bg-[#fea619]/15 text-[#fea619] border border-[#fea619]/30' : 'bg-[#f4f4f2] border border-[#E5E5E0] text-[#77767b]'}`}>
-                      <Check className="w-2 h-2 stroke-[3]" />
+              <div className="p-3.5 bg-[#fafaf8] border border-[#e8e8e4] rounded-xl mt-1 text-[12px] space-y-2 animate-in fade-in duration-200">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#a0a09a] block">Password requirements</span>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                  {[
+                    [password.length >= 6, 'At least 6 characters'],
+                    [/[A-Z]/.test(password), 'Uppercase letter'],
+                    [/[a-z]/.test(password), 'Lowercase letter'],
+                    [/[^A-Za-z0-9]/.test(password), 'Special character'],
+                  ].map(([met, label]) => (
+                    <div key={String(label)} className="flex items-center gap-1.5">
+                      <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-all ${
+                        met ? 'bg-[#fea619] text-white' : 'bg-[#eeeeec] text-[#c0bfc4]'
+                      }`}>
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                      </div>
+                      <span className={`text-[11px] transition-colors ${met ? 'text-[#1a1c1b] font-semibold' : 'text-[#a0a09a]'}`}>{String(label)}</span>
                     </div>
-                    <span className={`transition-colors text-[12px] ${password.length >= 6 ? 'text-[#47464b] font-medium' : 'text-[#77767b]'}`}>At least 6 characters</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all ${/[A-Z]/.test(password) ? 'bg-[#fea619]/15 text-[#fea619] border border-[#fea619]/30' : 'bg-[#f4f4f2] border border-[#E5E5E0] text-[#77767b]'}`}>
-                      <Check className="w-2 h-2 stroke-[3]" />
-                    </div>
-                    <span className={`transition-colors text-[12px] ${/[A-Z]/.test(password) ? 'text-[#47464b] font-medium' : 'text-[#77767b]'}`}>Uppercase character</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all ${/[a-z]/.test(password) ? 'bg-[#fea619]/15 text-[#fea619] border border-[#fea619]/30' : 'bg-[#f4f4f2] border border-[#E5E5E0] text-[#77767b]'}`}>
-                      <Check className="w-2 h-2 stroke-[3]" />
-                    </div>
-                    <span className={`transition-colors text-[12px] ${/[a-z]/.test(password) ? 'text-[#47464b] font-medium' : 'text-[#77767b]'}`}>Lowercase character</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all ${/[^A-Za-z0-9]/.test(password) ? 'bg-[#fea619]/15 text-[#fea619] border border-[#fea619]/30' : 'bg-[#f4f4f2] border border-[#E5E5E0] text-[#77767b]'}`}>
-                      <Check className="w-2 h-2 stroke-[3]" />
-                    </div>
-                    <span className={`transition-colors text-[12px] ${/[^A-Za-z0-9]/.test(password) ? 'text-[#47464b] font-medium' : 'text-[#77767b]'}`}>Special character</span>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -600,19 +593,19 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#000] hover:opacity-85 text-[#fff] font-bold text-[12px] uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg  group mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-[#1a1c1b] to-[#333] hover:from-[#2c2e2d] hover:to-[#444] text-white font-bold text-[13px] uppercase tracking-wider py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md group mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Verifying Email..." : "Continue Setup"}
-            {!isLoading && <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />}
+            {isLoading ? "Checking email..." : "Continue"}
+            {!isLoading && <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />}
           </button>
 
           {/* Return button */}
           <button
             type="button"
             onClick={onBackToLogin}
-            className="w-full text-center text-[13px] text-[#77767b] hover:text-[#1a1c1b] transition-colors uppercase font-bold tracking-wider pt-2"
+            className="w-full text-center text-[12px] text-[#a0a09a] hover:text-[#47464b] transition-colors font-semibold tracking-wider pt-1"
           >
-            Cancel and return to login
+            ← Back to login
           </button>
         </form>
       )}
@@ -718,25 +711,25 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
             })}
           </div>
 
-          <div className="flex gap-4 pt-2">
+          <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={() => setStep('details')}
-              className="px-4 py-2.5 border border-[#E5E5E0] hover:border-[#c8c5cb] text-[#47464b] rounded-xl font-bold text-[12px] uppercase tracking-wider transition-colors bg-transparent border-0 cursor-pointer"
+              className="px-5 py-3 border-[1.5px] border-[#e8e8e4] hover:border-[#c8c5cb] text-[#47464b] hover:text-[#1a1c1b] rounded-xl font-bold text-[12px] uppercase tracking-wider transition-all bg-white cursor-pointer shadow-sm"
             >
               Back
             </button>
             <button
               type="submit"
               disabled={selectedPlan === 'enterprise'}
-              className={`flex-1 font-bold text-[12px] uppercase tracking-wider py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all ${
+              className={`flex-1 font-bold text-[13px] uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all ${
                 selectedPlan === 'enterprise' 
                   ? 'bg-[#e8e8e6] text-[#77767b] cursor-not-allowed hidden' 
-                  : 'bg-[#000] hover:opacity-85 text-[#fff] cursor-pointer'
+                  : 'bg-gradient-to-r from-[#1a1c1b] to-[#333] hover:from-[#2c2e2d] text-white cursor-pointer'
               }`}
             >
-              Proceed to Verification
-              <ArrowRight className="w-3.5 h-3.5" />
+              Continue to Verify
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </form>
@@ -898,21 +891,21 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 pt-2">
+          <div className="flex flex-col gap-2.5 pt-2">
             <button
               type="submit"
               disabled={isLoading || success}
-              className="w-full bg-[#000] hover:opacity-85 text-[#fff] font-bold text-[12px] uppercase tracking-wider py-3 rounded-xl shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 border-0"
+              className="w-full bg-gradient-to-r from-[#1a1c1b] to-[#333] hover:from-[#2c2e2d] text-white font-bold text-[13px] uppercase tracking-wider py-3.5 rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 border-0"
             >
               {isLoading ? (
                 <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#1a1c1b]" />
-                  Activating Compliance Workspace...
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Activating workspace...
                 </>
               ) : (
                 <>
                   Activate Fleet Workspace
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
@@ -921,22 +914,22 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
               type="button"
               onClick={() => setStep('verify')}
               disabled={isLoading || success}
-              className="py-1 text-[13px] text-[#77767b] hover:text-[#1a1c1b] transition-colors disabled:opacity-50 uppercase font-bold tracking-wider"
+              className="py-1.5 text-[12px] text-[#a0a09a] hover:text-[#47464b] transition-colors disabled:opacity-50 font-semibold tracking-wider"
             >
-              Back to email status
+              ← Back to email verification
             </button>
           </div>
         </form>
       )}
 
       {/* Branded support link block */}
-      <div className="pt-4 border-t border-[#E5E5E0]/40 text-center">
-        <p className="text-[13px] text-[#77767b] uppercase  tracking-wider">
-          Require transport onboarding assistance?
+      <div className="pt-4 border-t border-[#e8e8e4] text-center">
+        <p className="text-[12px] text-[#a0a09a] tracking-wide">
+          Need help getting started?
         </p>
         <a 
           href="mailto:support@getwalksafe.co.uk" 
-          className="text-xs text-[#fea619] hover:text-[#684000] font-bold uppercase tracking-wider block mt-1"
+          className="text-xs text-[#fea619] hover:text-[#c07200] font-bold tracking-wide block mt-1 transition-colors"
         >
           support@getwalksafe.co.uk
         </a>

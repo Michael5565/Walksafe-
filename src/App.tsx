@@ -1668,17 +1668,29 @@ const loadDatabaseState = async (silently = false) => {
 
     if (currentPath === "/signup") {
       return (
-        <div style={{minHeight:'100vh',background:'#f9f9f7',color:'#1a1c1b',fontFamily:"'Inter',sans-serif",display:'flex',flexDirection:'column',justifyContent:'center',overflowX:'hidden',overflowY:'auto',padding:'40px 24px',WebkitFontSmoothing:'antialiased'}}>
-          <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',maxWidth:900,margin:'0 auto 32px',width:'100%'}}>
+        <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#fffbf2 0%,#f9f9f7 50%,#f0f4ff 100%)',color:'#1a1c1b',fontFamily:"'Inter',sans-serif",display:'flex',flexDirection:'column',justifyContent:'center',overflowX:'hidden',overflowY:'auto',padding:'32px 20px',WebkitFontSmoothing:'antialiased',position:'relative'}}>
+          {/* Decorative background blobs */}
+          <div style={{position:'fixed',top:'-80px',right:'-80px',width:320,height:320,borderRadius:'50%',background:'radial-gradient(circle,rgba(254,166,25,0.12) 0%,transparent 70%)',pointerEvents:'none',zIndex:0}} />
+          <div style={{position:'fixed',bottom:'-60px',left:'-60px',width:260,height:260,borderRadius:'50%',background:'radial-gradient(circle,rgba(99,102,241,0.06) 0%,transparent 70%)',pointerEvents:'none',zIndex:0}} />
+
+          {/* Header */}
+          <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',maxWidth:960,margin:'0 auto 28px',width:'100%',position:'relative',zIndex:1}}>
             <div style={{display:'flex',alignItems:'center',gap:10}}>
-              <div style={{width:36,height:36,background:'#fea619',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#684000" strokeWidth="2.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <div style={{width:38,height:38,background:'linear-gradient(135deg,#fea619,#f08000)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 12px rgba(254,166,25,0.35)'}}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
-              <span style={{fontWeight:800,fontSize:18,letterSpacing:'0.04em',color:'#1a1c1b'}}>Walk<span style={{color:'#fea619'}}>Safe</span></span>
+              <div>
+                <span style={{fontWeight:800,fontSize:18,letterSpacing:'0.04em',color:'#1a1c1b'}}>Walk<span style={{color:'#fea619'}}>Safe</span></span>
+                <span style={{display:'block',fontSize:9,color:'#fea619',fontWeight:700,letterSpacing:'0.1em',textTransform:'uppercase',lineHeight:1}}>UK DVSA Compliant</span>
+              </div>
             </div>
-            <button onClick={() => navigateTo('/login')} style={{padding:'6px 16px',fontSize:12,fontWeight:600,background:'transparent',color:'#47464b',border:'1px solid #E5E5E0',borderRadius:4,cursor:'pointer'}}>Sign In</button>
+            <button onClick={() => navigateTo('/login')} style={{padding:'8px 20px',fontSize:12,fontWeight:700,background:'#fff',color:'#1a1c1b',border:'1.5px solid #e5e5e0',borderRadius:8,cursor:'pointer',letterSpacing:'0.04em',textTransform:'uppercase',transition:'all 0.2s',boxShadow:'0 2px 8px rgba(0,0,0,0.06)'}}>
+              Sign In
+            </button>
           </header>
-          <main style={{width:'100%',maxWidth:900,margin:'0 auto'}}>
+
+          {/* Main signup form */}
+          <main style={{width:'100%',maxWidth:960,margin:'0 auto',position:'relative',zIndex:1}}>
             <Suspense fallback={<div style={{textAlign:'center',padding:40,fontSize:13,color:'#77767b'}}>Loading...</div>}>
               <SignupFlow 
                 onLoginSuccess={(session, driver) => {
@@ -1690,77 +1702,109 @@ const loadDatabaseState = async (silently = false) => {
               />
             </Suspense>
           </main>
-          <footer style={{textAlign:'center',marginTop:32,paddingTop:16,borderTop:'1px solid #E5E5E0',fontSize:10,color:'#77767b',textTransform:'uppercase',letterSpacing:'0.05em'}}>
-            DVSA COMPLIANT &copy; 2026 WALKSAFE &middot; <a href="https://getwalksafe.co.uk/privacy.html" target="_blank" style={{color:"inherit",textDecoration:"underline"}}>Privacy</a> &middot; <a href="https://getwalksafe.co.uk/terms.html" target="_blank" style={{color:"inherit",textDecoration:"underline"}}>Terms</a> &middot; <a href="https://getwalksafe.co.uk/refund-policy.html" target="_blank" style={{color:"inherit",textDecoration:"underline"}}>Refund Policy</a>
+
+          {/* Footer */}
+          <footer style={{textAlign:'center',marginTop:28,paddingTop:16,borderTop:'1px solid rgba(229,229,224,0.6)',fontSize:10,color:'#a0a09a',textTransform:'uppercase',letterSpacing:'0.06em',position:'relative',zIndex:1}}>
+            DVSA Compliant &copy; 2026 WalkSafe &nbsp;&middot;&nbsp;
+            <a href="https://getwalksafe.co.uk/privacy.html" target="_blank" style={{color:'#a0a09a',textDecoration:'underline'}}>Privacy</a> &nbsp;&middot;&nbsp;
+            <a href="https://getwalksafe.co.uk/terms.html" target="_blank" style={{color:'#a0a09a',textDecoration:'underline'}}>Terms</a> &nbsp;&middot;&nbsp;
+            <a href="https://getwalksafe.co.uk/refund-policy.html" target="_blank" style={{color:'#a0a09a',textDecoration:'underline'}}>Refund Policy</a>
           </footer>
         </div>
       );
     }
 
     return (
-      <div style={{minHeight:'100vh',background:'#f9f9f7',color:'#1a1c1b',fontFamily:"'Inter',sans-serif",display:'grid',gridTemplateColumns:'repeat(12,1fr)',WebkitFontSmoothing:'antialiased'}}>
+      <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#fffbf2 0%,#f9f9f7 50%,#f0f4ff 100%)',color:'#1a1c1b',fontFamily:"'Inter',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',WebkitFontSmoothing:'antialiased',padding:'24px 16px',position:'relative',overflow:'hidden'}}>
         
-        {/* LEFT COLUMN: Brand & Demo (desktop only) */}
-        <div style={{display:'none',flexDirection:'column',justifyContent:'space-between',padding:40,borderRight:'1px solid #E5E5E0',background:'#f4f4f2'}} className="lg:flex lg:col-span-5">
-          <div>
-            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:32}}>
-              <div style={{width:40,height:40,background:'#fea619',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#684000" strokeWidth="2.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              </div>
-              <div>
-                <span style={{fontWeight:800,fontSize:20,letterSpacing:'0.04em',color:'#1a1c1b'}}>Walk<span style={{color:'#fea619'}}>Safe</span></span>
-                <span style={{display:'block',fontSize:9,color:'#fea619',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase'}}>UK DVSA Compliant</span>
-              </div>
-            </div>
-            <div style={{background:'#fff',border:'1px solid #E5E5E0',borderRadius:16,padding:20,boxShadow:'0 4px 24px rgba(0,0,0,0.04)'}}>
-              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
-                <div style={{display:'flex',alignItems:'center',gap:10}}>
-                  <div style={{width:36,height:36,borderRadius:8,background:'rgba(254,166,25,0.1)',display:'flex',alignItems:'center',justifyContent:'center'}}><Truck style={{width:18,height:18,color:'#fea619'}} /></div>
-                  <div><span style={{fontWeight:700,fontSize:13,color:'#1a1c1b',display:'block'}}>Volvo FH Globetrotter</span><span style={{fontSize:10,color:'#77767b'}}>GH22 TUV &middot; HGV</span></div>
-                </div>
-                <span style={{fontSize:8,fontWeight:700,color:'#fea619',background:'rgba(254,166,25,0.1)',padding:'3px 8px',borderRadius:999}}><span style={{width:6,height:6,borderRadius:'50%',background:'#fea619',display:'inline-block',marginRight:4}} />Compliant</span>
-              </div>
-              <div style={{display:'flex',flexDirection:'column',gap:8,fontSize:12}}>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'#f4f4f2',padding:'8px 12px',borderRadius:8}}>
-                  <span style={{display:'flex',alignItems:'center',gap:6,color:'#fea619'}}><Check style={{width:14,height:14}} strokeWidth={3} /> Tyre Treads</span>
-                  <span style={{fontSize:10,color:'#77767b'}}>PASS (11.5mm)</span>
-                </div>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'#f4f4f2',padding:'8px 12px',borderRadius:8}}>
-                  <span style={{display:'flex',alignItems:'center',gap:6,color:'#fea619'}}><Check style={{width:14,height:14}} strokeWidth={3} /> Brakes & Air</span>
-                  <span style={{fontSize:10,color:'#77767b'}}>PASS (Verified)</span>
-                </div>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'#f4f4f2',padding:'8px 12px',borderRadius:8}}>
-                  <span style={{display:'flex',alignItems:'center',gap:6,color:'#fea619'}}><Check style={{width:14,height:14}} strokeWidth={3} /> Lights & Horns</span>
-                  <span style={{fontSize:10,color:'#77767b'}}>PASS (100%)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,paddingTop:20,borderTop:'1px solid #E5E5E0'}}>
-            <div><span style={{fontWeight:700,fontSize:14,color:'#fea619'}}>2.4M+</span><span style={{display:'block',fontSize:9,color:'#77767b',textTransform:'uppercase'}}>Logs Sync'd</span></div>
-            <div><span style={{fontWeight:700,fontSize:14,color:'#fea619'}}>99.8%</span><span style={{display:'block',fontSize:9,color:'#77767b',textTransform:'uppercase'}}>Uptime</span></div>
-            <div><span style={{fontWeight:700,fontSize:14,color:'#fea619'}}>0</span><span style={{display:'block',fontSize:9,color:'#77767b',textTransform:'uppercase'}}>Fine Audits</span></div>
-          </div>
-        </div>
+        {/* Decorative background blobs */}
+        <div style={{position:'fixed',top:'-120px',right:'-120px',width:480,height:480,borderRadius:'50%',background:'radial-gradient(circle,rgba(254,166,25,0.10) 0%,transparent 70%)',pointerEvents:'none'}} />
+        <div style={{position:'fixed',bottom:'-80px',left:'-80px',width:360,height:360,borderRadius:'50%',background:'radial-gradient(circle,rgba(99,102,241,0.07) 0%,transparent 70%)',pointerEvents:'none'}} />
+        <div style={{position:'fixed',top:'40%',left:'50%',width:600,height:2,background:'linear-gradient(90deg,transparent,rgba(254,166,25,0.08),transparent)',pointerEvents:'none'}} />
 
-        {/* RIGHT COLUMN: Login */}
-        <div style={{gridColumn:'span 12',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',padding:24,minHeight:'100vh'}} className="lg:col-span-7">
-          
-          {/* Mobile header */}
-          <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:24,textAlign:'center'}} className="lg:hidden">
-            <div style={{width:36,height:36,background:'#fea619',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:8}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#684000" strokeWidth="2.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {/* Main card container */}
+        <div style={{width:'100%',maxWidth:960,display:'grid',gridTemplateColumns:'1fr',gap:0,borderRadius:24,overflow:'hidden',boxShadow:'0 20px 60px rgba(0,0,0,0.10),0 4px 16px rgba(0,0,0,0.06)',border:'1.5px solid rgba(229,229,224,0.8)',position:'relative',zIndex:1}} className="lg:grid-cols-[1fr_1fr]">
+
+          {/* LEFT PANEL — Brand & Social Proof */}
+          <div style={{background:'linear-gradient(160deg,#1a1c1b 0%,#2c2e2d 100%)',padding:'48px 44px',display:'none',flexDirection:'column',justifyContent:'space-between',position:'relative',overflow:'hidden'}} className="lg:flex">
+            {/* Subtle pattern */}
+            <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(rgba(254,166,25,0.08) 1px,transparent 1px)',backgroundSize:'28px 28px',pointerEvents:'none'}} />
+            <div style={{position:'absolute',bottom:0,left:0,right:0,height:'50%',background:'linear-gradient(to top,rgba(0,0,0,0.3),transparent)',pointerEvents:'none'}} />
+
+            <div style={{position:'relative',zIndex:1}}>
+              {/* Logo */}
+              <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:48}}>
+                <div style={{width:44,height:44,background:'linear-gradient(135deg,#fea619,#f08000)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 24px rgba(254,166,25,0.4)'}}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                  <span style={{fontWeight:800,fontSize:22,letterSpacing:'0.04em',color:'#fff'}}>Walk<span style={{color:'#fea619'}}>Safe</span></span>
+                  <span style={{display:'block',fontSize:9,color:'#fea619',fontWeight:700,letterSpacing:'0.12em',textTransform:'uppercase',marginTop:1}}>UK DVSA Compliant</span>
+                </div>
+              </div>
+
+              {/* Headline */}
+              <h2 style={{fontSize:28,fontWeight:800,color:'#fff',lineHeight:1.25,margin:'0 0 12px',letterSpacing:'-0.02em'}}>Fleet compliance, <span style={{color:'#fea619'}}>simplified.</span></h2>
+              <p style={{fontSize:13,color:'rgba(255,255,255,0.55)',lineHeight:1.65,margin:'0 0 36px'}}>The UK's leading DVSA-compliant vehicle walkaround platform. Built for operators who take road safety seriously.</p>
+
+              {/* Live preview card */}
+              <div style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:16,padding:20,backdropFilter:'blur(12px)'}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10}}>
+                    <div style={{width:34,height:34,borderRadius:8,background:'rgba(254,166,25,0.15)',display:'flex',alignItems:'center',justifyContent:'center'}}><Truck style={{width:17,height:17,color:'#fea619'}} /></div>
+                    <div><span style={{fontWeight:700,fontSize:13,color:'#fff',display:'block'}}>Volvo FH Globetrotter</span><span style={{fontSize:10,color:'rgba(255,255,255,0.4)'}}>GH22 TUV · HGV</span></div>
+                  </div>
+                  <span style={{fontSize:9,fontWeight:700,color:'#fea619',background:'rgba(254,166,25,0.12)',padding:'4px 10px',borderRadius:999,border:'1px solid rgba(254,166,25,0.2)'}}>
+                    <span style={{width:5,height:5,borderRadius:'50%',background:'#4ade80',display:'inline-block',marginRight:5,verticalAlign:'middle'}} />Compliant
+                  </span>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  {[['Tyre Treads','PASS (11.5mm)'],['Brakes & Air','PASS (Verified)'],['Lights & Horn','PASS (100%)']].map(([label,val])=>(
+                    <div key={label} style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'rgba(255,255,255,0.04)',padding:'8px 12px',borderRadius:8,border:'1px solid rgba(255,255,255,0.06)'}}>
+                      <span style={{display:'flex',alignItems:'center',gap:6,color:'#fea619',fontSize:12}}>
+                        <Check style={{width:12,height:12,strokeWidth:3}} /> {label}
+                      </span>
+                      <span style={{fontSize:10,color:'rgba(255,255,255,0.4)'}}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <span style={{fontWeight:800,fontSize:18,letterSpacing:'0.04em',color:'#1a1c1b'}}>WALKSAFE</span>
-            <span style={{fontSize:9,color:'#fea619',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase'}}>UK DVSA COMPLIANT</span>
+
+            {/* Stats footer */}
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,paddingTop:24,borderTop:'1px solid rgba(255,255,255,0.08)',position:'relative',zIndex:1}}>
+              {[['2.4M+','Logs Synced'],['99.8%','Uptime SLA'],['0','Fine Audits']].map(([val,lbl])=>(
+                <div key={lbl}>
+                  <span style={{fontWeight:800,fontSize:18,color:'#fea619',display:'block'}}>{val}</span>
+                  <span style={{fontSize:9,color:'rgba(255,255,255,0.35)',textTransform:'uppercase',letterSpacing:'0.06em'}}>{lbl}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Login card */}
-          <div style={{width:'100%',maxWidth:400,background:'#fff',border:'1px solid #E5E5E0',borderRadius:16,padding:'24px 28px',boxShadow:'0 4px 24px rgba(0,0,0,0.04)',display:'flex',flexDirection:'column'}}>
-            
+          {/* RIGHT PANEL — Login Form */}
+          <div style={{background:'#fff',padding:'48px 44px',display:'flex',flexDirection:'column',justifyContent:'center'}}>
+
+            {/* Mobile logo */}
+            <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:32,textAlign:'center'}} className="lg:hidden">
+              <div style={{width:48,height:48,background:'linear-gradient(135deg,#fea619,#f08000)',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:10,boxShadow:'0 8px 24px rgba(254,166,25,0.3)'}}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <span style={{fontWeight:800,fontSize:20,letterSpacing:'0.04em',color:'#1a1c1b'}}>Walk<span style={{color:'#fea619'}}>Safe</span></span>
+              <span style={{fontSize:9,color:'#fea619',fontWeight:700,letterSpacing:'0.10em',textTransform:'uppercase',marginTop:2}}>UK DVSA Compliant</span>
+            </div>
+
+            {/* Heading */}
+            <div style={{marginBottom:32}}>
+              <h1 style={{fontSize:26,fontWeight:800,color:'#1a1c1b',margin:'0 0 6px',letterSpacing:'-0.02em'}}>Welcome back</h1>
+              <p style={{fontSize:13,color:'#77767b',margin:0,lineHeight:1.5}}>Sign in to your WalkSafe compliance workspace.</p>
+            </div>
+
             {/* Driver Login (mobile only) */}
             <div className="sm:hidden">
-              <h3 style={{fontSize:16,fontWeight:700,color:'#1a1c1b',marginBottom:16}}>Driver Sign In</h3>
+              <div style={{display:'flex',gap:6,marginBottom:24,background:'#f4f4f2',borderRadius:10,padding:4}}>
+                <div style={{flex:1,background:'#fff',borderRadius:8,padding:'8px 12px',textAlign:'center',fontSize:12,fontWeight:700,color:'#1a1c1b',boxShadow:'0 1px 4px rgba(0,0,0,0.08)'}}>Driver</div>
+              </div>
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const form = e.target as HTMLFormElement;
@@ -1779,31 +1823,37 @@ const loadDatabaseState = async (silently = false) => {
                     localStorage.setItem('walksafe_workspace_session', JSON.stringify(session));
                     localStorage.setItem('walksafe_driver_session', JSON.stringify(data.driver));
                     localStorage.setItem('walksafe_last_cid', data.company.id);
-                    setWsSession(session);
-                    setCompany(data.company);
-                    setMagicDriver(data.driver);
-                    setCurrentRole('driver');
+                    setWsSession(session); setCompany(data.company); setMagicDriver(data.driver); setCurrentRole('driver');
                   }
                 } catch { alert('Connection error. Please try again.'); }
-              }}>
-                <div style={{marginBottom:12}}>
-                  <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Work Email</label>
-                  <input type="email" name="drv_email" required style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none'}} placeholder="driver@company.co.uk" />
+              }} style={{display:'flex',flexDirection:'column',gap:16}}>
+                <div>
+                  <label style={{fontSize:11,fontWeight:700,color:'#47464b',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.05em'}}>Work Email</label>
+                  <div style={{position:'relative'}}>
+                    <Mail style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
+                    <input type="email" name="drv_email" required style={{width:'100%',background:'#f9f9f7',border:'1.5px solid #e5e5e0',borderRadius:10,padding:'11px 14px 11px 40px',fontSize:14,color:'#1a1c1b',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} placeholder="driver@company.co.uk"
+                      onFocus={e=>(e.target.style.borderColor='#fea619')}
+                      onBlur={e=>(e.target.style.borderColor='#e5e5e0')} />
+                  </div>
                 </div>
-                <div style={{marginBottom:16}}>
-                  <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Driver PIN</label>
-                  <input type="password" name="drv_pin" required maxLength={6} inputMode="numeric" style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none',letterSpacing:'0.2em',fontWeight:700}} placeholder="Enter PIN" />
+                <div>
+                  <label style={{fontSize:11,fontWeight:700,color:'#47464b',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.05em'}}>Driver PIN</label>
+                  <div style={{position:'relative'}}>
+                    <Key style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
+                    <input type="password" name="drv_pin" required maxLength={6} inputMode="numeric" style={{width:'100%',background:'#f9f9f7',border:'1.5px solid #e5e5e0',borderRadius:10,padding:'11px 14px 11px 40px',fontSize:18,color:'#1a1c1b',outline:'none',letterSpacing:'0.25em',fontWeight:800,boxSizing:'border-box',transition:'border-color 0.2s'}} placeholder="••••"
+                      onFocus={e=>(e.target.style.borderColor='#fea619')}
+                      onBlur={e=>(e.target.style.borderColor='#e5e5e0')} />
+                  </div>
                 </div>
-                <button type="submit" style={{width:'100%',padding:'12px 0',background:'#000',color:'#fff',border:'none',borderRadius:8,fontWeight:600,fontSize:13,cursor:'pointer'}}>Sign In</button>
-                <p style={{textAlign:'center',marginTop:12,fontSize:11,color:'#77767b'}}>
-                  Use your PIN from your fleet manager. Or scan your QR code / magic link.
-                </p>
+                <button type="submit" style={{width:'100%',padding:'13px 0',background:'linear-gradient(135deg,#1a1c1b,#333)',color:'#fff',border:'none',borderRadius:10,fontWeight:700,fontSize:13,cursor:'pointer',letterSpacing:'0.04em',textTransform:'uppercase',boxShadow:'0 4px 14px rgba(0,0,0,0.18)',transition:'all 0.2s'}}>
+                  Sign In →
+                </button>
+                <p style={{textAlign:'center',fontSize:11,color:'#a0a09a',margin:0,lineHeight:1.5}}>Enter your PIN provided by your fleet manager.</p>
               </form>
             </div>
 
             {/* Manager Login (desktop only) */}
             <div className="hidden sm:block">
-              <h3 style={{fontSize:16,fontWeight:700,color:'#1a1c1b',marginBottom:16}}>Sign In</h3>
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 const form = e.target as HTMLFormElement;
@@ -1820,27 +1870,65 @@ const loadDatabaseState = async (silently = false) => {
                   if (data.success && data.company) {
                     const session = { company: data.company, role: 'manager' as const };
                     localStorage.setItem('walksafe_workspace_session', JSON.stringify(session));
-                    setWsSession(session);
-                    setCompany(data.company);
-                    setCurrentRole('manager');
+                    setWsSession(session); setCompany(data.company); setCurrentRole('manager');
                   }
                 } catch { alert('Connection error. Please try again.'); }
-              }}>
-                <div style={{marginBottom:12}}>
-                  <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Work Email or Workspace Code</label>
-                  <input type="text" name="mgr_email" required style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none'}} placeholder="you@company.co.uk" />
+              }} style={{display:'flex',flexDirection:'column',gap:16}}>
+                <div>
+                  <label style={{fontSize:11,fontWeight:700,color:'#47464b',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.05em'}}>Work Email</label>
+                  <div style={{position:'relative'}}>
+                    <Mail style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
+                    <input type="text" name="mgr_email" required style={{width:'100%',background:'#f9f9f7',border:'1.5px solid #e5e5e0',borderRadius:10,padding:'11px 14px 11px 40px',fontSize:14,color:'#1a1c1b',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} placeholder="you@company.co.uk"
+                      onFocus={e=>(e.target.style.borderColor='#fea619')}
+                      onBlur={e=>(e.target.style.borderColor='#e5e5e0')} />
+                  </div>
                 </div>
-                <div style={{marginBottom:16}}>
-                  <label style={{fontSize:11,color:'#47464b',fontWeight:600,display:'block',marginBottom:4}}>Manager Password</label>
-                  <input type="password" name="password" required style={{width:'100%',background:'#f9f9f7',border:'1px solid #E5E5E0',borderRadius:8,padding:'10px 14px',fontSize:14,color:'#1a1c1b',outline:'none'}} placeholder="Enter password" />
+                <div>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                    <label style={{fontSize:11,fontWeight:700,color:'#47464b',textTransform:'uppercase',letterSpacing:'0.05em'}}>Password</label>
+                  </div>
+                  <div style={{position:'relative'}}>
+                    <Lock style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
+                    <input type="password" name="password" required style={{width:'100%',background:'#f9f9f7',border:'1.5px solid #e5e5e0',borderRadius:10,padding:'11px 14px 11px 40px',fontSize:14,color:'#1a1c1b',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} placeholder="Enter your password"
+                      onFocus={e=>(e.target.style.borderColor='#fea619')}
+                      onBlur={e=>(e.target.style.borderColor='#e5e5e0')} />
+                  </div>
                 </div>
-                <button type="submit" style={{width:'100%',padding:'12px 0',background:'#000',color:'#fff',border:'none',borderRadius:8,fontWeight:600,fontSize:13,cursor:'pointer'}}>Sign In</button>
+                <button type="submit" style={{width:'100%',padding:'14px 0',background:'linear-gradient(135deg,#1a1c1b 0%,#333 100%)',color:'#fff',border:'none',borderRadius:10,fontWeight:700,fontSize:13,cursor:'pointer',letterSpacing:'0.06em',textTransform:'uppercase',boxShadow:'0 4px 16px rgba(0,0,0,0.18)',marginTop:4,transition:'all 0.2s'}}>
+                  Sign In →
+                </button>
               </form>
             </div>
 
-            <p style={{textAlign:'center',marginTop:12,fontSize:12,color:'#77767b'}}>
-              New here? <button type="button" onClick={() => navigateTo('/signup')} style={{background:'none',border:'none',color:'#fea619',cursor:'pointer',fontWeight:600,fontSize:12,padding:0}}>Start Free Trial</button>
-            </p>
+            {/* Divider */}
+            <div style={{display:'flex',alignItems:'center',gap:12,margin:'24px 0'}}>
+              <div style={{flex:1,height:1,background:'#e5e5e0'}} />
+              <span style={{fontSize:11,color:'#c8c5cb',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em'}}>New to WalkSafe?</span>
+              <div style={{flex:1,height:1,background:'#e5e5e0'}} />
+            </div>
+
+            {/* Signup CTA */}
+            <button type="button" onClick={() => navigateTo('/signup')} style={{width:'100%',padding:'13px 0',background:'transparent',color:'#1a1c1b',border:'1.5px solid #e5e5e0',borderRadius:10,fontWeight:700,fontSize:13,cursor:'pointer',letterSpacing:'0.05em',textTransform:'uppercase',transition:'all 0.2s',boxShadow:'0 2px 8px rgba(0,0,0,0.04)'}}>
+              Start 30-Day Free Trial
+            </button>
+
+            {/* Trust badges */}
+            <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:16,marginTop:28,paddingTop:20,borderTop:'1px solid #f0f0ec'}}>
+              <div style={{display:'flex',alignItems:'center',gap:5,fontSize:10,color:'#a0a09a',fontWeight:600}}>
+                <Shield style={{width:12,height:12,color:'#fea619'}} />
+                DVSA Compliant
+              </div>
+              <div style={{width:3,height:3,borderRadius:'50%',background:'#ddd'}} />
+              <div style={{display:'flex',alignItems:'center',gap:5,fontSize:10,color:'#a0a09a',fontWeight:600}}>
+                <Wifi style={{width:12,height:12,color:'#fea619'}} />
+                Offline-First
+              </div>
+              <div style={{width:3,height:3,borderRadius:'50%',background:'#ddd'}} />
+              <div style={{display:'flex',alignItems:'center',gap:5,fontSize:10,color:'#a0a09a',fontWeight:600}}>
+                <Smartphone style={{width:12,height:12,color:'#fea619'}} />
+                PWA Ready
+              </div>
+            </div>
           </div>
         </div>
       </div>
