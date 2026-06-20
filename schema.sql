@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS company (
   createdAt TEXT,
   trialStartedAt TEXT,
   trialEndsAt TEXT,
-  isSubscribed INTEGER DEFAULT 0
+  isSubscribed INTEGER DEFAULT 0,
+  firebaseUid TEXT
 );
 
 CREATE TABLE IF NOT EXISTS vehicles (

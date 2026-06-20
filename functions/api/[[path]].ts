@@ -385,6 +385,16 @@ const bootstrapDb = async (db: D1Database) => {
       try { await db.prepare("CREATE INDEX IF NOT EXISTS idx_evt_email ON email_verification_tokens(email)").run(); } catch(_) {}
       await db.prepare("CREATE TABLE IF NOT EXISTS password_reset_tokens (id TEXT PRIMARY KEY, email TEXT NOT NULL, token TEXT NOT NULL UNIQUE, expires_at TEXT NOT NULL, used INTEGER DEFAULT 0, created_at TEXT NOT NULL)").run();
       try { await db.prepare("CREATE INDEX IF NOT EXISTS idx_prt_token ON password_reset_tokens(token)").run(); } catch(_) {}
+    }
+
+    // 6. Ensure company table has firebaseUid column
+    try {
+      await db.prepare("ALTER TABLE company ADD COLUMN firebaseUid TEXT").run();
+    } catch (e) {
+      // Column may already exist - that's fine
+      if (!e.message.includes("duplicate column")) {
+        console.warn("[DB] firebaseUid column add warning:", e.message);
+      }
     } catch(_) {}
 
     isDbBootstrapped = true;
