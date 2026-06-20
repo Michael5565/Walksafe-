@@ -337,7 +337,7 @@ export default function ManagerDashboard({
   onCloseDefect, onUpdateCompany, onAddAnnouncement, onAddSchedule, onSaveTemplate, onDeleteTemplate, onResetDriverPin,
   onMarkNotificationsAsRead, onTriggerRefresh, onLogOutWorkspace
 }: ManagerDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'operations' | 'vehicles' | 'drivers' | 'defects' | 'records' | 'settings' | 'schedules' | 'billing'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'operations' | 'vehicles' | 'drivers' | 'defects' | 'records' | 'settings' | 'schedules' | 'billing' | 'templates'>('overview');
   
   // Plan-based feature gating
   const planTier = company.plan || 'starter';
