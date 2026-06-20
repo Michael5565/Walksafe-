@@ -8,7 +8,6 @@ type Bindings = {
   FCM_CLIENT_EMAIL?: string;
   FCM_PRIVATE_KEY?: string;
   PAYSTACK_SECRET_KEY?: string;
-  BREVO_API_KEY?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api');
@@ -134,89 +133,6 @@ async function sendFcmPush(env: Bindings, token: string, title: string, body: st
   }
 }
 
-
-// --- Brevo Email Helper ---
-async function sendBrevoEmail(env, toEmail, subject, htmlContent) {
-  if (!env.BREVO_API_KEY) {
-    console.warn("[Brevo] API key not configured, skipping email send");
-    return null;
-  }
-  try {
-    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "api-key": env.BREVO_API_KEY },
-      body: JSON.stringify({
-        sender: { name: "WalkSafe", email: "noreply@getwalksafe.co.uk" },
-        to: [{ email: toEmail }],
-        subject,
-        htmlContent,
-      }),
-    });
-    const result = await res.json();
-    console.log("[Brevo] Email result:", JSON.stringify(result));
-    return result;
-  } catch (err) {
-    console.error("[Brevo] Send failed:", err);
-    return null;
-  }
-}
-
-// --- Firebase Admin Auth Helper (reuses existing FCM service account) ---
-async function getFirebaseAdminToken(env) {
-  if (!env.FCM_CLIENT_EMAIL || !env.FCM_PRIVATE_KEY) return null;
-  const header = { alg: "RS256", typ: "JWT" };
-  const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    iss: env.FCM_CLIENT_EMAIL,
-    scope: "https://www.googleapis.com/auth/identitytoolkit https://www.googleapis.com/auth/firebase",
-    aud: "https://oauth2.googleapis.com/token",
-    exp: now + 3600,
-    iat: now,
-  };
-  const decodeKey = (pem) => {
-    const normalized = pem.replace(/\\\\n/g, "\n");
-    const c = normalized.replace(/-----BEGIN PRIVATE KEY-----/, "").replace(/-----END PRIVATE KEY-----/, "").replace(/\s/g, "");
-    const b = atob(c);
-    const a = new Uint8Array(b.length);
-    for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
-    return a.buffer;
-  };
-  const b64 = (o) => btoa(JSON.stringify(o)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const msg = b64(header) + "." + b64(payload);
-  const key = await crypto.subtle.importKey("pkcs8", decodeKey(env.FCM_PRIVATE_KEY), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
-  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(msg));
-  const sSig = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const jwt = msg + "." + sSig;
-  const res = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=" + jwt,
-  });
-  const data = await res.json();
-  return data.access_token;
-}
-
-async function setFirebaseEmailVerified(env, uid) {
-  const token = await getFirebaseAdminToken(env);
-  if (!token) return false;
-  try {
-    const res = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({ localId: uid, emailVerified: true }),
-    });
-    return res.ok;
-  } catch (e) {
-    console.error("[Firebase Admin] Error:", e);
-    return false;
-  }
-}
-
-function generateVerifyToken() {
-  const a = new Uint8Array(32);
-  crypto.getRandomValues(a);
-  return Array.from(a).map((b) => b.toString(16).padStart(2, "0")).join("");
-}
 // --- Dynamic Database Bootstrapper & Migrations ---
 let isDbBootstrapped = false;
 
@@ -291,14 +207,6 @@ const bootstrapDb = async (db: D1Database) => {
     } catch (e) {
       console.error("Vehicles UNIQUE constraint removal failed:", e);
     }
-
-
-    // 4. Create email_verification_tokens table
-    try {
-      await db.prepare("CREATE TABLE IF NOT EXISTS email_verification_tokens (id TEXT PRIMARY KEY, email TEXT NOT NULL, token TEXT NOT NULL UNIQUE, uid TEXT NOT NULL, expires_at TEXT NOT NULL, used INTEGER DEFAULT 0, created_at TEXT NOT NULL)").run();
-      try { await db.prepare("CREATE INDEX IF NOT EXISTS idx_evt_token ON email_verification_tokens(token)").run(); } catch(_) {}
-      try { await db.prepare("CREATE INDEX IF NOT EXISTS idx_evt_email ON email_verification_tokens(email)").run(); } catch(_) {}
-    } catch(_) {}
 
     isDbBootstrapped = true;
   } catch (err) {
@@ -405,6 +313,11 @@ app.post('/auth/register', async (c) => {
     };
   }
 
+  // Seed built-in templates for new company (non-blocking)
+  try {
+    await db.prepare("INSERT INTO templates (id, companyId, name, description, items, createdAt) SELECT ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM templates WHERE companyId = ? AND name = ?)").bind("tmpl-seed-" + Date.now() + "-" + Math.floor(Math.random() * 1000), cleanId, "Scaffolding Fleet Daily Check", "DVSA-focused walkaround for scaffolding flatbeds", JSON.stringify([{label:"Load Restraint Straps",group:"loading",guidance:"Check ratchet straps",requiresPhoto:true},{label:"Tube Overhang",group:"loading",guidance:"Check restraints",requiresPhoto:true},{label:"Guardrails",group:"loading",guidance:"Check secure",requiresPhoto:true},{label:"Leaf Springs",group:"exterior",guidance:"Check for cracks",requiresPhoto:true},{label:"Tail Lamps",group:"exterior",guidance:"Check obstructed",requiresPhoto:true}]), new Date().toISOString(), cleanId, "Scaffolding Fleet Daily Check").catch(()=>{});
+  } catch(_) {}
+  
   return c.json({ success: true, company: newCompany, driver: defaultDriver });
 });
 
@@ -2045,6 +1958,75 @@ app.delete('/templates/:id', async (c) => {
   return c.json({ success: true });
 });
 
+// Built-in template definitions (mirrors src/types.ts BUILT_IN_TEMPLATES)
+const BUILT_IN_TEMPLATES = [
+  {
+    name: "Scaffolding Fleet Daily Check",
+    description: "DVSA-focused walkaround for scaffolding flatbeds with mandatory load securement photos",
+    items: JSON.stringify([
+      { label: "Load Restraint Straps & Ratchets", group: "loading", guidance: "Inspect all ratchet straps for fraying, cuts, or damaged tensioning mechanisms.", requiresPhoto: true },
+      { label: "Scaffold Tube Overhang Restraint", group: "loading", guidance: "Check that scaffold tubes, boards, and fittings are properly restrained.", requiresPhoto: true },
+      { label: "Guardrails & Edge Protection", group: "loading", guidance: "Verify that side guardrails, posts, and edge protection are secure and undamaged.", requiresPhoto: true },
+      { label: "Tie-Down Points & Lashing Rings", group: "loading", guidance: "Inspect all tie-down anchor points on the flatbed for deformation, cracks, or corrosion.", requiresPhoto: false },
+      { label: "Leaf Springs & Suspension", group: "exterior", guidance: "Check leaf springs for cracks, broken leaves, or displacement.", requiresPhoto: true },
+      { label: "Tail Lamp & Marker Light Cluster", group: "exterior", guidance: "Check all rear lighting functions. Verify visibility from 45-degree angles.", requiresPhoto: true },
+      { label: "Nearside & Offside Mirrors", group: "exterior", guidance: "Confirm mirrors are intact and correctly adjusted for the loaded vehicle width.", requiresPhoto: false },
+      { label: "Sideguards & Under-Run Protection", group: "exterior", guidance: "Verify sideguards are securely mounted and not deformed.", requiresPhoto: true },
+      { label: "Overhang Marker Boards & Flags", group: "exterior", guidance: "Check that red/white marker boards and overhang flags are clean and visible.", requiresPhoto: true },
+      { label: "Chassis & Body Condition", group: "exterior", guidance: "Inspect chassis rails for cracks or deformation from repeated heavy loading.", requiresPhoto: false },
+    ])
+  },
+  {
+    name: "Haulage & Trailer Daily Check",
+    description: "Full DVSA check with mandatory trailer coupling and load restraint photos",
+    items: JSON.stringify([
+      { label: "Fifth Wheel Coupling Lock", group: "exterior", guidance: "Verify fifth wheel is fully engaged around kingpin.", requiresPhoto: true, requiresTrailer: true },
+      { label: "Air & Electrical Lines", group: "exterior", guidance: "Check red and yellow air lines are securely connected with no audible leaks.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Load Restraint Curtains & Straps", group: "loading", guidance: "Inspect cargo curtains for rips. Ensure all internal load straps are tensioned.", requiresPhoto: true },
+      { label: "Trailer Landing Legs", group: "exterior", guidance: "Verify landing legs are fully wound up, handle stowed.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Wheel Nut Security (All Axles)", group: "exterior", guidance: "Visual check of all wheel nuts across tractor and trailer axles.", requiresPhoto: false },
+      { label: "Container Twistlock Securement", group: "loading", guidance: "If carrying intermodal containers, verify all 4 twistlocks are engaged.", requiresPhoto: true, requiresTrailer: true },
+      { label: "Reflective Markings & Conspicuity", group: "exterior", guidance: "Verify reflective tape on trailer sides and rear is present and clean.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Tyres Tread & Condition (All Wheels)", group: "exterior", guidance: "Check tread depth across all positions.", requiresPhoto: false },
+    ])
+  },
+  {
+    name: "Owner-Operator Daily Check",
+    description: "Streamlined check for single-vehicle operators",
+    items: JSON.stringify([
+      { label: "Tyres, Wheels & Wheel Nuts", group: "exterior", guidance: "Check tread depth, sidewall condition, and wheel nut security.", requiresPhoto: false },
+      { label: "Lights, Indicators & Reflectors", group: "exterior", guidance: "Verify all lights are clean and functional.", requiresPhoto: false },
+      { label: "Fluid Levels & Leaks", group: "exterior", guidance: "Check oil, coolant, screen wash levels. Inspect for leaks.", requiresPhoto: false },
+      { label: "Load Securement", group: "loading", guidance: "Verify all loads are properly restrained. Check straps or ropes are tight.", requiresPhoto: true },
+      { label: "Brakes & Air System", group: "interior", guidance: "Check brake pedal feel, handbrake hold, and listen for air leaks.", requiresPhoto: false },
+      { label: "Mirrors & Visibility", group: "interior", guidance: "Clean and adjust all mirrors. Ensure windscreen is clear.", requiresPhoto: false },
+    ])
+  }
+];
+
+// POST /api/auth/seed-templates — Auto-create built-in templates for a company
+app.post('/auth/seed-templates', async (c) => {
+  const db = getDbOrThrow(c);
+  const { companyId } = await c.req.json();
+  if (!companyId) return c.json({ error: "Company ID is required" }, 400);
+
+  let created = 0;
+  for (const tmpl of BUILT_IN_TEMPLATES) {
+    const existing = await db.prepare("SELECT id FROM templates WHERE companyId = ? AND name = ?").bind(companyId, tmpl.name).first();
+    if (existing) continue;
+    
+    const id = "tmpl-builtin-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+    const now = new Date().toISOString();
+    await db.prepare("INSERT INTO templates (id, companyId, name, description, items, createdAt) VALUES (?, ?, ?, ?, ?, ?)")
+      .bind(id, companyId, tmpl.name, tmpl.description, tmpl.items, now).run();
+    created++;
+  }
+  
+  return c.json({ success: true, created, message: created > 0 ? `${created} built-in templates added` : "Templates already exist" });
+});
+
+
+
 // Maintenance
 app.get('/maintenance', async (c) => {
   const db = getDbOrThrow(c);
@@ -2294,79 +2276,6 @@ app.delete('/alert-rules/:id', async (c) => {
   } catch(e2) {}
   return c.json({ success: true });
 });
-
-
-// --- Custom Email Verification Endpoints ---
-
-// POST /api/auth/send-verify-link — Generate token, store in D1, send email via Brevo
-app.post("/auth/send-verify-link", async (c) => {
-  const db = c.env.DB;
-  if (!db) return c.json({ error: "DB not bound" }, 500);
-  const { email, uid } = await c.req.json();
-  if (!email || !uid) return c.json({ error: "Email and UID are required" }, 400);
-  const cleanEmail = email.toLowerCase().trim();
-
-  // Rate limit: check existing unexpired token within last 60s
-  const recent = await db.prepare("SELECT id FROM email_verification_tokens WHERE email = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC LIMIT 1").bind(cleanEmail, new Date().toISOString()).first();
-  if (recent) {
-    const rec = recent;
-    return c.json({ error: "A verification email was already sent recently. Please check your inbox or wait before requesting again." }, 429);
-  }
-
-  const token = generateVerifyToken();
-  const id = "evt-" + Date.now();
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-  const createdAt = new Date().toISOString();
-
-  await db.prepare("INSERT INTO email_verification_tokens (id, email, token, uid, expires_at, used, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)")
-    .bind(id, cleanEmail, token, uid, expiresAt, createdAt).run();
-
-  const verifyUrl = "/verify?token=" + token;
-
-  await sendBrevoEmail(c.env, cleanEmail,
-    "Verify your WalkSafe email address",
-    '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;">' +
-    '<div style="text-align:center;margin-bottom:24px;"><span style="font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;">Walk<span style="color:#fea619;">Safe</span></span></div>' +
-    '<div style="background:#fff;border-radius:12px;padding:32px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
-    '<h2 style="color:#1a1c1b;font-size:18px;margin:0 0 12px;">Verify your email address</h2>' +
-    '<p style="color:#47464b;font-size:14px;line-height:1.5;margin:0 0 24px;">Click the button below to verify your WalkSafe account email address:</p>' +
-    '<div style="text-align:center;margin-bottom:24px;">' +
-    '<a href="' + verifyUrl + '" style="display:inline-block;background:#1a1c1b;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;">Verify Email Address</a>' +
-    '</div>' +
-    '<p style="color:#77767b;font-size:12px;line-height:1.5;margin:0;">This link expires in <strong>15 minutes</strong>. If you didn\'t sign up for WalkSafe, you can safely ignore this email.</p>' +
-    '</div>' +
-    '<div style="text-align:center;margin-top:16px;"><p style="color:#a0a09a;font-size:11px;margin:0;">WalkSafe Fleet Compliance &copy; 2026</p></div>' +
-    '</div>'
-  );
-
-  return c.json({ success: true, message: "Verification email sent" });
-});
-
-// GET /api/auth/verify-email — Validate token, mark email verified, return JSON
-app.get("/auth/verify-email", async (c) => {
-  const db = c.env.DB;
-  if (!db) return c.json({ success: false, error: "DB not bound" }, 500);
-  const token = c.req.query("token");
-  if (!token) return c.json({ success: false, error: "Token is required" }, 400);
-
-  const record = await db.prepare("SELECT * FROM email_verification_tokens WHERE token = ? AND used = 0 AND expires_at > ?").bind(token, new Date().toISOString()).first();
-  if (!record) {
-    return c.json({ success: false, message: "This verification link has expired or is invalid." });
-  }
-
-  // Mark as used
-  await db.prepare("UPDATE email_verification_tokens SET used = 1 WHERE id = ?").bind(record.id).run();
-
-  // Call Firebase Admin to set emailVerified
-  const verified = await setFirebaseEmailVerified(c.env, record.uid);
-
-  if (verified) {
-    return c.json({ success: true, message: "Email verified successfully! You can now close this tab and return to the app." });
-  } else {
-    return c.json({ success: false, message: "Verification failed. Please try signing up again." });
-  }
-});
-
 
 // Catch-all 404 fallback
 app.all('/*', (c) => {
