@@ -1835,7 +1835,10 @@ const loadDatabaseState = async (silently = false) => {
                   }
                 } catch { alert('Connection error. Please try again.'); }
               }} style={{display:'flex',flexDirection:'column',gap:16}}>
-                <div>
+                {mgrError && (
+                    <p style={{color:'#DC2626',fontSize:12,margin:'0 0 8px',textAlign:'center',background:'#fef2f2',padding:'8px 12px',borderRadius:8}}>{mgrError}</p>
+                  )}
+                  <div>
                   <label style={{fontSize:11,fontWeight:700,color:'#47464b',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.05em'}}>Work Email</label>
                   <div style={{position:'relative'}}>
                     <Mail style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
@@ -1864,6 +1867,7 @@ const loadDatabaseState = async (silently = false) => {
             <div className="hidden sm:block">
               <form onSubmit={async (e) => {
                 e.preventDefault();
+                setMgrError("");
                 const form = e.target as HTMLFormElement;
                 const email = (form.elements.namedItem('mgr_email') as HTMLInputElement).value;
                 const password = (form.elements.namedItem('password') as HTMLInputElement).value;
@@ -1873,16 +1877,23 @@ const loadDatabaseState = async (silently = false) => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                   });
-                  if (!res.ok) { alert('Invalid credentials'); return; }
+                  if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    setMgrError(errData.error || "Invalid credentials");
+                    return;
+                  }
                   const data = await res.json();
                   if (data.success && data.company) {
                     const session = { company: data.company, role: 'manager' as const };
                     localStorage.setItem('walksafe_workspace_session', JSON.stringify(session));
                     setWsSession(session); setCompany(data.company); setCurrentRole('manager');
                   }
-                } catch { alert('Connection error. Please try again.'); }
+                } catch { setMgrError("Connection error. Please try again."); }
               }} style={{display:'flex',flexDirection:'column',gap:16}}>
-                <div>
+                {mgrError && (
+                    <p style={{color:'#DC2626',fontSize:12,margin:'0 0 8px',textAlign:'center',background:'#fef2f2',padding:'8px 12px',borderRadius:8}}>{mgrError}</p>
+                  )}
+                  <div>
                   <label style={{fontSize:11,fontWeight:700,color:'#47464b',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.05em'}}>Work Email</label>
                   <div style={{position:'relative'}}>
                     <Mail style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
