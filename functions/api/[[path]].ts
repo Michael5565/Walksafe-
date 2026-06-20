@@ -2328,7 +2328,7 @@ app.post("/auth/send-verify-link", async (c) => {
 
   const verifyUrl = "https://app.getwalksafe.co.uk/auth/verify?token=" + token;
 
-  await sendBrevoEmail(c.env, cleanEmail,
+  const emailSent = await sendBrevoEmail(c.env, cleanEmail,
     "Verify your WalkSafe email address",
     '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;">' +
     '<div style="text-align:center;margin-bottom:24px;"><span style="font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;">Walk<span style="color:#fea619;">Safe</span></span></div>' +
@@ -2344,6 +2344,12 @@ app.post("/auth/send-verify-link", async (c) => {
     '</div>'
   );
 
+  if (!emailSent && !c.env.BREVO_API_KEY) {
+    return c.json({ success: false, error: "Brevo API key not configured. Set BREVO_API_KEY in Cloudflare secrets." }, 500);
+  }
+  if (!emailSent) {
+    console.warn("[verify-link] Email send may have failed");
+  }
   return c.json({ success: true, message: "Verification email sent" });
 });
 
