@@ -262,6 +262,39 @@ async function checkFirebaseEmailVerified(env, uid) {
     console.error("[Firebase Admin] Lookup Error:", e);
     return null;
   }
+
+
+async function deleteUnverifiedFirebaseUser(env, email) {
+  const token = await getFirebaseAdminToken(env);
+  if (!token) return false;
+  try {
+    // Look up user by email
+    const lookupRes = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ email: [email] }),
+    });
+    const lookupData = await lookupRes.json();
+    if (!lookupData.users || lookupData.users.length === 0) return false;
+    
+    const uid = lookupData.users[0].localId;
+    const emailVerified = lookupData.users[0].emailVerified === true;
+    
+    // Only delete if email is NOT verified
+    if (emailVerified) return false;
+    
+    const delRes = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ localId: uid }),
+    });
+    return delRes.ok;
+  } catch (e) {
+    console.error("[Firebase Admin] Delete unverified user error:", e);
+    return false;
+  }
+}
+
 }
 
 function generateVerifyToken() {
@@ -527,6 +560,19 @@ app.post('/auth/check-email', async (c) => {
   
   return c.json({ exists: !!(existingCompanyEmail || existingDriverEmail) });
 });
+
+// POST /api/auth/clear-unverified — Delete unverified Firebase user so they can re-register
+app.post('/auth/clear-unverified', async (c) => {
+  const { email } = await c.req.json();
+  if (!email) return c.json({ success: false, error: "Email is required" }, 400);
+  const deleted = await deleteUnverifiedFirebaseUser(c.env, email.toLowerCase().trim());
+  if (deleted) {
+    return c.json({ success: true, message: "Unverified account cleared. You can now re-register." });
+  }
+  return c.json({ success: false, error: "No unverified account found for this email." });
+});
+
+
 
 // 3. POST /api/auth/login-manager
 app.post('/auth/login-manager', async (c) => {

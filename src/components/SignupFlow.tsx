@@ -228,9 +228,29 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
           console.log("[Firebase Auth] Account pre-registered for verification:", user.uid);
         } catch (authErr: any) {
           if (authErr.code === "auth/email-already-in-use") {
-            setError("An account with this email address already exists. Please return to login.");
-            setIsLoading(false);
-            return;
+            // Try to delete the unverified account so user can re-register
+            try {
+              const clearRes = await fetch("/api/auth/clear-unverified", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: cleanEmail }),
+              });
+              const clearData = await clearRes.json();
+              if (clearRes.ok && clearData.success) {
+                // Retry registration
+                const retryCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+                user = retryCred.user;
+                console.log("[Firebase Auth] Re-registered after clearing unverified:", user.uid);
+              } else {
+                setError("An account with this email already exists. Please log in instead.");
+                setIsLoading(false);
+                return;
+              }
+            } catch (clearErr) {
+              setError("An account with this email already exists. Please log in instead.");
+              setIsLoading(false);
+              return;
+            }
           } else {
             throw authErr;
           }
