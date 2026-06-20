@@ -1,0 +1,344 @@
+{
+  "companies": [
+    {
+      "id": "co-demo-01",
+      "name": "Murphy Plumbing & Fleet Ltd",
+      "email": "demo@example.com",
+      "oLicence": "OM1234567",
+      "plan": "growth",
+      "vehicleLimit": 9,
+      "managerPassword": "demo",
+      "createdAt": "2026-05-14T11:48:08.902Z",
+      "trialStartedAt": "2026-05-14T11:48:08.902Z",
+      "trialEndsAt": "2026-06-13T11:48:08.902Z",
+      "isSubscribed": true,
+      "updatedAt": "2026-06-13T14:43:05.330Z",
+      "minDurationLgv": 5,
+      "minDurationHgv": 10,
+      "minDurationHgvTrailer": 15
+    }
+  ],
+  "vehicles": [
+    {
+      "id": "veh-01",
+      "companyId": "co-demo-01",
+      "registration": "AB12 CDE",
+      "make": "Ford",
+      "model": "Transit 350 L2 H2",
+      "year": 2021,
+      "colour": "White",
+      "type": "lgv",
+      "motExpiry": "2026-10-15",
+      "taxExpiry": "2026-09-01",
+      "isActive": true,
+      "isGrounded": false,
+      "createdAt": "2026-05-14T11:48:08.904Z"
+    },
+    {
+      "id": "veh-02",
+      "companyId": "co-demo-01",
+      "registration": "XY61 FGH",
+      "make": "Mercedes-Benz",
+      "model": "Sprinter 314 CDI",
+      "year": 2020,
+      "colour": "Silver",
+      "type": "lgv",
+      "motExpiry": "2026-03-14",
+      "taxExpiry": "2026-08-31",
+      "isActive": true,
+      "isGrounded": true,
+      "createdAt": "2026-05-14T11:48:08.904Z"
+    },
+    {
+      "id": "veh-03",
+      "companyId": "co-demo-01",
+      "registration": "BC14 JKL",
+      "make": "DAF",
+      "model": "LF 150 Box Van",
+      "year": 2018,
+      "colour": "Red",
+      "type": "hgv",
+      "motExpiry": "2026-05-18",
+      "taxExpiry": "2026-07-20",
+      "isActive": true,
+      "isGrounded": false,
+      "createdAt": "2026-05-14T11:48:08.904Z"
+    },
+    {
+      "id": "veh-04",
+      "companyId": "co-demo-01",
+      "registration": "GH22 TUV",
+      "make": "Volvo",
+      "model": "FH 460 Globetrotter",
+      "year": 2022,
+      "colour": "Deep Navy Blue",
+      "type": "hgv_trailer",
+      "motExpiry": "2026-12-05",
+      "taxExpiry": "2026-11-30",
+      "isActive": true,
+      "isGrounded": false,
+      "createdAt": "2026-05-14T11:48:08.904Z"
+    }
+  ],
+  "drivers": [
+    {
+      "id": "drv-01",
+      "companyId": "co-demo-01",
+      "fullName": "James Murphy",
+      "email": "james@murphy.com",
+      "phone": "+44 7700 900123",
+      "pin": "1234",
+      "defaultVehicleId": "veh-01",
+      "installToken": "token-murphy",
+      "createdAt": "2026-05-14T11:48:08.904Z"
+    },
+    {
+      "id": "drv-02",
+      "companyId": "co-demo-01",
+      "fullName": "Keval Patel",
+      "phone": "+44 7700 900567",
+      "pin": "5678",
+      "defaultVehicleId": "veh-02",
+      "installToken": "token-patel",
+      "createdAt": "2026-05-19T11:48:08.904Z",
+      "email": "keval@patel.com"
+    },
+    {
+      "id": "drv-03",
+      "companyId": "co-demo-01",
+      "fullName": "Teilo Walsh",
+      "phone": "+44 7700 900888",
+      "pin": "9999",
+      "defaultVehicleId": "veh-03",
+      "installToken": "token-walsh",
+      "createdAt": "2026-05-24T11:48:08.904Z",
+      "email": "teilo@walsh.com"
+    },
+    {
+      "id": "drv-04",
+      "companyId": "co-demo-01",
+      "fullName": "Sarah Ahmed",
+      "phone": "+44 7700 900111",
+      "pin": "1111",
+      "defaultVehicleId": "veh-04",
+      "installToken": "token-ahmed",
+      "createdAt": "2026-05-29T11:48:08.904Z",
+      "email": "sarah@ahmed.com"
+    }
+  ],
+  "checks": [
+    {
+      "id": "chk-past-01",
+      "vehicleId": "veh-01",
+      "driverId": "drv-01",
+      "companyId": "co-demo-01",
+      "startedAt": "2026-06-10T23:48:08.904Z",
+      "completedAt": "2026-06-11T00:00:08.904Z",
+      "durationSeconds": 720,
+      "result": "nil_defect",
+      "driverSignature": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='30'><path d='M10 20 Q 30 5, 50 15 T 90 10' fill='none' stroke='black' stroke-width='2'/></svg>",
+      "checkDate": "2026-06-11",
+      "items": [],
+      "createdAt": "2026-06-10T23:48:08.904Z"
+    },
+    {
+      "id": "chk-past-02",
+      "vehicleId": "veh-02",
+      "driverId": "drv-02",
+      "companyId": "co-demo-01",
+      "startedAt": "2026-06-12T00:48:08.904Z",
+      "completedAt": "2026-06-12T00:51:28.904Z",
+      "durationSeconds": 200,
+      "result": "defect",
+      "driverSignature": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='30'><path d='M10 25 Q 40 10, 60 20 T 90 15' fill='none' stroke='black' stroke-width='2'/></svg>",
+      "checkDate": "2026-06-12",
+      "quickCheckAlert": true,
+      "items": [],
+      "createdAt": "2026-06-12T00:48:08.904Z"
+    }
+  ],
+  "defects": [
+    {
+      "id": "def-past-02",
+      "checkId": "chk-past-02",
+      "itemKey": "17",
+      "itemLabel": "Tyres Tread & Condition",
+      "vehicleId": "veh-02",
+      "companyId": "co-demo-01",
+      "severity": "dangerous",
+      "description": "NSF tyre completely bald, wire/coil cords starting to show in central block.",
+      "reportedTo": "Fleet Manager",
+      "photoUrl": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=400",
+      "status": "open",
+      "createdAt": "2026-06-12T00:48:08.904Z"
+    },
+    {
+      "id": "def-past-01",
+      "checkId": "chk-past-01",
+      "itemKey": "10",
+      "itemLabel": "Lights & Indicators",
+      "vehicleId": "veh-01",
+      "companyId": "co-demo-01",
+      "severity": "major",
+      "description": "Nearside rear outer brake light is completely inactive.",
+      "reportedTo": "Fleet Manager",
+      "photoUrl": "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=400",
+      "status": "closed",
+      "engineerName": "Dave Briggs (Mechanic)",
+      "repairDescription": "Replaced 12V 21/5W bayonet bulb and cleaned connectors on the unit. Tested OK.",
+      "partsUsed": "1x 380 bulb",
+      "repairCompletedAt": "2026-06-12T05:48:08.904Z",
+      "engineerSignature": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='20'><path d='M5 10 C 25 10, 45 3, 75 12' fill='none' stroke='blue' stroke-width='1.5'/></svg>",
+      "closedBy": "Fleet Manager (Admin)",
+      "closedAt": "2026-06-12T06:48:08.904Z",
+      "createdAt": "2026-06-10T23:48:08.904Z"
+    }
+  ],
+  "announcements": [
+    {
+      "id": "ann-01",
+      "companyId": "co-demo-01",
+      "title": "M4 Junction 12 Roadworks Triage",
+      "content": "All drivers heading Westbound on M4 please note single lane traffic and speed checks near J12. Factor an extra 20 minutes into transit sheets.",
+      "important": true,
+      "createdAt": "2026-06-12T11:48:08.904Z"
+    },
+    {
+      "id": "ann-02",
+      "companyId": "co-demo-01",
+      "title": "New High-Vis Wear in Depot B",
+      "content": "Please collect your new thermal high-vis vests and safety boots from the office locker area before Friday shift starts.",
+      "important": false,
+      "createdAt": "2026-06-10T11:48:08.904Z"
+    }
+  ],
+  "schedules": [
+    {
+      "id": "sch-01",
+      "companyId": "co-demo-01",
+      "title": "Weekly Tyre & Valve Care Check",
+      "vehicleId": "veh-01",
+      "dueDate": "2026-06-15",
+      "status": "pending",
+      "createdAt": "2026-06-13T11:48:08.904Z"
+    },
+    {
+      "id": "sch-02",
+      "companyId": "co-demo-01",
+      "title": "Pre-MOT Rigorous Safety Audit",
+      "vehicleId": "veh-02",
+      "dueDate": "2026-06-13",
+      "status": "pending",
+      "createdAt": "2026-06-13T11:48:08.904Z"
+    },
+    {
+      "id": "sch-1781353242208",
+      "companyId": "co-demo-01",
+      "title": "Mandated Weekly Compliance Audit",
+      "vehicleId": "veh-01",
+      "dueDate": "2026-06-17",
+      "status": "pending",
+      "driverId": "drv-02",
+      "frequency": "daily",
+      "isRecurring": true,
+      "createdAt": "2026-06-13T12:20:42.208Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "not-01",
+      "companyId": "co-demo-01",
+      "type": "grounded",
+      "title": "Sprinter XY61 FGH GROUNDED",
+      "message": "Driver Keval Patel reported dangerous tyre baldness and wire cords. Asset grounded automatically.",
+      "isRead": false,
+      "createdAt": "2026-06-12T11:48:08.904Z"
+    },
+    {
+      "id": "not-02",
+      "companyId": "co-demo-01",
+      "type": "defect",
+      "title": "Major Defect Logged - Transit AB12 CDE",
+      "message": "Driver James Murphy reported inactive rear outer brake indicator. Scheduled mechanic repair assigned.",
+      "isRead": true,
+      "createdAt": "2026-06-11T11:48:08.904Z"
+    },
+    {
+      "id": "not-sch-1781353242208",
+      "companyId": "co-demo-01",
+      "type": "quick_check",
+      "title": "ðŸ—“ï¸ Check Scheduled",
+      "message": "Inspection task \"Mandated Weekly Compliance Audit\" assigned onto AB12 CDE for compliance due 2026-06-17.",
+      "isRead": false,
+      "createdAt": "2026-06-13T12:20:42.208Z"
+    }
+  ],
+  "vapidKeys": {
+    "publicKey": "BNG3kq6HqmFW6Of4OOHyAJ63RVj5N5KfL2X2HTLTWFyKspM6YxIEvMeYBOuCAR8IF--Mq6B93cAgrgL5KPj6g-M",
+    "privateKey": "HfCwl1el8NL2mg5Zyb9uOAbItZXkZIfWK11sv9UMwlk"
+  },
+  "pushSubscriptions": [],
+  "templates": [
+    {
+      "id": "tpl-1781355015455",
+      "companyId": "co-demo-01",
+      "name": "Test",
+      "description": "",
+      "items": [
+        {
+          "key": "1",
+          "label": "Tyre Condition",
+          "group": "interior",
+          "guidance": "",
+          "requiresTrailer": true
+        },
+        {
+          "key": "2",
+          "label": "Clean car",
+          "group": "interior",
+          "guidance": "",
+          "requiresTrailer": false
+        }
+      ],
+      "createdAt": "2026-06-13T12:50:15.456Z"
+    }
+  ],
+  "alertRules": [],
+  "maintenance": [
+    {
+      "id": "mnt-1781357963056",
+      "companyId": "co-demo-01",
+      "vehicleId": "veh-01",
+      "type": "service",
+      "title": "Oil",
+      "description": "",
+      "odometer": 0,
+      "cost": 0,
+      "workshop": "",
+      "dueDate": "2026-06-13",
+      "status": "scheduled",
+      "createdAt": "2026-06-13T13:39:23.056Z"
+    },
+    {
+      "id": "mnt-1781357982244",
+      "companyId": "co-demo-01",
+      "vehicleId": "veh-01",
+      "type": "service",
+      "title": "Oil ",
+      "description": "",
+      "odometer": 0,
+      "cost": 0,
+      "workshop": "",
+      "dueDate": "2026-06-01",
+      "status": "scheduled",
+      "createdAt": "2026-06-13T13:39:42.244Z"
+    }
+  ],
+  "documents": [],
+  "vehiclePositions": [],
+  "driverScores": [],
+  "parts": [],
+  "workOrders": [],
+  "fuelRecords": [],
+  "expenses": []
+}

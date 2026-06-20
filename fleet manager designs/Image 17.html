@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Master Compliance Log - WalkSafe</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#ffddb8",
+                    "on-error": "#ffffff",
+                    "on-background": "#1a1c1b",
+                    "inverse-on-surface": "#f1f1ef",
+                    "compliance-green": "#16A34A",
+                    "surface-container-high": "#e8e8e6",
+                    "major-defect-orange": "#EA580C",
+                    "surface-container": "#eeeeec",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#c8c5ca",
+                    "border-subtle": "#E5E5E0",
+                    "tertiary-fixed-dim": "#cbc6bd",
+                    "background": "#f9f9f7",
+                    "on-secondary-container": "#684000",
+                    "surface-variant": "#e2e3e1",
+                    "on-primary-container": "#858387",
+                    "on-primary-fixed": "#1b1b1e",
+                    "tertiary-fixed": "#e8e2d9",
+                    "surface-card": "#FFFFFF",
+                    "surface-container-highest": "#e2e3e1",
+                    "surface-tint": "#5f5e61",
+                    "outline": "#77767b",
+                    "surface-bright": "#f9f9f7",
+                    "primary-fixed-dim": "#c8c5ca",
+                    "plate-yellow": "#FFDE00",
+                    "outline-variant": "#c8c5cb",
+                    "on-primary": "#ffffff",
+                    "on-surface-variant": "#47464b",
+                    "tertiary-container": "#1d1b16",
+                    "on-secondary-fixed": "#2a1700",
+                    "on-tertiary-fixed-variant": "#494640",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "surface": "#f9f9f7",
+                    "tertiary": "#000000",
+                    "on-secondary": "#ffffff",
+                    "primary-container": "#1b1b1e",
+                    "secondary-container": "#fea619",
+                    "surface-dim": "#dadad8",
+                    "inverse-surface": "#2f3130",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "on-tertiary-container": "#88837c",
+                    "danger-red": "#DC2626",
+                    "on-primary-fixed-variant": "#47464a",
+                    "on-tertiary-fixed": "#1d1b16",
+                    "surface-container-low": "#f4f4f2",
+                    "primary-fixed": "#e4e1e6",
+                    "primary": "#000000",
+                    "on-error-container": "#93000a",
+                    "plate-blue": "#003399",
+                    "on-surface": "#1a1c1b",
+                    "secondary": "#855300"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "card-padding": "24px",
+                    "gutter": "16px",
+                    "grid-unit": "8px",
+                    "sidebar-width": "240px",
+                    "margin-page": "32px"
+            },
+            "fontFamily": {
+                    "plate-text": ["JetBrains Mono"],
+                    "data-mono": ["JetBrains Mono"],
+                    "body-sm": ["Inter"],
+                    "title-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-caps": ["Inter"]
+            },
+            "fontSize": {
+                    "plate-text": ["20px", { "lineHeight": "24px", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                    "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                    "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                    "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                    "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                    "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                    "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+            font-size: 1.25rem;
+        }
+        .uk-plate {
+            display: inline-flex;
+            align-items: center;
+            background-color: #FFDE00;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .uk-plate-blue {
+            background-color: #003399;
+            width: 12px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        body {
+            background-color: #f9f9f7;
+            color: #1a1c1b;
+        }
+    </style>
+</head>
+<body class="antialiased font-body-md text-body-md">
+<!-- Sidebar Wrapper -->
+<aside class="fixed h-full w-[240px] left-0 top-0 bg-primary flex flex-col gap-2 p-4 border-r border-border-subtle z-50">
+<div class="mb-8 px-2 flex items-center gap-3">
+<div class="w-8 h-8 bg-secondary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="security">security</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary leading-tight">WalkSafe</h1>
+<p class="font-label-caps text-label-caps text-on-primary-container tracking-widest">FLEET MANAGEMENT</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Today's Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span>Operations &amp; Comms</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span>Compliance Schedules</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+<span>Vehicle Fleet</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span>Drivers &amp; PINs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span>Defect Triage</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-secondary-container border-l-2 border-secondary-container bg-surface-container/10 rounded-r" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span>Compliance Log</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 transition-all duration-200 text-on-primary-container hover:text-on-primary hover:bg-surface-container/5 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span>Billing &amp; Plans</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-on-primary-container/20">
+<div class="flex items-center gap-3 px-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-border-subtle">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a fleet operations manager in a corporate setting. He is wearing a dark charcoal suit with a crisp white shirt, looking directly at the camera with an expression of reliable authority. The background is a blurred high-tech logistics control center with soft, warm ambient lighting that maintains the professional institutional minimalism style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe8IgE3mrOqHkd3KvmK5-Qf_AYREfeeJRxx-4tuSHc9AQjagre_xZbNqwH38jcPxBRNOL8dw6jSJcU9jY4qPMFK26_6DXthNzcp0hp6YYSK2B9rjD2_xiMyfWPbTq1dCJD3k0MuGSh0PiCJQxVbaEPRtOTNzWlahnvHLkzioE4Q0EFEspax-EWVRdwmG7c0Ky6y13q1k5Og5ixH5KLeQCQ7TiirBbbPzVSUjK4afhTokSuLrp6AZ2AUA"/>
+</div>
+<div class="flex flex-col">
+<span class="font-title-sm text-on-primary text-[13px]">James Sterling</span>
+<span class="text-[11px] text-on-primary-container">Chief Compliance Officer</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] min-h-screen">
+<!-- Top Bar -->
+<header class="h-[64px] bg-surface-card border-b border-border-subtle flex justify-between items-center px-margin-page sticky top-0 z-40">
+<h2 class="font-headline-md text-headline-md text-primary font-bold">Master Compliance Log</h2>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-low transition-colors rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+</button>
+<button class="p-2 hover:bg-surface-container-low transition-colors rounded-full text-on-surface-variant relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-danger-red rounded-full border-2 border-surface-card"></span>
+</button>
+<div class="h-6 w-[1px] bg-border-subtle mx-2"></div>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 font-body-md text-[13px] hover:bg-on-surface-variant transition-colors">
+<span class="material-symbols-outlined !text-[18px]" data-icon="download">download</span>
+                    Export for DVSA Audit
+                </button>
+</div>
+</header>
+<!-- Main Content Area -->
+<div class="p-margin-page max-w-[1600px] mx-auto space-y-6">
+<!-- Filters Bento Row -->
+<section class="grid grid-cols-12 gap-gutter">
+<div class="col-span-12 lg:col-span-12 bg-surface-card border border-border-subtle p-4 flex flex-wrap items-end gap-6 shadow-sm">
+<div class="flex-1 min-w-[200px]">
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">DATE RANGE</label>
+<div class="relative">
+<input class="w-full bg-surface border border-border-subtle p-2 px-3 focus:border-primary focus:ring-0 text-body-md font-data-mono outline-none" type="text" value="01/10/2023 - 31/10/2023"/>
+<span class="absolute right-3 top-2.5 material-symbols-outlined text-on-surface-variant !text-[18px]" data-icon="calendar_month">calendar_month</span>
+</div>
+</div>
+<div class="flex-1 min-w-[200px]">
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">VEHICLE SEARCH</label>
+<div class="relative">
+<input class="w-full bg-surface border border-border-subtle p-2 px-3 focus:border-primary focus:ring-0 text-body-md outline-none" placeholder="Enter Registration..." type="text"/>
+<span class="absolute right-3 top-2.5 material-symbols-outlined text-on-surface-variant !text-[18px]" data-icon="search">search</span>
+</div>
+</div>
+<div class="flex-1 min-w-[200px]">
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">DRIVER FILTER</label>
+<select class="w-full bg-surface border border-border-subtle p-2 px-3 focus:border-primary focus:ring-0 text-body-md outline-none appearance-none">
+<option>All Drivers</option>
+<option>D. Henderson</option>
+<option>M. Thompson</option>
+<option>S. Patel</option>
+</select>
+</div>
+<div class="flex flex-col gap-2">
+<label class="block font-label-caps text-label-caps text-on-surface-variant">SEVERITY TOGGLE</label>
+<div class="flex border border-border-subtle">
+<button class="px-4 py-2 bg-primary text-on-primary text-[13px] font-medium transition-colors">All</button>
+<button class="px-4 py-2 bg-surface text-on-surface-variant text-[13px] font-medium border-l border-border-subtle hover:bg-surface-container-low">Defects Only</button>
+</div>
+</div>
+<button class="h-[38px] px-6 border border-primary font-body-md text-[13px] hover:bg-surface-container-low transition-colors">
+                        Clear Filters
+                    </button>
+</div>
+</section>
+<!-- Data Table Section -->
+<section class="bg-surface-card border border-border-subtle shadow-sm overflow-hidden">
+<div class="p-6 border-b border-border-subtle flex justify-between items-center bg-surface-container-lowest">
+<div>
+<h3 class="font-title-sm text-title-sm">Audit History</h3>
+<p class="text-[12px] text-on-surface-variant">Showing 2,492 completed walkaround records</p>
+</div>
+<div class="flex gap-2">
+<button class="p-1.5 border border-border-subtle hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="p-1.5 border border-border-subtle hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant border-b border-border-subtle">DATE/TIME</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant border-b border-border-subtle">VEHICLE PLATE</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant border-b border-border-subtle">DRIVER</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant border-b border-border-subtle">DURATION</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant border-b border-border-subtle">STATUS</th>
+<th class="p-4 font-label-caps text-label-caps text-on-surface-variant border-b border-border-subtle text-right">ACTION</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-subtle">
+<!-- Row 1: Under Time Warning -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono">24/10/2023 05:42</td>
+<td class="p-4">
+<div class="uk-plate">
+<div class="uk-plate-blue">
+<span class="text-[6px] text-white font-bold text-center">GB</span>
+</div>
+<span class="px-3 py-1 font-plate-text text-plate-text">WA22 LNK</span>
+</div>
+</td>
+<td class="p-4 font-medium">David Henderson</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="font-data-mono text-data-mono text-major-defect-orange">01:42</span>
+<span class="px-2 py-0.5 bg-major-defect-orange/10 text-major-defect-orange font-label-caps text-[10px] rounded flex items-center gap-1">
+<span class="material-symbols-outlined !text-[12px]" data-icon="timer">timer</span>
+                                            Under-Time
+                                        </span>
+</div>
+</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-compliance-green/10 text-compliance-green font-label-caps text-[10px] rounded border border-compliance-green/20">PASSED</span>
+</td>
+<td class="p-4 text-right">
+<button class="text-primary hover:underline text-[13px] font-medium">View Report</button>
+</td>
+</tr>
+<!-- Row 2: Normal Compliance -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono">24/10/2023 05:15</td>
+<td class="p-4">
+<div class="uk-plate">
+<div class="uk-plate-blue">
+<span class="text-[6px] text-white font-bold text-center">GB</span>
+</div>
+<span class="px-3 py-1 font-plate-text text-plate-text">FE71 JXM</span>
+</div>
+</td>
+<td class="p-4 font-medium">Sarah Jenkins</td>
+<td class="p-4 font-data-mono text-on-primary-container">08:12</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-compliance-green/10 text-compliance-green font-label-caps text-[10px] rounded border border-compliance-green/20">PASSED</span>
+</td>
+<td class="p-4 text-right">
+<button class="text-primary hover:underline text-[13px] font-medium">View Report</button>
+</td>
+</tr>
+<!-- Row 3: Defect Detected -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono">23/10/2023 21:04</td>
+<td class="p-4">
+<div class="uk-plate">
+<div class="uk-plate-blue">
+<span class="text-[6px] text-white font-bold text-center">GB</span>
+</div>
+<span class="px-3 py-1 font-plate-text text-plate-text">LD20 VRT</span>
+</div>
+</td>
+<td class="p-4 font-medium">Marcus Thompson</td>
+<td class="p-4 font-data-mono text-on-primary-container">12:45</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-danger-red/10 text-danger-red font-label-caps text-[10px] rounded border border-danger-red/20">MAJOR DEFECT</span>
+</td>
+<td class="p-4 text-right">
+<button class="text-danger-red hover:underline text-[13px] font-medium">View Defect</button>
+</td>
+</tr>
+<!-- Row 4: Normal Compliance -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono">23/10/2023 18:30</td>
+<td class="p-4">
+<div class="uk-plate">
+<div class="uk-plate-blue">
+<span class="text-[6px] text-white font-bold text-center">GB</span>
+</div>
+<span class="px-3 py-1 font-plate-text text-plate-text">BK19 OWP</span>
+</div>
+</td>
+<td class="p-4 font-medium">Priya Sharma</td>
+<td class="p-4 font-data-mono text-on-primary-container">07:55</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-compliance-green/10 text-compliance-green font-label-caps text-[10px] rounded border border-compliance-green/20">PASSED</span>
+</td>
+<td class="p-4 text-right">
+<button class="text-primary hover:underline text-[13px] font-medium">View Report</button>
+</td>
+</tr>
+<!-- Row 5: Under Time Warning -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono">23/10/2023 06:12</td>
+<td class="p-4">
+<div class="uk-plate">
+<div class="uk-plate-blue">
+<span class="text-[6px] text-white font-bold text-center">GB</span>
+</div>
+<span class="px-3 py-1 font-plate-text text-plate-text">HX73 ZZA</span>
+</div>
+</td>
+<td class="p-4 font-medium">Gary O'Neil</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="font-data-mono text-data-mono text-major-defect-orange">01:10</span>
+<span class="px-2 py-0.5 bg-major-defect-orange/10 text-major-defect-orange font-label-caps text-[10px] rounded flex items-center gap-1">
+<span class="material-symbols-outlined !text-[12px]" data-icon="timer">timer</span>
+                                            Under-Time
+                                        </span>
+</div>
+</td>
+<td class="p-4">
+<span class="px-2 py-1 bg-compliance-green/10 text-compliance-green font-label-caps text-[10px] rounded border border-compliance-green/20">PASSED</span>
+</td>
+<td class="p-4 text-right">
+<button class="text-primary hover:underline text-[13px] font-medium">View Report</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-4 border-t border-border-subtle flex justify-between items-center bg-surface-container-low">
+<span class="text-[12px] text-on-surface-variant">Page 1 of 125</span>
+<div class="flex items-center gap-1">
+<button class="px-3 py-1 text-[13px] font-medium text-primary hover:bg-surface-container-highest transition-colors">1</button>
+<button class="px-3 py-1 text-[13px] font-medium text-on-surface-variant hover:bg-surface-container-highest transition-colors">2</button>
+<button class="px-3 py-1 text-[13px] font-medium text-on-surface-variant hover:bg-surface-container-highest transition-colors">3</button>
+<span class="px-2 text-on-surface-variant">...</span>
+<button class="px-3 py-1 text-[13px] font-medium text-on-surface-variant hover:bg-surface-container-highest transition-colors">125</button>
+</div>
+</div>
+</section>
+<!-- Bottom Insight Card -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-surface-card border border-border-subtle p-card-padding shadow-sm flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-on-surface-variant">DVSA COMPLIANCE RATING</span>
+<span class="material-symbols-outlined text-compliance-green" data-icon="verified">verified</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-data-mono text-headline-md font-bold">98.4%</span>
+<span class="text-[12px] text-compliance-green">+0.2% since last month</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 mt-2 overflow-hidden">
+<div class="bg-compliance-green h-full w-[98.4%]"></div>
+</div>
+</div>
+<div class="bg-surface-card border border-border-subtle p-card-padding shadow-sm flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-on-surface-variant">UNDER-TIME ALERTS (7D)</span>
+<span class="material-symbols-outlined text-major-defect-orange" data-icon="warning">warning</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-data-mono text-headline-md font-bold text-major-defect-orange">14</span>
+<span class="text-[12px] text-danger-red">Requires Supervisor Review</span>
+</div>
+<div class="mt-auto">
+<a class="text-[11px] font-bold text-primary flex items-center gap-1 group" href="#">
+                            VIEW TARGET DRIVERS
+                            <span class="material-symbols-outlined !text-[14px] group-hover:translate-x-0.5 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="bg-surface-card border border-border-subtle p-card-padding shadow-sm flex flex-col gap-2 overflow-hidden relative">
+<div class="z-10 flex flex-col h-full">
+<span class="font-label-caps text-label-caps text-on-surface-variant">FLEET DEFECT DENSITY</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-data-mono text-headline-md font-bold">Low</span>
+<span class="text-[12px] text-on-surface-variant">0.12 Defects/Unit</span>
+</div>
+<div class="mt-auto">
+<span class="text-[11px] text-on-primary-container italic">Generated 4m ago</span>
+</div>
+</div>
+<div class="absolute right-0 bottom-0 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined !text-[120px]" data-icon="analytics">analytics</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple Micro-interaction for filter toggles
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', function() {
+                this.style.transform = 'scale(0.98)';
+            });
+            btn.addEventListener('mouseup', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+
+        // Search highlight simulation
+        const searchInput = document.querySelector('input[placeholder="Enter Registration..."]');
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toUpperCase();
+            const plates = document.querySelectorAll('.uk-plate');
+            plates.forEach(plate => {
+                const row = plate.closest('tr');
+                if (plate.textContent.toUpperCase().includes(query)) {
+                    row.style.opacity = '1';
+                } else {
+                    row.style.opacity = '0.3';
+                }
+            });
+        });
+    </script>
+</body></html>
