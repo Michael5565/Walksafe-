@@ -268,10 +268,10 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
           if (res.ok) {
             setVerifyStatusMsg("Work email verification link has been dispatched successfully! Please check your inbox.");
             // Also create the company record immediately (awaiting verification)
+            const baseSlug = orgName.trim().toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "company";
+            const cleanId = (baseSlug + "-" + Math.floor(1000 + Math.random() * 9000)).substring(0, 25);
             try {
-              const baseSlug = orgName.trim().toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "company";
-              const cleanId = (baseSlug + "-" + Math.floor(1000 + Math.random() * 9000)).substring(0, 25);
-              await fetch("/api/auth/register", {
+              const regRes = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -284,8 +284,33 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                   managerFullName: fullName.trim(),
                 }),
               });
+              if (!regRes.ok) {
+                const regErrData = await regRes.json().catch(() => ({}));
+                console.warn("[Signup] Register failed:", regErrData.error || regRes.status);
+                // If email already registered, create with a modified ID
+                if (regErrData.error && regErrData.error.includes("already registered")) {
+                  const altId = (baseSlug + "-" + Math.floor(1000 + Math.random() * 9000)).substring(0, 25);
+                  const retryRes = await fetch("/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      firebaseUid: user.uid,
+                      id: altId,
+                      name: orgName.trim() + " " + Math.floor(Math.random() * 100),
+                      plan: selectedPlan,
+                      managerEmail: cleanEmail,
+                      managerPassword: password,
+                      managerFullName: fullName.trim(),
+                    }),
+                  });
+                  if (!retryRes.ok) {
+                    const retryErr = await retryRes.json().catch(() => ({}));
+                    console.warn("[Signup] Register retry also failed:", retryErr.error);
+                  }
+                }
+              }
             } catch (regErr) {
-              console.warn("[Signup] Company pre-creation warning (can be created later):", regErr);
+              console.warn("[Signup] Network error during registration:", regErr);
             }
           } else {
             setError(data.error || "Failed to send verification email");
