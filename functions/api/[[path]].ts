@@ -2321,7 +2321,8 @@ app.post("/auth/send-verify-link", async (c) => {
   await db.prepare("INSERT INTO email_verification_tokens (id, email, token, uid, expires_at, used, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)")
     .bind(id, cleanEmail, token, uid, expiresAt, createdAt).run();
 
-  const verifyUrl = "/verify?token=" + token;
+  const url = new URL(c.req.url);
+  const verifyUrl = url.protocol + "//" + url.host + "/verify?token=" + token;
 
   await sendBrevoEmail(c.env, cleanEmail,
     "Verify your WalkSafe email address",
