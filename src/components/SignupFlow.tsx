@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { Company, Driver } from "../types";
 import { auth } from "../lib/firebase";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 const fetchWithTimeout = async (url: string, options: any = {}, timeoutMs = 5000) => {
   const controller = new AbortController();
@@ -149,20 +149,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
       return;
     }
 
-    if (!/[A-Z]/.test(password)) {
-      setError("Password must contain at least one uppercase character.");
-      return;
-    }
 
-    if (!/[a-z]/.test(password)) {
-      setError("Password must contain at least one lowercase character.");
-      return;
-    }
-
-    if (!/[^A-Za-z0-9]/.test(password)) {
-      setError("Password must contain at least one non-alphanumeric (special) character.");
-      return;
-    }
 
     setIsLoading(true);
     try {
@@ -251,8 +238,21 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
       }
 
       if (user) {
-        await sendEmailVerification(user);
-        setVerifyStatusMsg("Work email verification link has been dispatched successfully! Please check your inbox.");
+        try {
+          const res = await fetch("/api/auth/send-verify-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: cleanEmail, uid: user.uid }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            setVerifyStatusMsg("Work email verification link has been dispatched successfully! Please check your inbox.");
+          } else {
+            setError(data.error || "Failed to send verification email");
+          }
+        } catch(e) {
+          setError("Network error sending verification email");
+        }
         setStep("verify");
       }
     } catch (err: any) {
@@ -267,9 +267,22 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
     setVerifyStatusMsg("");
     try {
       if (auth.currentUser) {
-        await sendEmailVerification(auth.currentUser);
-        setResendTimer(60);
-        setVerifyStatusMsg("Audit verification payload successfully dispatched to your email!");
+        try {
+          const res = await fetch("/api/auth/send-verify-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: auth.currentUser.email, uid: auth.currentUser.uid }),
+          });
+          if (res.ok) {
+            setResendTimer(60);
+            setVerifyStatusMsg("Verification link has been resent! Please check your inbox.");
+          } else {
+            const data = await res.json();
+            setError(data.error || "Failed to resend");
+          }
+        } catch(e) {
+          setError("Network error resending verification email");
+        }
       } else {
         setError("Your session is inactive. Please return to Details and retry registration.");
       }
@@ -571,9 +584,6 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                   {[
                     [password.length >= 6, 'At least 6 characters'],
-                    [/[A-Z]/.test(password), 'Uppercase letter'],
-                    [/[a-z]/.test(password), 'Lowercase letter'],
-                    [/[^A-Za-z0-9]/.test(password), 'Special character'],
                   ].map(([met, label]) => (
                     <div key={String(label)} className="flex items-center gap-1.5">
                       <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-all ${

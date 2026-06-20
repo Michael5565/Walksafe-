@@ -2,6 +2,8 @@
 name = "walksafe"
 pages_build_output_dir = "dist"
 
+# Required secrets: BREVO_API_KEY for email verification links
+
 [[d1_databases]]
 binding = "DB"
 database_name = "walksafe-db"

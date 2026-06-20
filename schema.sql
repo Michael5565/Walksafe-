@@ -149,3 +149,16 @@ CREATE INDEX IF NOT EXISTS idx_work_orders_company ON work_orders(companyId);
 CREATE INDEX IF NOT EXISTS idx_documents_company ON documents(companyId);
 CREATE INDEX IF NOT EXISTS idx_driver_scores_company ON driver_scores(companyId);
 CREATE INDEX IF NOT EXISTS idx_alert_rules_company ON alert_rules(companyId);
+
+-- Email verification tokens (for custom verification links, replaces Firebase sendEmailVerification)
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  token TEXT NOT NULL UNIQUE,
+  uid TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  used INTEGER DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_token ON email_verification_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_email ON email_verification_tokens(email);
