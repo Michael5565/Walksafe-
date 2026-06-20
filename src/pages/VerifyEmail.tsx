@@ -19,7 +19,7 @@ export default function VerifyEmail() {
         const data = await res.json();
         if (res.ok && data.success) {
           setStatus("success");
-          setMessage(data.message || "Email verified successfully! You can now close this tab and return to the app.");
+          setMessage(data.message || "Email verified successfully!");
         } else {
           setStatus("error");
           setMessage(data.message || data.error || "Verification failed. The link may have expired or already been used.");
@@ -30,6 +30,14 @@ export default function VerifyEmail() {
         setMessage("Network error. Please check your connection and try again.");
       });
   }, []);
+
+  // Auto-redirect to login after 5 seconds on success
+  useEffect(() => {
+    if (status === "success") {
+      const t = setTimeout(() => window.location.href = "/login", 5000);
+      return () => clearTimeout(t);
+    }
+  }, [status]);
 
   return (
     <div style={{
@@ -63,9 +71,16 @@ export default function VerifyEmail() {
           {status === "error" && "Verification Failed"}
         </h1>
         <p style={{ color: status === "error" ? "#DC2626" : "#47464b", fontSize: 13, lineHeight: 1.5, margin: "0 0 24px" }}>{message}</p>
-        {status !== "loading" && (
-          <a href="/" style={{ display: "inline-block", padding: "10px 28px", background: "#000", color: "#fff", textDecoration: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, transition: "opacity 0.2s" }}
-             onMouseOver={e => (e.currentTarget.style.opacity = "0.85")} onMouseOut={e => (e.currentTarget.style.opacity = "1")}>Return to App</a>
+        {status === "success" && (
+          <>
+            <p style={{ color: "#77767b", fontSize: 11, margin: "0 0 12px" }}>Redirecting to login in 5 seconds...</p>
+            <a href="/login" style={{ display: "inline-block", padding: "10px 28px", background: "#000", color: "#fff", textDecoration: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, transition: "opacity 0.2s" }}
+               onMouseOver={e => (e.currentTarget.style.opacity = "0.85")} onMouseOut={e => (e.currentTarget.style.opacity = "1")}>Go to Login</a>
+          </>
+        )}
+        {status === "error" && (
+          <a href="/login" style={{ display: "inline-block", padding: "10px 28px", background: "#000", color: "#fff", textDecoration: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, transition: "opacity 0.2s" }}
+             onMouseOver={e => (e.currentTarget.style.opacity = "0.85")} onMouseOut={e => (e.currentTarget.style.opacity = "1")}>Go to Login</a>
         )}
       </div>
     </div>

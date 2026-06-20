@@ -27,6 +27,38 @@ app.onError((err, c) => {
   console.error("Cloudflare Functions Error:", err);
   return c.json({ error: err.message || "An unexpected error occurred" }, 500);
 });
+// POST /api/auth/reset-password — Validate token, update password
+app.post('/auth/reset-password', async (c) => {
+  const db = getDbOrThrow(c);
+  const { token, newPassword } = await c.req.json();
+  if (!token || !newPassword) {
+    return c.json({ success: false, error: "Token and new password are required" }, 400);
+  }
+
+  const record = await db.prepare("SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0 AND expires_at > ?").bind(token, new Date().toISOString()).first();
+  if (!record) {
+    return c.json({ success: false, error: "This reset link has expired or is invalid." });
+  }
+
+  // Mark as used
+  await db.prepare("UPDATE password_reset_tokens SET used = 1 WHERE id = ?").bind(record.id).run();
+
+  const cleanEmail = record.email;
+
+  // Update company password if it's a manager account
+  const company = await db.prepare("SELECT id FROM company WHERE LOWER(TRIM(email)) = ?").bind(cleanEmail).first();
+  if (company) {
+    await db.prepare("UPDATE company SET managerPassword = ? WHERE id = ?").bind(newPassword, company.id).run();
+  }
+
+  // Update driver password if it's a driver account
+  const driver = await db.prepare("SELECT id FROM drivers WHERE LOWER(TRIM(email)) = ?").bind(cleanEmail).first();
+  if (driver) {
+    await db.prepare("UPDATE drivers SET pin = ? WHERE id = ?").bind(newPassword, driver.id).run();
+  }
+
+  return c.json({ success: true, message: "Password reset successfully!" });
+});
 
 // --- Push Messaging Helper (FCM v1 for Cloudflare) ---
 async function getToken(clientEmail: string, privateKey: string) {
@@ -571,19 +603,51 @@ app.post('/auth/forgot-password', async (c) => {
   const db = getDbOrThrow(c);
   const { email } = await c.req.json();
   if (!email) {
-    return c.json({ error: "Email target is required." }, 400);
+    return c.json({ error: "Email is required." }, 400);
   }
 
   const cleanEmail = email.toLowerCase().trim();
-  const company = await db.prepare("SELECT id FROM company WHERE LOWER(TRIM(email)) = ?").bind(cleanEmail).first();
+  const company = await db.prepare("SELECT id, name FROM company WHERE LOWER(TRIM(email)) = ?").bind(cleanEmail).first();
   const driver = await db.prepare("SELECT id FROM drivers WHERE LOWER(TRIM(email)) = ?").bind(cleanEmail).first();
 
   if (!company && !driver) {
     return c.json({ error: "No account found associated with this email address." }, 404);
   }
 
-  console.log(`[AUTH] Reset Link Request: ${cleanEmail}`);
-  return c.json({ success: true, message: "A recovery link has been dispatched to your work email. Integration pending." });
+  // Rate limit: check existing unexpired token within last 60s
+  const recent = await db.prepare("SELECT id FROM password_reset_tokens WHERE email = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC LIMIT 1").bind(cleanEmail, new Date().toISOString()).first();
+  if (recent) {
+    return c.json({ error: "A reset email was already sent recently. Please check your inbox or wait before requesting again." }, 429);
+  }
+
+  const token = generateVerifyToken();
+  const id = "prt-" + Date.now();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+  const createdAt = new Date().toISOString();
+
+  await db.prepare("INSERT INTO password_reset_tokens (id, email, token, expires_at, used, created_at) VALUES (?, ?, ?, ?, 0, ?)")
+    .bind(id, cleanEmail, token, expiresAt, createdAt).run();
+
+  const url = new URL(c.req.url);
+  const resetUrl = url.protocol + "//" + url.host + "/reset-password?token=" + token;
+
+  await sendBrevoEmail(c.env, cleanEmail,
+    "Reset your WalkSafe password",
+    '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;">' +
+    '<div style="text-align:center;margin-bottom:24px;"><span style="font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;">Walk<span style="color:#fea619;">Safe</span></span></div>' +
+    '<div style="background:#fff;border-radius:12px;padding:32px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
+    '<h2 style="color:#1a1c1b;font-size:18px;margin:0 0 12px;">Reset your password</h2>' +
+    '<p style="color:#47464b;font-size:14px;line-height:1.5;margin:0 0 24px;">Click the button below to reset your WalkSafe account password:</p>' +
+    '<div style="text-align:center;margin-bottom:24px;">' +
+    '<a href="' + resetUrl + '" style="display:inline-block;background:#1a1c1b;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;">Reset Password</a>' +
+    '</div>' +
+    '<p style="color:#77767b;font-size:12px;line-height:1.5;margin:0;">This link expires in <strong>15 minutes</strong>. If you didn't request a password reset, you can safely ignore this email.</p>' +
+    '</div>' +
+    '<div style="text-align:center;margin-top:16px;"><p style="color:#a0a09a;font-size:11px;margin:0;">WalkSafe Fleet Compliance &copy; 2026</p></div>' +
+    '</div>'
+  );
+
+  return c.json({ success: true, message: "A password reset link has been sent to your email." });
 });
 
 // 4. GET /api/auth/workspace-drivers/:id

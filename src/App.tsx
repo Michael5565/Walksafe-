@@ -17,6 +17,7 @@ const ManagerDashboard = lazy(() => import("./components/ManagerDashboard"));
 const SignupFlow = lazy(() => import("./components/SignupFlow"));
 const AuthAction = lazy(() => import("./pages/AuthAction"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Backup fallback states in case Express server is compiling/initializing in background
 
@@ -1644,7 +1645,7 @@ const loadDatabaseState = async (silently = false) => {
 
   useEffect(() => {
     if (!wsSession) {
-      if (currentPath !== "/" && currentPath !== "/login" && currentPath !== "/signup" && currentPath !== "/verify") {
+      if (currentPath !== "/" && currentPath !== "/login" && currentPath !== "/signup" && currentPath !== "/verify" && currentPath !== "/reset-password") {
         navigateTo("/");
       }
     } else {
@@ -1655,6 +1656,9 @@ const loadDatabaseState = async (silently = false) => {
   }, [wsSession, currentPath]);
 
   if (!wsSession) {
+    if (currentPath === "/reset-password") {
+      return <ResetPassword />;
+    }
     if (currentPath === "/verify") {
       return <VerifyEmail />;
     }
