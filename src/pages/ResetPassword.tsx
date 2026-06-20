@@ -2,20 +2,48 @@ import { useEffect, useState } from "react";
 
 export default function ResetPassword() {
   const [token, setToken] = useState("");
+  const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [status, setStatus] = useState<"form" | "loading" | "success" | "error">("form");
   const [message, setMessage] = useState("");
+  const [mode, setMode] = useState<"request" | "reset">("request");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const t = params.get("token");
-    if (!t) {
-      setStatus("error");
-      setMessage("Missing reset token. Please use the link from your email.");
-    } else {
+    if (t) {
       setToken(t);
+      setMode("reset");
     }
   }, []);
+
+  const handleRequestReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setMessage("Please enter your email address.");
+      return;
+    }
+    setStatus("loading");
+    setMessage("");
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatus("success");
+        setMessage(data.message || "A reset link has been sent to your email.");
+      } else {
+        setStatus("error");
+        setMessage(data.error || "Failed to send reset email.");
+      }
+    } catch {
+      setStatus("error");
+      setMessage("Network error. Please try again.");
+    }
+  };
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,10 +86,22 @@ export default function ResetPassword() {
         </div>
         <p style={{ fontSize: 10, color: "#fea619", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 24px" }}>UK DVSA Compliant</p>
 
-        {status === "form" && (
+        {mode === "request" && (
+          <form onSubmit={handleRequestReset} style={{ textAlign: "left" }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1a1c1b", margin: "0 0 4px", textAlign: "center" }}>Forgot Password?</h2>
+            <p style={{ fontSize: 12, color: "#77767b", margin: "0 0 16px", textAlign: "center" }}>Enter your email and we'll send you a reset link.</p>
+            {message && <p style={{ color: status === "error" ? "#DC2626" : "#16A34A", fontSize: 12, margin: "0 0 12px", textAlign: "center" }}>{message}</p>}
+            <input type="email" placeholder="you@company.co.uk" value={email} onChange={e => setEmail(e.target.value)} style={{ width: "100%", padding: "12px 14px", border: "1px solid #E5E5E0", borderRadius: 10, fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 12, background: "#fafaf8" }} />
+            <button type="submit" style={{ width: "100%", padding: "12px 0", background: "#000", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer", letterSpacing: "0.04em" }}>Send Reset Link</button>
+            <p style={{ textAlign: "center", marginTop: 12, fontSize: 12 }}>
+              <a href="/login" style={{ color: "#fea619", textDecoration: "none", fontWeight: 600 }}>Back to Login</a>
+            </p>
+          </form>
+        )}
+        {mode === "reset" && (
           <form onSubmit={handleReset} style={{ textAlign: "left" }}>
             <h2 style={{ fontSize: 16, fontWeight: 700, color: "#1a1c1b", margin: "0 0 16px", textAlign: "center" }}>Reset Your Password</h2>
-            {message && <p style={{ color: "#DC2626", fontSize: 12, margin: "0 0 12px", textAlign: "center" }}>{message}</p>}
+            {message && <p style={{ color: status === "error" ? "#DC2626" : "#16A34A", fontSize: 12, margin: "0 0 12px", textAlign: "center" }}>{message}</p>}
             <input type="password" placeholder="New password (min 6 characters)" value={newPassword} onChange={e => setNewPassword(e.target.value)} style={{ width: "100%", padding: "12px 14px", border: "1px solid #E5E5E0", borderRadius: 10, fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 12, background: "#fafaf8" }} />
             <button type="submit" style={{ width: "100%", padding: "12px 0", background: "#000", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer", letterSpacing: "0.04em" }}>Reset Password</button>
           </form>
