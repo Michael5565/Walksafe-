@@ -2306,11 +2306,16 @@ app.post("/auth/send-verify-link", async (c) => {
   if (!email || !uid) return c.json({ error: "Email and UID are required" }, 400);
   const cleanEmail = email.toLowerCase().trim();
 
-  // Rate limit: check existing unexpired token within last 60s
-  const recent = await db.prepare("SELECT id FROM email_verification_tokens WHERE email = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC LIMIT 1").bind(cleanEmail, new Date().toISOString()).first();
+  // Rate limit: only block if sent within last 60 seconds
+  const recent = await db.prepare("SELECT id, created_at FROM email_verification_tokens WHERE email = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC LIMIT 1").bind(cleanEmail, new Date().toISOString()).first();
   if (recent) {
-    const rec = recent;
-    return c.json({ error: "A verification email was already sent recently. Please check your inbox or wait before requesting again." }, 429);
+    const lastTime = new Date(recent.created_at).getTime();
+    const elapsed = Date.now() - lastTime;
+    if (elapsed < 60000) {
+      return c.json({ error: "Please wait before requesting another verification email." }, 429);
+    }
+    // Mark old token as used so a new one can be generated
+    await db.prepare("UPDATE email_verification_tokens SET used = 1 WHERE id = ?").bind(recent.id).run();
   }
 
   const token = generateVerifyToken();
