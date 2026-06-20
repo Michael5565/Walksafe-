@@ -26,7 +26,7 @@ interface SignupFlowProps {
 }
 
 export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlowProps) {
-  const [step, setStep] = useState<'details' | 'plan' | 'verify' | 'confirm'>('details');
+  const [step, setStep] = useState<'details' | 'plan' | 'verify'>('details');
   const [showPassword, setShowPassword] = useState(false);
 
   // Details form
@@ -193,10 +193,10 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
           await auth.currentUser.reload();
           if (auth.currentUser.emailVerified && isMounted) {
             setIsVerified(true);
-            setVerifyStatusMsg("SUCCESS: Email successfully verified! Transitioning to confirmation...");
+            setVerifyStatusMsg("SUCCESS: Email successfully verified! Redirecting to login...");
             clearInterval(interval);
             setTimeout(() => {
-              if (isMounted) setStep("confirm");
+              if (isMounted) window.location.href = "/login";
             }, 1500);
           }
         } catch (reloadErr) {
@@ -299,9 +299,9 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
         await auth.currentUser.reload();
         if (auth.currentUser.emailVerified) {
           setIsVerified(true);
-          setVerifyStatusMsg("SUCCESS: Email successfully verified! Transitioning...");
+          setVerifyStatusMsg("SUCCESS: Email successfully verified! Redirecting to login...");
           setTimeout(() => {
-            setStep("confirm");
+            window.location.href = "/login";
           }, 1200);
         } else {
           setError("Work email is not verified yet. Please locate and click the security link from your mail client.");
@@ -454,9 +454,9 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
             { key: 'details', label: 'Details' },
             { key: 'plan', label: 'Plan' },
             { key: 'verify', label: 'Verify' },
-            { key: 'confirm', label: 'Confirm' }
+            
           ].map((s, idx) => {
-            const stepList = ['details', 'plan', 'verify', 'confirm'];
+            const stepList = ['details', 'plan', 'verify'];
             const stepIndex = stepList.indexOf(step);
             const isCompleted = idx < stepIndex;
             const isActive = s.key === step;
@@ -810,110 +810,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
       )}
 
       {/* Step 4: Review & Confirm Summary */}
-      {step === 'confirm' && (
-        <form onSubmit={handleFinalSubmit} className="space-y-4 animate-in fade-in duration-200">
-          {error && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/15 rounded-xl flex items-start gap-2 text-xs text-rose-400 animate-in fade-in duration-200">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {success && (
-            <div className="p-3 bg-[#fea619]/10 border border-[#E5E5E0] rounded-xl flex items-center gap-2 text-xs text-[#fea619]">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-[#fea619]" />
-              <span>Workspace provisioned! Redirecting to dashboard...</span>
-            </div>
-          )}
-
-          {/* Account Summary section */}
-          <div className="space-y-2 bg-[#f4f4f2]/50 p-4 rounded-xl border border-[#E5E5E0]">
-            <h3 className=" font-bold text-[#1a1c1b] text-xs uppercase tracking-wider">Workspace Summary</h3>
-            
-            <div className="space-y-1.5 text-xs text-[#47464b] font-medium">
-              <div className="flex justify-between border-b border-[#E5E5E0]/30 pb-1.5">
-                <span className="text-[#77767b] uppercase text-[13px] tracking-normal">Manager Profile</span>
-                <span>{fullName}</span>
-              </div>
-              <div className="flex justify-between border-b border-[#E5E5E0]/30 pb-1.5">
-                <span className="text-[#77767b] uppercase text-[13px] tracking-normal">Work Email</span>
-                <span className="break-all">{workEmail}</span>
-              </div>
-              <div className="flex justify-between pb-0.5">
-                <span className="text-[#77767b] uppercase text-[13px] tracking-normal">Organization Fleet</span>
-                <span>{orgName}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Plan chosen card summary */}
-          <div className="bg-[#fef7e6] border border-[#fea619]/30 p-4 rounded-xl space-y-3">
-            <div>
-              <span className="text-[13px] font-bold uppercase tracking-wider text-[#fea619]">Plan Allocation Chosen</span>
-              <h4 className=" font-black text-[#1a1c1b] text-sm uppercase tracking-wider mt-0.5">{currentPlan?.name}</h4>
-              <p className="text-[#47464b] text-[13px] mt-0.5 leading-normal">{currentPlan?.description}</p>
-            </div>
-
-            <div className="pt-2.5 border-t border-[#E5E5E0] flex justify-between items-baseline">
-              <div>
-                <span className="text-[13px] text-[#77767b] block uppercase tracking-wider ">30-Day Trial Activation</span>
-                <span className="text-lg font-black text-[#fea619] uppercase tracking-wider mt-0.5 block">£0.00 FREE</span>
-              </div>
-              <div className="text-right">
-                <span className="text-[13px] text-[#77767b] block uppercase tracking-wider ">Subscription After</span>
-                <span className="text-xs font-bold text-[#1a1c1b] tracking-normal mt-0.5 block">
-                  {currentPlan?.id === 'enterprise' ? 'Custom Quote' : `£${currentPlan?.monthlyPrice}/mo`}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Compliance guarantee checklist */}
-          <div className="space-y-1.5 text-xs text-[#47464b] font-medium">
-            <div className="flex gap-2">
-              <Shield className="w-3.5 h-3.5 text-[#fea619] shrink-0 mt-0.5" />
-              <span>Full statutory DVSA-compliant log templates included</span>
-            </div>
-            <div className="flex gap-2">
-              <Check className="w-3.5 h-3.5 text-[#fea619] shrink-0 mt-0.5" />
-              <span>Card collected for trial — no charge until after 30 days</span>
-            </div>
-            <div className="flex gap-2">
-              <Check className="w-3.5 h-3.5 text-[#fea619] shrink-0 mt-0.5" />
-              <span>Cancel or adjust limits directly inside the billings view</span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2.5 pt-2">
-            <button
-              type="submit"
-              disabled={isLoading || success}
-              className="w-full bg-gradient-to-r from-[#1a1c1b] to-[#333] hover:from-[#2c2e2d] text-white font-bold text-[13px] uppercase tracking-wider py-3.5 rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 border-0"
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Activating workspace...
-                </>
-              ) : (
-                <>
-                  Activate Fleet Workspace
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setStep('verify')}
-              disabled={isLoading || success}
-              className="py-1.5 text-[12px] text-[#a0a09a] hover:text-[#47464b] transition-colors disabled:opacity-50 font-semibold tracking-wider"
-            >
-              ← Back to email verification
-            </button>
-          </div>
-        </form>
-      )}
+      
 
       {/* Branded support link block */}
       <div className="pt-4 border-t border-[#e8e8e4] text-center">
