@@ -641,7 +641,7 @@ app.post('/auth/forgot-password', async (c) => {
     '<div style="text-align:center;margin-bottom:24px;">' +
     '<a href="' + resetUrl + '" style="display:inline-block;background:#1a1c1b;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;">Reset Password</a>' +
     '</div>' +
-    '<p style="color:#77767b;font-size:12px;line-height:1.5;margin:0;">This link expires in <strong>15 minutes</strong>. If you didn't request a password reset, you can safely ignore this email.</p>' +
+    '<p style="color:#77767b;font-size:12px;line-height:1.5;margin:0;">This link expires in <strong>15 minutes</strong>. If you didn\'t request a password reset, you can safely ignore this email.</p>' +
     '</div>' +
     '<div style="text-align:center;margin-top:16px;"><p style="color:#a0a09a;font-size:11px;margin:0;">WalkSafe Fleet Compliance &copy; 2026</p></div>' +
     '</div>'
