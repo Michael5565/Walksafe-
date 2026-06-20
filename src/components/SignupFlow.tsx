@@ -702,7 +702,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                   onClick={() => setSelectedPlan(p.id)}
                   className={`py-2 px-1 rounded-lg text-[13px] font-black uppercase tracking-wider text-center transition-all duration-300 ${
                     isActive
-                      ? 'bg-[#000] text-[#fff] font-bold shadow-md '
+                      ? 'bg-[#0891b2] text-[#fff] font-bold shadow-md '
                       : 'text-[#47464b] hover:text-[#1a1c1b]'
                   }`}
                 >
@@ -728,13 +728,13 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                   }}
                   className={`text-left p-5 rounded-xl border-2 transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
                     matchesSelected
-                      ? 'border-[#fea619] bg-[#fef7e6] shadow-xl shadow-[#fea619]/5'
-                      : 'border-[#E5E5E0] bg-black/35 hover:border-[#c8c5cb]'
+                      ? 'border-[#0891b2] bg-[#ecfeff] shadow-xl shadow-[#0891b2]/10'
+                      : 'border-[#E5E5E0] bg-white hover:border-[#0891b2]/30 hover:shadow-md'
                   } ${matchesSelected ? 'flex' : 'flex'}`}
                 >
                   {/* Selected indicators */}
                   {matchesSelected && (
-                    <div className="absolute top-3.5 right-3.5 bg-[#fea619]/20 border border-[#fea619]/30 p-1 rounded-full text-[#fea619]">
+                    <div className="absolute top-3.5 right-3.5 bg-[#0891b2]/15 border border-[#0891b2]/25 p-1 rounded-full text-[#0891b2]">
                       <Check className="w-3 h-3 stroke-[3]" />
                     </div>
                   )}
@@ -749,7 +749,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                         <span className="text-xl  font-extrabold text-[#1a1c1b]">Contact Us</span>
                       ) : (
                         <>
-                          <span className="text-xl  font-extrabold text-[#1a1c1b]">£{plan.monthlyPrice}</span>
+                          <span className="text-xl  font-extrabold text-[#0891b2]">£{plan.monthlyPrice}</span>
                           <span className="text-[#77767b]  text-[12px]">/mo after trial</span>
                         </>
                       )}
@@ -758,7 +758,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                     <ul className="space-y-1 pt-2 border-t border-[#E5E5E0]/45">
                       {plan.features.map((feat, idx) => (
                         <li key={idx} className="flex items-center gap-1.5 text-[13px] text-[#47464b] font-medium">
-                           <Check className="w-3 h-3 text-[#fea619] shrink-0" />
+                           <Check className="w-3 h-3 text-[#0891b2] shrink-0" />
                           <span>{feat}</span>
                         </li>
                       ))}
