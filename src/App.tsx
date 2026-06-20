@@ -1894,6 +1894,7 @@ const loadDatabaseState = async (silently = false) => {
                 <div>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
                     <label style={{fontSize:11,fontWeight:700,color:'#47464b',textTransform:'uppercase',letterSpacing:'0.05em'}}>Password</label>
+                    <a href="/reset-password" style={{fontSize:10,color:'#fea619',fontWeight:600,textDecoration:'none',cursor:'pointer'}}>Forgot?</a>
                   </div>
                   <div style={{position:'relative'}}>
                     <Lock style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
