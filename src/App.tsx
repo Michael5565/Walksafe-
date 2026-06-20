@@ -1892,16 +1892,14 @@ const loadDatabaseState = async (silently = false) => {
                   </div>
                 </div>
                 <div>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                    <label style={{fontSize:11,fontWeight:700,color:'#47464b',textTransform:'uppercase',letterSpacing:'0.05em'}}>Password</label>
-                    <a href="/reset-password" style={{fontSize:10,color:'#fea619',fontWeight:600,textDecoration:'none',cursor:'pointer'}}>Forgot?</a>
-                  </div>
+                  <label style={{fontSize:11,fontWeight:700,color:'#47464b',textTransform:'uppercase',letterSpacing:'0.05em',display:'block',marginBottom:6}}>Password</label>
                   <div style={{position:'relative'}}>
                     <Lock style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
                     <input type="password" name="password" required style={{width:'100%',background:'#f9f9f7',border:'1.5px solid #e5e5e0',borderRadius:10,padding:'11px 14px 11px 40px',fontSize:14,color:'#1a1c1b',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} placeholder="Enter your password"
                       onFocus={e=>(e.target.style.borderColor='#fea619')}
                       onBlur={e=>(e.target.style.borderColor='#e5e5e0')} />
                   </div>
+                  <a href="/reset-password" style={{fontSize:11,color:'#fea619',fontWeight:600,textDecoration:'none',cursor:'pointer',display:'block',textAlign:'right',marginTop:2}}>Forgot password?</a>
                 </div>
                 <button type="submit" style={{width:'100%',padding:'14px 0',background:'linear-gradient(135deg,#1a1c1b 0%,#333 100%)',color:'#fff',border:'none',borderRadius:10,fontWeight:700,fontSize:13,cursor:'pointer',letterSpacing:'0.06em',textTransform:'uppercase',boxShadow:'0 4px 16px rgba(0,0,0,0.18)',marginTop:4,transition:'all 0.2s'}}>
                   Sign In →
