@@ -267,6 +267,26 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
           const data = await res.json();
           if (res.ok) {
             setVerifyStatusMsg("Work email verification link has been dispatched successfully! Please check your inbox.");
+            // Also create the company record immediately (awaiting verification)
+            try {
+              const baseSlug = orgName.trim().toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "company";
+              const cleanId = (baseSlug + "-" + Math.floor(1000 + Math.random() * 9000)).substring(0, 25);
+              await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  firebaseUid: user.uid,
+                  id: cleanId,
+                  name: orgName.trim(),
+                  plan: selectedPlan,
+                  managerEmail: cleanEmail,
+                  managerPassword: password,
+                  managerFullName: fullName.trim(),
+                }),
+              });
+            } catch (regErr) {
+              console.warn("[Signup] Company pre-creation warning (can be created later):", regErr);
+            }
           } else {
             setError(data.error || "Failed to send verification email");
           }

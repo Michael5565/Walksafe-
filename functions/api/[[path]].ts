@@ -658,7 +658,28 @@ app.post('/auth/forgot-password', async (c) => {
   const company = await db.prepare("SELECT id, name FROM company WHERE LOWER(TRIM(email)) = ?").bind(cleanEmail).first();
   const driver = await db.prepare("SELECT id FROM drivers WHERE LOWER(TRIM(email)) = ?").bind(cleanEmail).first();
 
+  // Also check Firebase Auth - the user might exist there even if D1 record is pending
+  let firebaseUserUid = null;
   if (!company && !driver) {
+    const fToken = await getFirebaseAdminToken(c.env);
+    if (fToken) {
+      try {
+        const lookupRes = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + fToken },
+          body: JSON.stringify({ email: [cleanEmail] }),
+        });
+        const lookupData = await lookupRes.json();
+        if (lookupData.users && lookupData.users.length > 0) {
+          firebaseUserUid = lookupData.users[0].localId;
+        }
+      } catch (e) {
+        console.warn("[Auth] Firebase lookup failed:", e);
+      }
+    }
+  }
+
+  if (!company && !driver && !firebaseUserUid) {
     return c.json({ error: "No account found associated with this email address." }, 404);
   }
 
