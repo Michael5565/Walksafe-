@@ -1629,6 +1629,7 @@ const loadDatabaseState = async (silently = false) => {
   };
 
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [mgrError, setMgrError] = useState("");
 
   useEffect(() => {
     const handlePopState = () => {
