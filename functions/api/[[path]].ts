@@ -212,6 +212,26 @@ async function setFirebaseEmailVerified(env, uid) {
   }
 }
 
+async function checkFirebaseEmailVerified(env, uid) {
+  const token = await getFirebaseAdminToken(env);
+  if (!token) return null;
+  try {
+    const res = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ localId: [uid] }),
+    });
+    const data = await res.json();
+    if (data.users && data.users.length > 0) {
+      return data.users[0].emailVerified === true;
+    }
+    return null;
+  } catch (e) {
+    console.error("[Firebase Admin] Lookup Error:", e);
+    return null;
+  }
+}
+
 function generateVerifyToken() {
   const a = new Uint8Array(32);
   crypto.getRandomValues(a);
@@ -354,9 +374,9 @@ app.post('/auth/register', async (c) => {
   const createdAt = new Date().toISOString();
 
   await db.prepare(`
-    INSERT INTO company (id, name, email, oLicence, plan, vehicleLimit, managerPassword, createdAt, trialStartedAt, trialEndsAt, isSubscribed)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(cleanId, name, emailToUse, oLicence || null, plan || 'starter', oLicenceLimit, managerPassword, createdAt, createdAt, body.trialEndsAt || null, 0).run();
+    INSERT INTO company (id, name, email, oLicence, plan, vehicleLimit, managerPassword, createdAt, trialStartedAt, trialEndsAt, isSubscribed, firebaseUid)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(cleanId, name, emailToUse, oLicence || null, plan || 'starter', oLicenceLimit, managerPassword, createdAt, createdAt, body.trialEndsAt || null, 0, body.firebaseUid || null).run();
 
   const newCompany = {
     id: cleanId,
@@ -495,6 +515,16 @@ app.post('/auth/login-manager', async (c) => {
 
   if (company.managerPassword !== password) {
     return c.json({ error: "Invalid Manager Password" }, 401);
+  }
+
+  // Check email verification if firebaseUid is stored
+  if (company.firebaseUid) {
+    const verified = await checkFirebaseEmailVerified(c.env, company.firebaseUid);
+    if (verified === false) {
+      return c.json({ error: "Please verify your email address before logging in. Check your inbox for the verification link." }, 403);
+    } else if (verified === null) {
+      console.warn("[Auth] Could not verify email status for:", company.firebaseUid);
+    }
   }
 
   const clientCompany = mapCompanyDbToClient(company);
