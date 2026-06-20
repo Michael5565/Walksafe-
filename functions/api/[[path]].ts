@@ -8,6 +8,7 @@ type Bindings = {
   FCM_CLIENT_EMAIL?: string;
   FCM_PRIVATE_KEY?: string;
   PAYSTACK_SECRET_KEY?: string;
+  BREVO_API_KEY?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api');
@@ -133,6 +134,89 @@ async function sendFcmPush(env: Bindings, token: string, title: string, body: st
   }
 }
 
+
+// --- Brevo Email Helper ---
+async function sendBrevoEmail(env, toEmail, subject, htmlContent) {
+  if (!env.BREVO_API_KEY) {
+    console.warn("[Brevo] API key not configured, skipping email send");
+    return null;
+  }
+  try {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "api-key": env.BREVO_API_KEY },
+      body: JSON.stringify({
+        sender: { name: "WalkSafe", email: "noreply@getwalksafe.co.uk" },
+        to: [{ email: toEmail }],
+        subject,
+        htmlContent,
+      }),
+    });
+    const result = await res.json();
+    console.log("[Brevo] Email result:", JSON.stringify(result));
+    return result;
+  } catch (err) {
+    console.error("[Brevo] Send failed:", err);
+    return null;
+  }
+}
+
+// --- Firebase Admin Auth Helper (reuses existing FCM service account) ---
+async function getFirebaseAdminToken(env) {
+  if (!env.FCM_CLIENT_EMAIL || !env.FCM_PRIVATE_KEY) return null;
+  const header = { alg: "RS256", typ: "JWT" };
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    iss: env.FCM_CLIENT_EMAIL,
+    scope: "https://www.googleapis.com/auth/identitytoolkit https://www.googleapis.com/auth/firebase",
+    aud: "https://oauth2.googleapis.com/token",
+    exp: now + 3600,
+    iat: now,
+  };
+  const decodeKey = (pem) => {
+    const normalized = pem.replace(/\\\\n/g, "\n");
+    const c = normalized.replace(/-----BEGIN PRIVATE KEY-----/, "").replace(/-----END PRIVATE KEY-----/, "").replace(/\s/g, "");
+    const b = atob(c);
+    const a = new Uint8Array(b.length);
+    for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
+    return a.buffer;
+  };
+  const b64 = (o) => btoa(JSON.stringify(o)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const msg = b64(header) + "." + b64(payload);
+  const key = await crypto.subtle.importKey("pkcs8", decodeKey(env.FCM_PRIVATE_KEY), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(msg));
+  const sSig = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const jwt = msg + "." + sSig;
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=" + jwt,
+  });
+  const data = await res.json();
+  return data.access_token;
+}
+
+async function setFirebaseEmailVerified(env, uid) {
+  const token = await getFirebaseAdminToken(env);
+  if (!token) return false;
+  try {
+    const res = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ localId: uid, emailVerified: true }),
+    });
+    return res.ok;
+  } catch (e) {
+    console.error("[Firebase Admin] Error:", e);
+    return false;
+  }
+}
+
+function generateVerifyToken() {
+  const a = new Uint8Array(32);
+  crypto.getRandomValues(a);
+  return Array.from(a).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 // --- Dynamic Database Bootstrapper & Migrations ---
 let isDbBootstrapped = false;
 
@@ -207,6 +291,14 @@ const bootstrapDb = async (db: D1Database) => {
     } catch (e) {
       console.error("Vehicles UNIQUE constraint removal failed:", e);
     }
+
+
+    // 4. Create email_verification_tokens table
+    try {
+      await db.prepare("CREATE TABLE IF NOT EXISTS email_verification_tokens (id TEXT PRIMARY KEY, email TEXT NOT NULL, token TEXT NOT NULL UNIQUE, uid TEXT NOT NULL, expires_at TEXT NOT NULL, used INTEGER DEFAULT 0, created_at TEXT NOT NULL)").run();
+      try { await db.prepare("CREATE INDEX IF NOT EXISTS idx_evt_token ON email_verification_tokens(token)").run(); } catch(_) {}
+      try { await db.prepare("CREATE INDEX IF NOT EXISTS idx_evt_email ON email_verification_tokens(email)").run(); } catch(_) {}
+    } catch(_) {}
 
     isDbBootstrapped = true;
   } catch (err) {
@@ -2201,6 +2293,78 @@ app.delete('/alert-rules/:id', async (c) => {
     await db.prepare("DELETE FROM alert_rules WHERE id=? AND companyId=?").bind(c.req.param('id'), companyId).run();
   } catch(e2) {}
   return c.json({ success: true });
+});
+
+
+// --- Custom Email Verification Endpoints ---
+
+// POST /api/auth/send-verify-link — Generate token, store in D1, send email via Brevo
+app.post("/auth/send-verify-link", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: "DB not bound" }, 500);
+  const { email, uid } = await c.req.json();
+  if (!email || !uid) return c.json({ error: "Email and UID are required" }, 400);
+  const cleanEmail = email.toLowerCase().trim();
+
+  // Rate limit: check existing unexpired token within last 60s
+  const recent = await db.prepare("SELECT id FROM email_verification_tokens WHERE email = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC LIMIT 1").bind(cleanEmail, new Date().toISOString()).first();
+  if (recent) {
+    const rec = recent;
+    return c.json({ error: "A verification email was already sent recently. Please check your inbox or wait before requesting again." }, 429);
+  }
+
+  const token = generateVerifyToken();
+  const id = "evt-" + Date.now();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+  const createdAt = new Date().toISOString();
+
+  await db.prepare("INSERT INTO email_verification_tokens (id, email, token, uid, expires_at, used, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)")
+    .bind(id, cleanEmail, token, uid, expiresAt, createdAt).run();
+
+  const verifyUrl = "/verify?token=" + token;
+
+  await sendBrevoEmail(c.env, cleanEmail,
+    "Verify your WalkSafe email address",
+    '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;">' +
+    '<div style="text-align:center;margin-bottom:24px;"><span style="font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;">Walk<span style="color:#fea619;">Safe</span></span></div>' +
+    '<div style="background:#fff;border-radius:12px;padding:32px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
+    '<h2 style="color:#1a1c1b;font-size:18px;margin:0 0 12px;">Verify your email address</h2>' +
+    '<p style="color:#47464b;font-size:14px;line-height:1.5;margin:0 0 24px;">Click the button below to verify your WalkSafe account email address:</p>' +
+    '<div style="text-align:center;margin-bottom:24px;">' +
+    '<a href="' + verifyUrl + '" style="display:inline-block;background:#1a1c1b;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;">Verify Email Address</a>' +
+    '</div>' +
+    '<p style="color:#77767b;font-size:12px;line-height:1.5;margin:0;">This link expires in <strong>15 minutes</strong>. If you didn\'t sign up for WalkSafe, you can safely ignore this email.</p>' +
+    '</div>' +
+    '<div style="text-align:center;margin-top:16px;"><p style="color:#a0a09a;font-size:11px;margin:0;">WalkSafe Fleet Compliance &copy; 2026</p></div>' +
+    '</div>'
+  );
+
+  return c.json({ success: true, message: "Verification email sent" });
+});
+
+// GET /api/auth/verify-email — Validate token, mark email verified, return JSON
+app.get("/auth/verify-email", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ success: false, error: "DB not bound" }, 500);
+  const token = c.req.query("token");
+  if (!token) return c.json({ success: false, error: "Token is required" }, 400);
+
+  const record = await db.prepare("SELECT * FROM email_verification_tokens WHERE token = ? AND used = 0 AND expires_at > ?").bind(token, new Date().toISOString()).first();
+  if (!record) {
+    return c.json({ success: false, message: "This verification link has expired or is invalid." });
+  }
+
+  // Mark as used
+  await db.prepare("UPDATE email_verification_tokens SET used = 1 WHERE id = ?").bind(record.id).run();
+
+  // Call Firebase Admin to set emailVerified
+  const verified = await setFirebaseEmailVerified(c.env, record.uid);
+
+  if (verified) {
+    return c.json({ success: true, message: "Email verified successfully! You can now close this tab and return to the app." });
+  } else {
+    return c.json({ success: false, message: "Verification failed. Please try signing up again." });
+  }
 });
 
 // Catch-all 404 fallback

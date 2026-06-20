@@ -16,6 +16,7 @@ const DriverPwa = lazy(() => import("./components/DriverPwa"));
 const ManagerDashboard = lazy(() => import("./components/ManagerDashboard"));
 const SignupFlow = lazy(() => import("./components/SignupFlow"));
 const AuthAction = lazy(() => import("./pages/AuthAction"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 
 // Backup fallback states in case Express server is compiling/initializing in background
 
@@ -1643,7 +1644,7 @@ const loadDatabaseState = async (silently = false) => {
 
   useEffect(() => {
     if (!wsSession) {
-      if (currentPath !== "/" && currentPath !== "/login" && currentPath !== "/signup") {
+      if (currentPath !== "/" && currentPath !== "/login" && currentPath !== "/signup" && currentPath !== "/verify") {
         navigateTo("/");
       }
     } else {
@@ -1654,6 +1655,9 @@ const loadDatabaseState = async (silently = false) => {
   }, [wsSession, currentPath]);
 
   if (!wsSession) {
+    if (currentPath === "/verify") {
+      return <VerifyEmail />;
+    }
     if (currentPath.startsWith("/auth/")) {
       return <AuthAction />;
     }
