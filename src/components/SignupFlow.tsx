@@ -144,8 +144,8 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters, with upper, lower & a number.");
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
       return;
     }
 
@@ -566,7 +566,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min. 8 chars, upper, lower & number"
+                placeholder="Min. 6 chars, upper, lower & special"
                 className="w-full pl-10 pr-10 py-3 bg-[#fafaf8] border-[1.5px] border-[#e8e8e4] hover:border-[#c8c5cb] focus:border-[#fea619] focus:ring-2 focus:ring-[#fea619]/12 rounded-xl text-sm text-[#1a1c1b] placeholder-[#c0bfc4] focus:outline-none transition-all"
               />
               <button
@@ -584,8 +584,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#a0a09a] block">Password requirements</span>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                   {[
-                    [password.length >= 8, 'At least 8 characters'],
-                    [/\d/.test(password), 'Contains a number'],
+                    [password.length >= 6, 'At least 6 characters'],
                   ].map(([met, label]) => (
                     <div key={String(label)} className="flex items-center gap-1.5">
                       <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-all ${
