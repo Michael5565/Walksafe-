@@ -594,7 +594,29 @@ app.post('/auth/login-manager', async (c) => {
   }
 
   if (company.managerPassword !== password) {
-    return c.json({ error: "Invalid Manager Password" }, 401);
+    // Before rejecting, try Firebase Auth as fallback (user might exist there)
+    try {
+      const fToken = await getFirebaseAdminToken(c.env);
+      if (fToken) {
+        const signInRes = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + "AIzaSyDG_aHph-hlD7TSUq4HMIlD0Wpl8YpI29c", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: cleanEmail, password, returnSecureToken: true }),
+        });
+        const signInData = await signInRes.json();
+        if (signInData.registered && !signInData.error) {
+          // Firebase Auth confirmed password is correct, but D1 password is out of sync
+          // Update D1 password to match
+          await db.prepare("UPDATE company SET managerPassword = ? WHERE id = ?").bind(password, company.id).run();
+        } else {
+          return c.json({ error: "Invalid Manager Password" }, 401);
+        }
+      } else {
+        return c.json({ error: "Invalid Manager Password" }, 401);
+      }
+    } catch {
+      return c.json({ error: "Invalid Manager Password" }, 401);
+    }
   }
 
   // Check email verification if firebaseUid is stored
