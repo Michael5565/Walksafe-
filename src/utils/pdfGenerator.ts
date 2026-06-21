@@ -417,37 +417,38 @@ const templateName = safeCheck.templateName || undefined;
   // -- CHECK ITEM PHOTOS (pass/fail photos for all checks) --
   // -- INLINE ITEM PHOTOS (addImage with auto-detection) --
   // try simple addImage with auto-detect from data URL
-  // Try items first, then fall back to itemPhotos
-  const photoItems = (check as any).items || [];
-  const photoMap = (check as any).itemPhotos || [];
-  // Build a map of itemKey -> photoUrl from itemPhotos for fallback
-  const photoLookup: Record<string, string> = {};
-  for (let fi = 0; fi < photoMap.length; fi++) {
-    if (photoMap[fi]?.photoUrl) photoLookup[photoMap[fi].itemKey] = photoMap[fi].photoUrl;
-  }
-  for (let pi = 0; pi < photoItems.length; pi++) {
-    const pit = photoItems[pi];
-    const url = pit.photoUrl || photoLookup[pit.itemKey];
-    if (url && typeof url === "string" && url.length > 100) {
-      try {
-        const sy = doc.getY();
-        if (sy > 250) doc.addPage();
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor("#000000");
-        doc.text(String(pit.itemLabel || "Item " + (pi+1)), 10, sy + 5);
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(6);
-        doc.text("Result: " + (pit.result === "fail" ? "FAIL" : "PASS"), 10, sy + 10);
-        doc.addImage(url, 125, sy + 1, 60, 38);
-        doc.setY(sy + 42);
-      } catch(e) {
-        console.warn("[PDF] photo skip:", e);
+  // -- ITEM PHOTOS (using manual y cursor) --
+  if ((check as any).items) {
+    const photoItems2 = (check as any).items;
+    const photoMap2 = (check as any).itemPhotos || [];
+    const photoLookup2: Record<string, string> = {};
+    for (let fi2 = 0; fi2 < photoMap2.length; fi2++) {
+      if (photoMap2[fi2]?.photoUrl) photoLookup2[photoMap2[fi2].itemKey] = photoMap2[fi2].photoUrl;
+    }
+    for (let pi2 = 0; pi2 < photoItems2.length; pi2++) {
+      const pit2 = photoItems2[pi2];
+      const url2 = pit2.photoUrl || photoLookup2[pit2.itemKey];
+      if (url2 && typeof url2 === "string" && url2.length > 100) {
+        try {
+          if (y > 250) { doc.addPage(); y = 15; }
+          doc.setFont("Helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor("#000000");
+          doc.text(String(pit2.itemLabel || "Item " + (pi2+1)), 10, y + 5);
+          doc.setFont("Helvetica", "normal");
+          doc.setFontSize(6);
+          doc.text("Result: " + (pit2.result === "fail" ? "FAIL" : "PASS"), 10, y + 10);
+          doc.addImage(url2, 125, y + 1, 60, 38);
+          y += 42;
+        } catch(e2) {
+          console.warn("[PDF] photo skip:", e2);
+          y += 10;
+        }
       }
     }
   }
-
-  // -- MISCELLANEOUS DAMAGE & FIELD NOTES SECTION --
+  
+  // -- MISCELLANEOUS DAMAGE   // -- MISCELLANEOUS DAMAGE & FIELD NOTES SECTION --  // -- MISCELLANEOUS DAMAGE & FIELD NOTES SECTION -- FIELD NOTES SECTION --
   if (typeof doc.addImage === "function" && ((safeCheck.miscDamageNotes && safeCheck.miscDamageNotes.trim() !== "") || safeCheck.miscDamagePhotoUrl)) {
     if (y + 40 > 280) {
       doc.addPage();
