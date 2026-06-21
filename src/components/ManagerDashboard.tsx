@@ -3675,8 +3675,7 @@ export default function ManagerDashboard({
           }}
         />
       )}
-  </>
-  );
+    );
 }
 
 
