@@ -882,10 +882,15 @@ export default function ManagerDashboard({
     const veh = (vehicles && vehicles.length > 0) ? (vehicles.find(v => v.id === check.vehicleId) || vehicles[0]) : null;
     const drv = (drivers && drivers.length > 0) ? (drivers.find(d => d.id === check.driverId) || drivers[0]) : null;
     const relatedDefs = defects ? defects.filter(df => df.checkId === check.id) : [];
-    const doc = generateDVSA_PDF(check, veh!, drv!, company, relatedDefs);
-    const regLabel = veh ? veh.registration : "UNKNOWN";
-    const dateLabel = check ? check.checkDate : new Date().toISOString().split('T')[0];
-    doc.save(`WalkSafe_Compliance_${regLabel}_${dateLabel}.pdf`);
+    try {
+      const doc = generateDVSA_PDF(check, veh!, drv!, company, relatedDefs);
+      const regLabel = veh ? veh.registration : "UNKNOWN";
+      const dateLabel = check ? check.checkDate : new Date().toISOString().split("T")[0];
+      doc.save("WalkSafe_Compliance_" + regLabel + "_" + dateLabel + ".pdf");
+    } catch (pdfErr) {
+      console.error("PDF generation failed:", pdfErr);
+      alert("Could not generate PDF. Some photos may be too large or the check data is incomplete.");
+    }
   };
 
         // Consolidated multi-day PDF download - stacks each check's full DVSA report natively in one document
@@ -920,7 +925,7 @@ export default function ManagerDashboard({
       }
     }
     if (consolidatedDoc) {
-      consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + reportDateTo + '.pdf');
+try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + reportDateTo + '.pdf'); } catch(ce) { console.error("Consolidated PDF save failed:", ce); alert("Could not save consolidated PDF."); }
     }
   };
 

@@ -415,7 +415,7 @@ const templateName = safeCheck.templateName || undefined;
   }
 
   // -- CHECK ITEM PHOTOS (pass/fail photos for all checks) --
-  if ((check as any).items) {
+  if ((check as any).items && typeof doc.getY === "function") {
     (check as any).items.forEach((it: any) => {
       if (it.photoUrl) {
         const startY = doc.getY();
@@ -440,7 +440,7 @@ const templateName = safeCheck.templateName || undefined;
   }
 
   // -- MISCELLANEOUS DAMAGE & FIELD NOTES SECTION --
-  if ((safeCheck.miscDamageNotes && safeCheck.miscDamageNotes.trim() !== "") || safeCheck.miscDamagePhotoUrl) {
+  if (typeof doc.addImage === "function" && ((safeCheck.miscDamageNotes && safeCheck.miscDamageNotes.trim() !== "") || safeCheck.miscDamagePhotoUrl)) {
     if (y + 40 > 280) {
       doc.addPage();
       y = 15;
