@@ -836,7 +836,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       result: 'fail' as const,
       severity: defectSeverity,
       description: defectDescription.trim() || `Asset wear noted on ${currentItem.label}`,
-      photoUrl: defectPhoto || "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=400" // fallbacks as per selection rules
+      photoUrl: requiredPhotoUrl || defectPhoto || "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=400" // fallbacks as per selection rules
     };
 
     const updated = [...activeCheckResults.filter(r => r.itemKey !== currentItem.key), resultItem];
@@ -971,10 +971,15 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
         }));
     }
     
-    const doc = generateDVSA_PDF(c, dVeh!, dDrv!, company, relateDefs);
+try {
+      const doc = generateDVSA_PDF(c, dVeh!, dDrv!, company, relateDefs);
     const regLabel = dVeh ? dVeh.registration : "UNKNOWN";
     const dateLabel = c ? c.checkDate : new Date().toISOString().split('T')[0];
     doc.save(`WalkSafe_Record_${regLabel}_${dateLabel}.pdf`);
+    } catch (pdfErr) {
+      console.error("PDF failed:", pdfErr);
+      triggerAlert("Could not generate PDF. Some photos may be too large.", "PDF Error");
+    }
   };
 
   const getDriverPastChecks = () => {
