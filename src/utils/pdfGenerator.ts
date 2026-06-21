@@ -344,10 +344,10 @@ const templateName = safeCheck.templateName || undefined;
       doc.setTextColor(grayColor);
       if (def.photoUrl) {
         try {
-          doc.addImage(def.photoUrl, "JPEG", 130, y + 4, 64, Math.max(35, upperHeight - 6));
+          try { doc.addImage(def.photoUrl, "JPEG", 130, y + 4, 64, Math.max(35, upperHeight - 6)); } catch(je) { try { doc.addImage(def.photoUrl, 130, y + 4, 64, Math.max(35, upperHeight - 6)); } catch(pe) { doc.text("[Photo]", 130, y + 20); } }
         } catch (e) {
           try {
-            doc.addImage(def.photoUrl, "PNG", 130, y + 4, 64, Math.max(35, upperHeight - 6));
+            doc.addImage(def.photoUrl, 130, y + 4, 64, Math.max(35, upperHeight - 6));
           } catch (e2) {
             doc.text("[PHOTO ATTACHED]", 145, y + 20);
           }
@@ -430,7 +430,7 @@ const templateName = safeCheck.templateName || undefined;
         // Try JPEG first, fall back to PNG
         let imgAdded = false;
         try { doc.addImage(it.photoUrl, "JPEG", 125, startY + 1, 60, 38); imgAdded = true; }
-        catch(e) { try { doc.addImage(it.photoUrl, "PNG", 125, startY + 1, 60, 38); imgAdded = true; } catch(e2) {} }
+        catch(e) { try { doc.addImage(it.photoUrl, 125, startY + 1, 60, 38); imgAdded = true; } catch(e2) {} }
         if (!imgAdded) {
           doc.text("[Photo could not be embedded]", 125, startY + 20);
         }
