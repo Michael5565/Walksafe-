@@ -1290,6 +1290,7 @@ const loadDatabaseState = async (silently = false) => {
       driverSignature: checkPayload.driverSignature,
       checkDate: new Date().toISOString().split('T')[0],
       items: checkPayload.items,
+      itemPhotos: checkPayload.itemPhotos || [],
       createdAt: new Date().toISOString(),
       latitude: checkPayload.latitude,
       longitude: checkPayload.longitude,
@@ -1356,7 +1357,8 @@ const loadDatabaseState = async (silently = false) => {
         miscDamageNotes: String(checkPayload.miscDamageNotes ?? ""),
         miscDamagePhotoUrl: typeof checkPayload.miscDamagePhotoUrl === "string" ? checkPayload.miscDamagePhotoUrl : "",
         scheduleId: checkPayload.scheduleId != null ? String(checkPayload.scheduleId) : null,
-        templateName: String(checkPayload.templateName ?? "")
+        templateName: String(checkPayload.templateName ?? ""),
+        itemPhotos: checkPayload.itemPhotos || []
       };
 
       try {

@@ -417,28 +417,32 @@ const templateName = safeCheck.templateName || undefined;
   // -- CHECK ITEM PHOTOS (pass/fail photos for all checks) --
   // -- INLINE ITEM PHOTOS (addImage with auto-detection) --
   // try simple addImage with auto-detect from data URL
-  if ((check as any).items) {
-    const itemsArr = (check as any).items;
-    for (let pi = 0; pi < itemsArr.length; pi++) {
-      const pit = itemsArr[pi];
-      if (pit.photoUrl && typeof pit.photoUrl === "string" && pit.photoUrl.length > 100) {
-        try {
-          const sy = doc.getY();
-          if (sy > 250) doc.addPage();
-          doc.setFont("Helvetica", "bold");
-          doc.setFontSize(8);
-          doc.setTextColor("#000000");
-          doc.text(String(pit.itemLabel || "Item " + (pi+1)), 10, sy + 5);
-          doc.setFont("Helvetica", "normal");
-          doc.setFontSize(6);
-          doc.text("Result: " + (pit.result === "fail" ? "FAIL" : "PASS"), 10, sy + 10);
-          // addImage with data URL - no format param for auto-detect
-          doc.addImage(pit.photoUrl, 125, sy + 1, 60, 38);
-          doc.setY(sy + 42);
-        } catch(e) {
-          console.warn("[PDF] photo skip:", e);
-          // Skip this photo silently rather than crash
-        }
+  // Try items first, then fall back to itemPhotos
+  const photoItems = (check as any).items || [];
+  const photoMap = (check as any).itemPhotos || [];
+  // Build a map of itemKey -> photoUrl from itemPhotos for fallback
+  const photoLookup: Record<string, string> = {};
+  for (let fi = 0; fi < photoMap.length; fi++) {
+    if (photoMap[fi]?.photoUrl) photoLookup[photoMap[fi].itemKey] = photoMap[fi].photoUrl;
+  }
+  for (let pi = 0; pi < photoItems.length; pi++) {
+    const pit = photoItems[pi];
+    const url = pit.photoUrl || photoLookup[pit.itemKey];
+    if (url && typeof url === "string" && url.length > 100) {
+      try {
+        const sy = doc.getY();
+        if (sy > 250) doc.addPage();
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor("#000000");
+        doc.text(String(pit.itemLabel || "Item " + (pi+1)), 10, sy + 5);
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(6);
+        doc.text("Result: " + (pit.result === "fail" ? "FAIL" : "PASS"), 10, sy + 10);
+        doc.addImage(url, 125, sy + 1, 60, 38);
+        doc.setY(sy + 42);
+      } catch(e) {
+        console.warn("[PDF] photo skip:", e);
       }
     }
   }
