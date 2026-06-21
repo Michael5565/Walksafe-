@@ -3662,8 +3662,6 @@ export default function ManagerDashboard({
 
 
       
-    </div>
-
       {tourStep >= 0 && (
         <TourSpotlight
           step={tourStep}
@@ -3675,7 +3673,8 @@ export default function ManagerDashboard({
           }}
         />
       )}
-  );
+    </div>
+    );
 }
 
 
