@@ -8,6 +8,7 @@ import { Vehicle, Driver, WalkaroundCheck, Defect, Company, Announcement, Schedu
 import { generateDVSA_PDF } from "../utils/pdfGenerator";
 import { isScheduleDueToday } from "../utils/scheduleUtils";
 import SignaturePad from "./SignaturePad";
+import TourSpotlight from "./TourSpotlight";
 
 /* =========================================================
    Design: Institutional Minimalism
@@ -365,6 +366,7 @@ export default function ManagerDashboard({
   const [globalSearch, setGlobalSearch] = useState("");
   const [publishTemplates, setPublishTemplates] = useState<{name:string;desc:string;selected:boolean}[]>([]);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [tourStep, setTourStep] = useState(-1);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
   useEffect(() => { const id = setInterval(() => { try { setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })); } catch(e) {} }, 1000); return () => clearInterval(id); }, []);
   useEffect(() => { const t = setInterval(() => setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })), 1000); return () => clearInterval(t); }, []);
@@ -1093,6 +1095,7 @@ export default function ManagerDashboard({
           </div>
           <div className="flex items-center gap-4">
             <button onClick={() => setShowTour(true)}
+              onClick={() => setTourStep(0)}
               className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded cursor-pointer">
               help
             </button>
@@ -3660,6 +3663,18 @@ export default function ManagerDashboard({
 
       
     </div>
+
+      {tourStep >= 0 && (
+        <TourSpotlight
+          step={tourStep}
+          onNext={() => setTourStep(Math.min(tourStep + 1, 4))}
+          onBack={() => setTourStep(Math.max(tourStep - 1, 0))}
+          onClose={() => setTourStep(-1)}
+          onTabChange={(tab) => {
+            try { setActiveTab(tab as any); } catch(e) {}
+          }}
+        />
+      )}
   );
 }
 
