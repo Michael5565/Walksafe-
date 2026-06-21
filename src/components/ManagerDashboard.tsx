@@ -366,7 +366,6 @@ export default function ManagerDashboard({
   const [publishTemplates, setPublishTemplates] = useState<{name:string;desc:string;selected:boolean}[]>([]);
   const [showTour, setShowTour] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-  const [showTour, setShowTour] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
   useEffect(() => { const id = setInterval(() => { try { setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })); } catch(e) {} }, 1000); return () => clearInterval(id); }, []);
   useEffect(() => { const t = setInterval(() => setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })), 1000); return () => clearInterval(t); }, []);
