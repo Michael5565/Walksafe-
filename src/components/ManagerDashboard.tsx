@@ -331,20 +331,7 @@ interface ManagerDashboardProps {
   onLogOutWorkspace?: () => void;
 
 
-      {showTour && (
-        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-primary mb-4">Welcome to WalkSafe</h2>
-            <div className="space-y-3 mb-6">
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">1</span><div><p className="font-semibold text-sm">Dashboard</p><p className="text-xs text-gray-500">Check status, defects, fleet health</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">2</span><div><p className="font-semibold text-sm">Add Vehicles & Drivers</p><p className="text-xs text-gray-500">Register fleet with DVLA lookup</p></div></div>
-              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">3</span><div><p className="font-semibold text-sm">Compliance Templates</p><p className="text-xs text-gray-500">Built-in scaffolding/haulage checklists</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">4</span><div><p className="font-semibold text-sm">Schedule & Track</p><p className="text-xs text-gray-500">Recurring checks and PDF audit trails</p></div></div>
-            </div>
-            <button onClick={() => setShowTour(false)} className="w-full py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 cursor-pointer">Got it</button>
-          </div>
-        </div>
-      )}
+      
 }
 
 export default function ManagerDashboard({
@@ -379,6 +366,7 @@ export default function ManagerDashboard({
   const [publishTemplates, setPublishTemplates] = useState<{name:string;desc:string;selected:boolean}[]>([]);
   const [showTour, setShowTour] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
   useEffect(() => { const id = setInterval(() => { try { setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })); } catch(e) {} }, 1000); return () => clearInterval(id); }, []);
   useEffect(() => { const t = setInterval(() => setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })), 1000); return () => clearInterval(t); }, []);
@@ -3664,6 +3652,24 @@ export default function ManagerDashboard({
             </div>
             <div className="bg-surface-container-low p-4 text-center border-t border-border-subtle">
               <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Secure Authentication Protocol Active</p>
+
+      {showTour && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">i</span>
+              <h2 className="text-lg font-bold text-primary">Welcome to WalkSafe</h2>
+            </div>
+            <div className="space-y-3">
+              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0 text-xs">1</span><div><p className="font-semibold text-sm">Dashboard Overview</p><p className="text-xs text-gray-500">Check today status</p></div></div>
+              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0 text-xs">2</span><div><p className="font-semibold text-sm">Add Vehicles & Drivers</p><p className="text-xs text-gray-500">Register with DVLA lookup</p></div></div>
+              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg"><span className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 text-xs">3</span><div><p className="font-semibold text-sm">Compliance Templates</p><p className="text-xs text-gray-500">Built-in checklists with mandatory photos</p></div></div>
+              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0 text-xs">4</span><div><p className="font-semibold text-sm">Schedule & Track</p><p className="text-xs text-gray-500">Set recurring checks</p></div></div>
+            </div>
+            <button onClick={() => setShowTour(false)} className="w-full mt-5 py-3 bg-primary text-white font-bold text-sm rounded-lg hover:opacity-90 cursor-pointer">Got it</button>
+          </div>
+        </div>
+      )}
             </div>
           </div>
         </div>
