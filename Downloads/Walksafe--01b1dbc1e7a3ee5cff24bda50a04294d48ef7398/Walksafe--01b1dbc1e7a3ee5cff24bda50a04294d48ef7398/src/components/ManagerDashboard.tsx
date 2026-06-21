@@ -329,22 +329,6 @@ interface ManagerDashboardProps {
   onMarkNotificationsAsRead: () => Promise<void>;
   onTriggerRefresh: () => void;
   onLogOutWorkspace?: () => void;
-
-
-      {showTour && (
-        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-primary mb-4">Welcome to WalkSafe</h2>
-            <div className="space-y-3 mb-6">
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">1</span><div><p className="font-semibold text-sm">Dashboard</p><p className="text-xs text-gray-500">Check status, defects, fleet health</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">2</span><div><p className="font-semibold text-sm">Add Vehicles & Drivers</p><p className="text-xs text-gray-500">Register fleet with DVLA lookup</p></div></div>
-              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">3</span><div><p className="font-semibold text-sm">Compliance Templates</p><p className="text-xs text-gray-500">Built-in scaffolding/haulage checklists</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">4</span><div><p className="font-semibold text-sm">Schedule & Track</p><p className="text-xs text-gray-500">Recurring checks and PDF audit trails</p></div></div>
-            </div>
-            <button onClick={() => setShowTour(false)} className="w-full py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 cursor-pointer">Got it</button>
-          </div>
-        </div>
-      )}
 }
 
 export default function ManagerDashboard({
@@ -3670,7 +3654,23 @@ export default function ManagerDashboard({
       )}
 
     </div>
-  );
+  
+
+      {showTour && (
+        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-primary mb-4">Welcome to WalkSafe</h2>
+            <div className="space-y-3 mb-6">
+              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">1</span><div><p className="font-semibold text-sm">Dashboard</p><p className="text-xs text-gray-500">Check status, defects, fleet health</p></div></div>
+              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">2</span><div><p className="font-semibold text-sm">Add Vehicles & Drivers</p><p className="text-xs text-gray-500">Register fleet with DVLA lookup</p></div></div>
+              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">3</span><div><p className="font-semibold text-sm">Compliance Templates</p><p className="text-xs text-gray-500">Built-in scaffolding/haulage checklists with mandatory photos</p></div></div>
+              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">4</span><div><p className="font-semibold text-sm">Schedule & Track</p><p className="text-xs text-gray-500">Recurring checks and PDF audit trails</p></div></div>
+            </div>
+            <button onClick={() => setShowTour(false)} className="w-full py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 cursor-pointer">Got it</button>
+          </div>
+        </div>
+      )}
+);
 }
 
 
