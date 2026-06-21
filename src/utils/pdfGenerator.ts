@@ -418,17 +418,23 @@ const templateName = safeCheck.templateName || undefined;
   if ((check as any).items) {
     (check as any).items.forEach((it: any) => {
       if (it.photoUrl) {
-        if (doc.getY() > 250) doc.addPage();
+        const startY = doc.getY();
+        if (startY > 250) { doc.addPage(); }
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(9);
         doc.setTextColor("#000000");
-        doc.text(`${it.itemLabel}`, 10, doc.getY() + 4);
+        doc.text(it.itemLabel, 10, startY + 6);
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(7);
-        doc.text(`Result: ${it.result === "fail" ? "FAIL" : "PASS"}`, 10, doc.getY() + 2);
-        try { doc.addImage(it.photoUrl, "JPEG", 120, doc.getY() - 12, 64, 40); }
-        catch(e) { try { doc.addImage(it.photoUrl, "PNG", 120, doc.getY() - 12, 64, 40); } catch(e2) {} }
-        doc.setY(doc.getY() + 32);
+        doc.text("Result: " + (it.result === "fail" ? "FAIL" : "PASS"), 10, startY + 13);
+        // Try JPEG first, fall back to PNG
+        let imgAdded = false;
+        try { doc.addImage(it.photoUrl, "JPEG", 125, startY + 1, 60, 38); imgAdded = true; }
+        catch(e) { try { doc.addImage(it.photoUrl, "PNG", 125, startY + 1, 60, 38); imgAdded = true; } catch(e2) {} }
+        if (!imgAdded) {
+          doc.text("[Photo could not be embedded]", 125, startY + 20);
+        }
+        doc.setY(startY + 42);
       }
     });
   }
