@@ -402,6 +402,7 @@ export default function ManagerDashboard({
   const [drvPin, setDrvPin] = useState("");
   const [drvStep, setDrvStep] = useState(1);
   const [drvDefaultVeh, setDrvDefaultVeh] = useState("");
+  const [drvAssignedVehs, setDrvAssignedVehs] = useState<string[]>([]);
   const [generatedLink, setGeneratedLink] = useState("");
 
   // Edit states
@@ -831,7 +832,7 @@ export default function ManagerDashboard({
     if (isSavingDriver) return;
     setIsSavingDriver(true);
     try {
-      const payload = { fullName: drvName, email: drvEmail, phone: drvPhone, pin: drvPin, defaultVehicleId: drvDefaultVeh || undefined, installToken: drvInviteToken || undefined };
+      const payload = { fullName: drvName, email: drvEmail, phone: drvPhone, pin: drvPin, defaultVehicleId: drvDefaultVeh || undefined, assignedVehicleIds: drvAssignedVehs.length > 0 ? drvAssignedVehs : undefined, installToken: drvInviteToken || undefined };
       if (editingDriver) { if (onUpdateDriver) await onUpdateDriver(editingDriver.id, payload); }
       else await onAddDriver(payload);
       setShowDrvModal(false); resetDrvForm();
@@ -845,7 +846,7 @@ export default function ManagerDashboard({
   };
 
   const resetDrvForm = () => {
-    setDrvName(""); setDrvEmail(""); setDrvPhone(""); setDrvPin(""); setDrvDefaultVeh("");
+    setDrvName(""); setDrvEmail(""); setDrvPhone(""); setDrvPin(""); setDrvDefaultVeh(""); setDrvAssignedVehs([]);
     setDrvInviteToken(""); setGeneratedLink(""); setEditingDriver(null);
   };
 
@@ -1790,6 +1791,7 @@ export default function ManagerDashboard({
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter">
                     {drivers.map(d => {
                       const dVeh = vehicles.find(v => v.id === d.defaultVehicleId);
+                      const dAssignedVehs = (d.assignedVehicleIds || []).map(id => vehicles.find(v => v.id === id)).filter(Boolean);
                       const driverChecksCount = checks.filter(c => c.driverId === d.id).length;
                       return (
                         <div key={d.id} className="bg-surface-card border border-border-subtle p-card-padding flex flex-col gap-4 group hover:border-secondary-container transition-all">
@@ -1831,7 +1833,7 @@ export default function ManagerDashboard({
                             </button>
                             <button onClick={() => {
                               setEditingDriver(d); setDrvName(d.fullName); setDrvEmail(d.email || ""); setDrvPhone(d.phone || "");
-                              setDrvPin(d.pin); setDrvDefaultVeh(d.defaultVehicleId || ""); setDrvInviteToken(d.installToken || "");
+                              setDrvPin(d.pin); setDrvDefaultVeh(d.defaultVehicleId || ""); setDrvAssignedVehs(d.assignedVehicleIds || []); setDrvInviteToken(d.installToken || "");
                               setShowDrvModal(true);
                             }} className="px-3 py-2.5 border border-border-subtle text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">
                               <Edit className="w-4 h-4" />
@@ -3292,8 +3294,27 @@ export default function ManagerDashboard({
                   <input type="text" maxLength={4} required value={drvPin} onChange={(e) => setDrvPin(e.target.value.replace(/\D/g, ''))} placeholder="e.g. 1234" className="w-full bg-surface border border-border-subtle p-2.5 text-body-md focus:outline-hidden focus:border-primary font-data-mono tracking-widest text-center" />
                 </div>
                 <div>
-                  <label className="font-label-caps text-label-caps text-on-surface-variant block mb-1">Default Vehicle</label>
-                  <CustomSelect value={drvDefaultVeh} onChange={(val) => setDrvDefaultVeh(val)} placeholder="-- None --" options={vehicles.map(v => ({ value: v.id, label: `${v.registration} (${v.make})` }))} />
+                  <label className="font-label-caps text-label-caps text-on-surface-variant block mb-1">Assign Vehicles</label>
+                  <div className="border border-border-subtle rounded max-h-[140px] overflow-y-auto p-1 space-y-0.5">
+                    {vehicles.map(v => {
+                      const isAssigned = drvAssignedVehs.includes(v.id);
+                      return (
+                        <label key={v.id} className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-xs ${isAssigned ? "bg-secondary-container/10 text-primary font-bold" : "text-on-surface-variant hover:bg-surface-container"}`}>
+                          <input type="checkbox" checked={isAssigned} onChange={() => {
+                            setDrvAssignedVehs(prev => isAssigned ? prev.filter(id => id !== v.id) : [...prev, v.id]);
+                          }} className="accent-secondary-container cursor-pointer" />
+                          <span>{v.registration}</span>
+                          <span className="text-[10px] text-on-surface-variant ml-1">({v.make} {v.model})</span>
+                          {v.id === drvDefaultVeh && <span className="text-[9px] bg-secondary-container/20 text-secondary-container px-1.5 py-0.5 rounded ml-auto font-bold">Default</span>}
+                        </label>
+                      );
+                    })}
+                    {vehicles.length === 0 && <p className="text-[10px] text-on-surface-variant p-2">No vehicles registered yet.</p>}
+                  </div>
+                  <div className="mt-1.5">
+                    <label className="font-label-caps text-[10px] text-on-surface-variant block mb-1">Default Vehicle <span className="text-on-surface-variant/60 font-normal">(used when no schedule)</span></label>
+                    <CustomSelect value={drvDefaultVeh} onChange={(val) => setDrvDefaultVeh(val)} placeholder="-- None --" options={vehicles.filter(v => drvAssignedVehs.includes(v.id)).map(v => ({ value: v.id, label: `${v.registration} (${v.make})` }))} />
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-3 pt-2">

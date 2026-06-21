@@ -703,12 +703,12 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   };
 
   // Begin check flow
-  const handleBeginCheck = (scheduleId?: string) => {
+  const handleBeginCheck = (scheduleId?: string, templateId?: string) => {
     if (!assignedVehicle) return;
     setCheckStartedAt(new Date().toISOString());
     
     // Find the schedule and its templateId if applicable
-    let scheduleTemplateId: string | undefined;
+    let scheduleTemplateId: string | undefined = templateId;
     if (scheduleId) {
       setPendingScheduleId(scheduleId);
       const matchedSch = schedules.find(s => s.id === scheduleId);
@@ -1459,7 +1459,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                     MANDATORY DAILY WALKAROUND CHECK
                   </span>
                   <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 max-w-[280px]">
-                    You must perform a 27-point walkaround audit before moving the vehicle. Completing this under 5 minutes flags your record.
+                    {getRelevantChecklist(assignedVehicle, activeTemplateId).length}-point walkaround audit before moving the vehicle. Completing this under 5 minutes flags your record.
                   </p>
 
                   <button
@@ -1470,6 +1470,21 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                     <Play className="w-4 h-4 fill-current" />
                     START WALKAROUND CHECK
                   </button>
+                  {templatesFromProps && templatesFromProps.filter(t => t.id !== "tpl-dvsa-default").length > 0 && (
+                    <div className="w-full mt-3 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-label-caps text-on-surface-variant uppercase tracking-wider">QUICK SELECT TEMPLATE</span>
+                        <div className="flex-1 h-px bg-border-subtle"></div>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {templatesFromProps.filter(t => t.id !== "tpl-dvsa-default").map(tpl => (
+                          <button key={tpl.id} onClick={() => handleBeginCheck(undefined, tpl.id)} className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg border border-border-subtle hover:border-secondary-container hover:bg-secondary-container/5 transition-all cursor-pointer">
+                            {tpl.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="flex gap-4 mt-3 w-full">
                     <button
