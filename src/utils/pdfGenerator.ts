@@ -415,24 +415,29 @@ const templateName = safeCheck.templateName || undefined;
   }
 
   // -- CHECK ITEM PHOTOS (pass/fail photos for all checks) --
+  // Debug: how many items have photoUrl?
   if ((check as any).items && typeof doc.getY === "function") {
+    const itemsWithPhoto = (check as any).items.filter((i: any) => i.photoUrl).length;
+    const totalItems = (check as any).items.length;
+    console.log("[PDF] Items with photoUrl:", itemsWithPhoto, "of", totalItems);
     (check as any).items.forEach((it: any) => {
-      if (it.photoUrl) {
+      if (it.photoUrl && it.photoUrl.length > 50) {
         const startY = doc.getY();
         if (startY > 250) { doc.addPage(); }
         doc.setFont("Helvetica", "bold");
-        doc.setFontSize(9);
+        doc.setFontSize(8);
         doc.setTextColor("#000000");
-        doc.text(it.itemLabel, 10, startY + 6);
+        doc.text(it.itemLabel, 10, startY + 5);
         doc.setFont("Helvetica", "normal");
-        doc.setFontSize(7);
-        doc.text("Result: " + (it.result === "fail" ? "FAIL" : "PASS"), 10, startY + 13);
-        // Try JPEG first, fall back to PNG
-        let imgAdded = false;
-        try { doc.addImage(it.photoUrl, "JPEG", 125, startY + 1, 60, 38); imgAdded = true; }
-        catch(e) { try { doc.addImage(it.photoUrl, 125, startY + 1, 60, 38); imgAdded = true; } catch(e2) {} }
-        if (!imgAdded) {
-          doc.text("[Photo could not be embedded]", 125, startY + 20);
+        doc.setFontSize(6);
+        const status = it.result === "fail" ? "FAIL" : "PASS";
+        doc.text("Result: " + status, 10, startY + 10);
+        // Use addImage without format param to let jsPDF auto-detect
+        try {
+          doc.addImage(it.photoUrl, 125, startY + 1, 60, 38);
+        } catch(imgErr) {
+          console.warn("[PDF] addImage failed for", it.itemLabel, imgErr);
+          doc.text("[Photo error]", 125, startY + 20);
         }
         doc.setY(startY + 42);
       }
