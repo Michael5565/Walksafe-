@@ -360,6 +360,8 @@ export default function ManagerDashboard({
   const [scheduleFilter, setScheduleFilter] = useState<'all' | 'pending' | 'completed' | 'overdue'>('all');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+  useEffect(() => { const t = setInterval(() => setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })), 1000); return () => clearInterval(t); }, []);
   const [vehicleFilter, setVehicleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -2898,6 +2900,24 @@ export default function ManagerDashboard({
                 }} className="flex items-center gap-2 bg-primary text-secondary-container px-6 py-3 font-bold font-label-caps text-label-caps hover:opacity-90 transition-all cursor-pointer active:scale-[0.98]">
                   <Plus className="w-4 h-4" /> New Template
                 </button>
+                <button type="button" onClick={async () => {
+                  try {
+                    const res = await fetch('/api/auth/seed-templates', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ companyId: company.id }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      onTriggerRefresh();
+                      alert(data.message);
+                    }
+                  } catch(e) {
+                    alert('Failed to seed templates');
+                  }
+                }} className="px-3 py-2 border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1">
+                  Publish Built-in
+                </button>
               </div>
 
               {/* Template Grid */}
@@ -3531,7 +3551,7 @@ export default function ManagerDashboard({
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-label-caps text-label-caps text-on-surface-variant">CHECKLIST ITEMS ({templateItems.length})</span>
-                  <button type="button" onClick={() => setTemplateItems([...templateItems, { key: String(templateItems.length + 1), label: '', group: 'exterior', guidance: '', requiresTrailer: false, requiresPhoto: false }])}
+                  <button type="button" onClick={() => setTemplateItems([...templateItems, { key: String(templateItems.length + 1), label: '', group: 'exterior', guidance: '', requiresTrailer: false }])}
                     className="text-sm text-secondary-container font-bold flex items-center gap-1 hover:underline cursor-pointer">
                     <Plus className="w-4 h-4" /> Add Item
                   </button>
@@ -3565,7 +3585,6 @@ export default function ManagerDashboard({
                             }} className="w-full bg-white border border-border-subtle p-1.5 text-xs focus:outline-hidden focus:border-primary rounded">
                               <option value="exterior">Exterior</option>
                               <option value="interior">Interior</option>
-                              <option value="loading">Loading</option>
                             </select>
                           </div>
                           <div className="col-span-1 flex items-end pb-1">
@@ -3574,12 +3593,6 @@ export default function ManagerDashboard({
                                 const next = [...templateItems]; next[i] = { ...next[i], requiresTrailer: e.target.checked }; setTemplateItems(next);
                               }} className="w-3.5 h-3.5 text-primary accent-primary" />
                               <span className="font-label-caps text-[9px] text-on-surface-variant">Trailer</span>
-                            </label>
-                            <label className="flex items-center gap-1 cursor-pointer ml-2">
-                              <input type="checkbox" checked={item.requiresPhoto} onChange={(e) => {
-                                const next = [...templateItems]; next[i] = { ...next[i], requiresPhoto: e.target.checked }; setTemplateItems(next);
-                              }} className="w-3.5 h-3.5 text-amber-500 accent-amber-500" />
-                              <span className="font-label-caps text-[9px] text-amber-600">Photo</span>
                             </label>
                           </div>
                         </div>
@@ -3598,25 +3611,8 @@ export default function ManagerDashboard({
               <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
                 <button type="button" onClick={() => setShowTemplateModal(false)} className="px-4 py-2 border border-border-subtle text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">Cancel</button>
                 <button type="submit" disabled={savingTemplate} className="px-6 py-2 bg-primary text-on-primary font-label-caps text-label-caps font-bold hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer">
-                  {savingTemplate ? 'Saving...' : editingTemplate ? 'Update Template' : 'Create Template'}</button>
-                    <button type="button" onClick={async () => {
-                      try {
-                        const res = await fetch('/api/auth/seed-templates', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ companyId: company.id }),
-                        });
-                        const data = await res.json();
-                        if (data.success) {
-                          loadTemplates();
-                          alert(data.message);
-                        }
-                      } catch(e) {
-                        alert('Failed to seed templates');
-                      }
-                    }} className="px-3 py-1.5 border border-amber-300 text-amber-700 bg-amber-50 font-label-caps text-label-caps font-bold hover:bg-amber-100 transition-all cursor-pointer flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">auto_awesome</span> Publish Built-in
-                    </button>
+                  {savingTemplate ? 'Saving...' : editingTemplate ? 'Update Template' : 'Create Template'}
+                </button>
               </div>
             </form>
           </div>
