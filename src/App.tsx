@@ -1334,7 +1334,7 @@ const loadDatabaseState = async (silently = false) => {
       const safeItems: any[] = [];
       if (Array.isArray(checkPayload.items)) {
         for (const it of checkPayload.items) {
-          safeItems.push({ itemKey: String(it?.itemKey ?? ""), itemLabel: String(it?.itemLabel ?? ""), result: it?.result === "fail" ? "fail" : "pass", sequenceOrder: Number(it?.sequenceOrder ?? 0) });
+          safeItems.push({ itemKey: String(it?.itemKey ?? ""), itemLabel: String(it?.itemLabel ?? ""), result: it?.result === "fail" ? "fail" : "pass", sequenceOrder: Number(it?.sequenceOrder ?? 0), photoUrl: typeof it?.photoUrl === "string" ? it.photoUrl.substring(0, 500000) : "" });
         }
       }
       const safeResults: any[] = [];

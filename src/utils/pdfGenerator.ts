@@ -334,20 +334,7 @@ const templateName = safeCheck.templateName || undefined;
       doc.text(`Reported verbally to: ${def.reportedTo}`, 14, textEndY + 6);
       doc.text(`Logged timestamp: ${new Date(def.createdAt).toLocaleTimeString("en-GB")} UTC`, 14, textEndY + 12);
 
-      // Item photos from check results
-      if ((check as any).items) {
-        (check as any).items.forEach((it: any) => {
-          if (it.photoUrl) {
-            const yStart = doc.getY();
-            if (yStart > 250) doc.addPage();
-            doc.setFontSize(8);
-            doc.text(`Item Photo: ${it.itemLabel}`, 10, doc.getY() + 4);
-            try { doc.addImage(it.photoUrl, "JPEG", 120, doc.getY(), 64, 40); }
-            catch(e) { try { doc.addImage(it.photoUrl, "PNG", 120, doc.getY(), 64, 40); } catch(e2) {} }
-            doc.setY(doc.getY() + 44);
-          }
-        });
-      }
+
       // Embedded photo box state — LARGER for full readability
       doc.setDrawColor("#E2E8F0");
       doc.setFillColor("#E2E8F0");
@@ -425,6 +412,25 @@ const templateName = safeCheck.templateName || undefined;
     doc.text(templateName ? "Vehicle has been certified as safe and roadworthy." : "Department for Transport/DVSA guide to maintaining roadworthiness legislation.", 14, y + 17);
     
     y += 26;
+  }
+
+  // -- CHECK ITEM PHOTOS (pass/fail photos for all checks) --
+  if ((check as any).items) {
+    (check as any).items.forEach((it: any) => {
+      if (it.photoUrl) {
+        if (doc.getY() > 250) doc.addPage();
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor("#000000");
+        doc.text(`${it.itemLabel}`, 10, doc.getY() + 4);
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(7);
+        doc.text(`Result: ${it.result === "fail" ? "FAIL" : "PASS"}`, 10, doc.getY() + 2);
+        try { doc.addImage(it.photoUrl, "JPEG", 120, doc.getY() - 12, 64, 40); }
+        catch(e) { try { doc.addImage(it.photoUrl, "PNG", 120, doc.getY() - 12, 64, 40); } catch(e2) {} }
+        doc.setY(doc.getY() + 32);
+      }
+    });
   }
 
   // -- MISCELLANEOUS DAMAGE & FIELD NOTES SECTION --
