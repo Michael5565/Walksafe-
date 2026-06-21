@@ -329,36 +329,6 @@ interface ManagerDashboardProps {
   onMarkNotificationsAsRead: () => Promise<void>;
   onTriggerRefresh: () => void;
   onLogOutWorkspace?: () => void;
-
-      )}
-      {showTour && (
-        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-8">
-              <h2 className="text-xl font-bold text-primary mb-4">Welcome to WalkSafe</h2>
-              <div className="space-y-4">
-                <div className="flex gap-3 p-3 bg-blue-50 rounded-lg">
-                  <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">1</span>
-                  <div><p className="font-semibold text-sm">Dashboard</p><p className="text-xs text-gray-500 mt-0.5">See today check status, open defects, and fleet health.</p></div>
-                </div>
-                <div className="flex gap-3 p-3 bg-blue-50 rounded-lg">
-                  <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">2</span>
-                  <div><p className="font-semibold text-sm">Add Vehicles</p><p className="text-xs text-gray-500 mt-0.5">Register your fleet using DVLA lookup. Add drivers with PINs.</p></div>
-                </div>
-                <div className="flex gap-3 p-3 bg-amber-50 rounded-lg">
-                  <span className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">3</span>
-                  <div><p className="font-semibold text-sm">Compliance Templates</p><p className="text-xs text-gray-500 mt-0.5">Use built-in scaffolding or haulage templates with mandatory photo requirements for DVSA-proof checks.</p></div>
-                </div>
-                <div className="flex gap-3 p-3 bg-blue-50 rounded-lg">
-                  <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">4</span>
-                  <div><p className="font-semibold text-sm">Schedule &amp; Track</p><p className="text-xs text-gray-500 mt-0.5">Set recurring checks. Get instant defect alerts. Export PDF audit trails.</p></div>
-                </div>
-              </div>
-              <button onClick={() => setShowTour(false)} className="w-full mt-6 py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-all cursor-pointer">Got it</button>
-            </div>
-          </div>
-        </div>
-      )}
 }
 
 export default function ManagerDashboard({

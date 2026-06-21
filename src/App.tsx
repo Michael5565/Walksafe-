@@ -16,8 +16,6 @@ const DriverPwa = lazy(() => import("./components/DriverPwa"));
 const ManagerDashboard = lazy(() => import("./components/ManagerDashboard"));
 const SignupFlow = lazy(() => import("./components/SignupFlow"));
 const AuthAction = lazy(() => import("./pages/AuthAction"));
-const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Backup fallback states in case Express server is compiling/initializing in background
 
@@ -1629,7 +1627,6 @@ const loadDatabaseState = async (silently = false) => {
   };
 
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const [mgrError, setMgrError] = useState("");
 
   useEffect(() => {
     const handlePopState = () => {
@@ -1646,7 +1643,7 @@ const loadDatabaseState = async (silently = false) => {
 
   useEffect(() => {
     if (!wsSession) {
-      if (currentPath !== "/" && currentPath !== "/login" && currentPath !== "/signup" && currentPath !== "/verify" && currentPath !== "/reset-password") {
+      if (currentPath !== "/" && currentPath !== "/login" && currentPath !== "/signup") {
         navigateTo("/");
       }
     } else {
@@ -1657,12 +1654,6 @@ const loadDatabaseState = async (silently = false) => {
   }, [wsSession, currentPath]);
 
   if (!wsSession) {
-    if (currentPath === "/reset-password") {
-      return <ResetPassword />;
-    }
-    if (currentPath === "/verify") {
-      return <VerifyEmail />;
-    }
     if (currentPath.startsWith("/auth/")) {
       return <AuthAction />;
     }
@@ -1732,17 +1723,17 @@ const loadDatabaseState = async (silently = false) => {
         <div style={{position:'fixed',top:'40%',left:'50%',width:600,height:2,background:'linear-gradient(90deg,transparent,rgba(254,166,25,0.08),transparent)',pointerEvents:'none'}} />
 
         {/* Main card container */}
-        <div style={{width:'100%',maxWidth:560,width:'100%',borderRadius:20,overflow:'hidden',boxShadow:'0 12px 40px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04)',border:'1.5px solid rgba(229,229,224,0.8)',position:'relative',zIndex:1}}>
+        <div style={{width:'100%',maxWidth:960,display:'grid',gridTemplateColumns:'1fr',gap:0,borderRadius:24,overflow:'hidden',boxShadow:'0 20px 60px rgba(0,0,0,0.10),0 4px 16px rgba(0,0,0,0.06)',border:'1.5px solid rgba(229,229,224,0.8)',position:'relative',zIndex:1}} className="lg:grid-cols-[1fr_1fr]">
 
           {/* LEFT PANEL — Brand & Social Proof */}
-          <div style={{background:'linear-gradient(160deg,#1a1c1b 0%,#2c2e2d 100%)',padding:'32px 32px',display:'none',flexDirection:'column',justifyContent:'center',position:'relative',overflow:'hidden',textAlign:'center'}}>
+          <div style={{background:'linear-gradient(160deg,#1a1c1b 0%,#2c2e2d 100%)',padding:'48px 44px',display:'none',flexDirection:'column',justifyContent:'space-between',position:'relative',overflow:'hidden'}} className="lg:flex">
             {/* Subtle pattern */}
             <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(rgba(254,166,25,0.08) 1px,transparent 1px)',backgroundSize:'28px 28px',pointerEvents:'none'}} />
             <div style={{position:'absolute',bottom:0,left:0,right:0,height:'50%',background:'linear-gradient(to top,rgba(0,0,0,0.3),transparent)',pointerEvents:'none'}} />
 
             <div style={{position:'relative',zIndex:1}}>
               {/* Logo */}
-              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:12,marginBottom:8}}>
+              <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:48}}>
                 <div style={{width:44,height:44,background:'linear-gradient(135deg,#fea619,#f08000)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 24px rgba(254,166,25,0.4)'}}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
@@ -1836,10 +1827,7 @@ const loadDatabaseState = async (silently = false) => {
                   }
                 } catch { alert('Connection error. Please try again.'); }
               }} style={{display:'flex',flexDirection:'column',gap:16}}>
-                {mgrError && (
-                    <p style={{color:'#DC2626',fontSize:12,margin:'0 0 8px',textAlign:'center',background:'#fef2f2',padding:'8px 12px',borderRadius:8}}>{mgrError}</p>
-                  )}
-                  <div>
+                <div>
                   <label style={{fontSize:11,fontWeight:700,color:'#47464b',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.05em'}}>Work Email</label>
                   <div style={{position:'relative'}}>
                     <Mail style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
@@ -1868,7 +1856,6 @@ const loadDatabaseState = async (silently = false) => {
             <div className="hidden sm:block">
               <form onSubmit={async (e) => {
                 e.preventDefault();
-                setMgrError("");
                 const form = e.target as HTMLFormElement;
                 const email = (form.elements.namedItem('mgr_email') as HTMLInputElement).value;
                 const password = (form.elements.namedItem('password') as HTMLInputElement).value;
@@ -1878,23 +1865,16 @@ const loadDatabaseState = async (silently = false) => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                   });
-                  if (!res.ok) {
-                    const errData = await res.json().catch(() => ({}));
-                    setMgrError(errData.error || "Invalid credentials");
-                    return;
-                  }
+                  if (!res.ok) { alert('Invalid credentials'); return; }
                   const data = await res.json();
                   if (data.success && data.company) {
                     const session = { company: data.company, role: 'manager' as const };
                     localStorage.setItem('walksafe_workspace_session', JSON.stringify(session));
                     setWsSession(session); setCompany(data.company); setCurrentRole('manager');
                   }
-                } catch { setMgrError("Connection error. Please try again."); }
+                } catch { alert('Connection error. Please try again.'); }
               }} style={{display:'flex',flexDirection:'column',gap:16}}>
-                {mgrError && (
-                    <p style={{color:'#DC2626',fontSize:12,margin:'0 0 8px',textAlign:'center',background:'#fef2f2',padding:'8px 12px',borderRadius:8}}>{mgrError}</p>
-                  )}
-                  <div>
+                <div>
                   <label style={{fontSize:11,fontWeight:700,color:'#47464b',display:'block',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.05em'}}>Work Email</label>
                   <div style={{position:'relative'}}>
                     <Mail style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
@@ -1904,14 +1884,15 @@ const loadDatabaseState = async (silently = false) => {
                   </div>
                 </div>
                 <div>
-                  <label style={{fontSize:11,fontWeight:700,color:'#47464b',textTransform:'uppercase',letterSpacing:'0.05em',display:'block',marginBottom:6}}>Password</label>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                    <label style={{fontSize:11,fontWeight:700,color:'#47464b',textTransform:'uppercase',letterSpacing:'0.05em'}}>Password</label>
+                  </div>
                   <div style={{position:'relative'}}>
                     <Lock style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
                     <input type="password" name="password" required style={{width:'100%',background:'#f9f9f7',border:'1.5px solid #e5e5e0',borderRadius:10,padding:'11px 14px 11px 40px',fontSize:14,color:'#1a1c1b',outline:'none',boxSizing:'border-box',transition:'border-color 0.2s'}} placeholder="Enter your password"
                       onFocus={e=>(e.target.style.borderColor='#fea619')}
                       onBlur={e=>(e.target.style.borderColor='#e5e5e0')} />
                   </div>
-                  <a href="/reset-password" style={{fontSize:11,color:'#fea619',fontWeight:600,textDecoration:'none',cursor:'pointer',display:'block',textAlign:'right',marginTop:2}}>Forgot password?</a>
                 </div>
                 <button type="submit" style={{width:'100%',padding:'14px 0',background:'linear-gradient(135deg,#1a1c1b 0%,#333 100%)',color:'#fff',border:'none',borderRadius:10,fontWeight:700,fontSize:13,cursor:'pointer',letterSpacing:'0.06em',textTransform:'uppercase',boxShadow:'0 4px 16px rgba(0,0,0,0.18)',marginTop:4,transition:'all 0.2s'}}>
                   Sign In →
