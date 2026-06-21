@@ -26,6 +26,7 @@ function UkPlate({ registration, size = "sm" }: { registration: string; size?: "
   const plateH = size === "lg" ? "h-10" : size === "md" ? "h-8" : "h-6";
   const blueW = size === "lg" ? "w-3" : "w-2";
   return (
+<>
     <div className={`inline-flex items-center bg-plate-yellow rounded-sm border border-black/10 overflow-hidden uk-plate-shadow ${plateH}`}>
       <div className={`${blueW} bg-plate-blue flex flex-col items-center justify-center h-full shrink-0`}>
         <span className="text-[6px] text-white font-bold leading-none">GB</span>
@@ -3675,6 +3676,7 @@ export default function ManagerDashboard({
           }}
         />
       )}
+  </>
   );
 }
 
