@@ -3621,7 +3621,7 @@ export default function ManagerDashboard({
         </div>
       )}
 
-      {showTemplateModal && ({showTemplateModal && (
+      {showTemplateModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowTemplateModal(false)}>
           <div className="bg-white w-full max-w-2xl border border-border-subtle shadow-xl overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()} style={{ borderRadius: '0.5rem' }}>
             <div className="p-6 border-b border-border-subtle flex items-center justify-between">
