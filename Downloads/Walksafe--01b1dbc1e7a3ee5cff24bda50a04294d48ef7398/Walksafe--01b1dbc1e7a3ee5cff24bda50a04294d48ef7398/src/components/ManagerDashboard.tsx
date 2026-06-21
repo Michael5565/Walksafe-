@@ -424,6 +424,7 @@ export default function ManagerDashboard({
   const [drvEmail, setDrvEmail] = useState("");
   const [drvPhone, setDrvPhone] = useState("");
   const [drvPin, setDrvPin] = useState("");
+  const [drvStep, setDrvStep] = useState(1);
   const [drvDefaultVeh, setDrvDefaultVeh] = useState("");
   const [generatedLink, setGeneratedLink] = useState("");
 
@@ -3282,7 +3283,9 @@ export default function ManagerDashboard({
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => { setShowDrvModal(false); resetDrvForm(); }}>
           <div className="bg-white w-full max-w-lg border border-border-subtle shadow-xl overflow-hidden" onClick={e => e.stopPropagation()} style={{ borderRadius: '0.5rem' }}>
             <div className="p-6 border-b border-border-subtle flex items-center justify-between">
-              <h3 className="font-title-sm text-title-sm text-primary">{editingDriver ? 'Edit Driver' : 'Add New Driver'}</h3>
+              <h3 className="font-title-sm text-title-sm text-primary flex items-center gap-2">{editingDriver ? 'Edit Driver' : 'Add New Driver'}
+                {!editingDriver && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">Step {drvStep} of 3</span>}
+              </h3>
               <button onClick={() => { setShowDrvModal(false); resetDrvForm(); }} className="p-1 hover:bg-surface-container rounded transition-colors cursor-pointer"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleSaveDriver} className="p-6 space-y-4">
