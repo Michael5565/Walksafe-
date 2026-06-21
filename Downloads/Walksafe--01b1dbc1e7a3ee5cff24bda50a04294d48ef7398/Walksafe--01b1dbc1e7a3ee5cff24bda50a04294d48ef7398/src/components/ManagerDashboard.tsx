@@ -8,6 +8,7 @@ import { Vehicle, Driver, WalkaroundCheck, Defect, Company, Announcement, Schedu
 import { generateDVSA_PDF } from "../utils/pdfGenerator";
 import { isScheduleDueToday } from "../utils/scheduleUtils";
 import SignaturePad from "./SignaturePad";
+import TourSpotlight from "./TourSpotlight";
 
 /* =========================================================
    Design: Institutional Minimalism
@@ -364,9 +365,8 @@ export default function ManagerDashboard({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
   const [publishTemplates, setPublishTemplates] = useState<{name:string;desc:string;selected:boolean}[]>([]);
-  const [showTour, setShowTour] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-  const [showTour, setShowTour] = useState(false);
+  const [tourStep, setTourStep] = useState(-1);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
   useEffect(() => { const id = setInterval(() => { try { setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })); } catch(e) {} }, 1000); return () => clearInterval(id); }, []);
   useEffect(() => { const t = setInterval(() => setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })), 1000); return () => clearInterval(t); }, []);
@@ -1095,6 +1095,7 @@ export default function ManagerDashboard({
           </div>
           <div className="flex items-center gap-4">
             <button onClick={() => setShowTour(true)}
+              onClick={() => setTourStep(0)}
               className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded cursor-pointer">
               help
             </button>
@@ -3653,34 +3654,29 @@ export default function ManagerDashboard({
             <div className="bg-surface-container-low p-4 text-center border-t border-border-subtle">
               <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-400">Secure Authentication Protocol Active</p>
 
-      {showTour && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">i</span>
-              <h2 className="text-lg font-bold text-primary">Welcome to WalkSafe</h2>
-            </div>
-            <div className="space-y-3">
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0 text-xs">1</span><div><p className="font-semibold text-sm">Dashboard Overview</p><p className="text-xs text-gray-500">Check today status</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0 text-xs">2</span><div><p className="font-semibold text-sm">Add Vehicles & Drivers</p><p className="text-xs text-gray-500">Register with DVLA lookup</p></div></div>
-              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg"><span className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 text-xs">3</span><div><p className="font-semibold text-sm">Compliance Templates</p><p className="text-xs text-gray-500">Built-in checklists with mandatory photos</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0 text-xs">4</span><div><p className="font-semibold text-sm">Schedule & Track</p><p className="text-xs text-gray-500">Set recurring checks</p></div></div>
-            </div>
-            <button onClick={() => setShowTour(false)} className="w-full mt-5 py-3 bg-primary text-white font-bold text-sm rounded-lg hover:opacity-90 cursor-pointer">Got it</button>
-          </div>
-        </div>
-      )}
+      
             </div>
           </div>
         </div>
       )}
 
+
+      
     </div>
+
+      {tourStep >= 0 && (
+        <TourSpotlight
+          step={tourStep}
+          onNext={() => setTourStep(Math.min(tourStep + 1, 4))}
+          onBack={() => setTourStep(Math.max(tourStep - 1, 0))}
+          onClose={() => setTourStep(-1)}
+          onTabChange={(tab) => {
+            try { setActiveTab(tab as any); } catch(e) {}
+          }}
+        />
+      )}
   );
 }
-
-
-
 
 
 
