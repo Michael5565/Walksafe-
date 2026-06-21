@@ -893,7 +893,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       driverId: currentDriver.id,
       startedAt: checkStartedAt,
       driverSignature: driverSignature || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='30'></svg>",
-      items: wizardItems.map(w => { const r = activeCheckResults.find(a => a.itemKey === w.itemKey); return { itemKey: w.itemKey, itemLabel: w.itemLabel, result: r ? r.result : "pass", sequenceOrder: w.sequenceOrder }; }),
+      items: wizardItems.map(w => { const r = activeCheckResults.find(a => a.itemKey === w.itemKey); return { itemKey: w.itemKey, itemLabel: w.itemLabel, result: r ? r.result : "pass", sequenceOrder: w.sequenceOrder, photoUrl: (r as any)?.photoUrl || undefined }; }),
       latitude: gpsCoords?.latitude || null,
       longitude: gpsCoords?.longitude || null,
       miscDamageNotes,
@@ -1020,7 +1020,29 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       }
     });
 
-    // 2. Miscellaneous Damage Photos
+    // 2. Check Item Photos (from required photo items)
+    checks.forEach(c => {
+      const isMyCheck = company.isSoloOperator || c.driverId === currentDriver?.id;
+      if (c.items && isMyCheck) {
+        c.items.forEach(it => {
+          if ((it as any).photoUrl) {
+            const veh = vehicles.find(v => v.id === c.vehicleId);
+            list.push({
+              id: `item-${c.id}-${it.itemKey}`,
+              url: (it as any).photoUrl,
+              sourceType: "defect" as const,
+              category: it.itemLabel || "Check Item",
+              notes: `Required photo for: ${it.itemLabel}`,
+              date: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-GB") : c.checkDate,
+              vehicleReg: veh ? veh.registration.toUpperCase() : "Unknown",
+              driverName: currentDriver?.fullName || "Operator"
+            });
+          }
+        });
+      }
+    });
+
+    // 3. Miscellaneous Damage Photos
     checks.forEach(c => {
       const isMyCheck = company.isSoloOperator || c.driverId === currentDriver?.id;
       if (c.miscDamagePhotoUrl && isMyCheck) {

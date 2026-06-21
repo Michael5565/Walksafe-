@@ -334,6 +334,20 @@ const templateName = safeCheck.templateName || undefined;
       doc.text(`Reported verbally to: ${def.reportedTo}`, 14, textEndY + 6);
       doc.text(`Logged timestamp: ${new Date(def.createdAt).toLocaleTimeString("en-GB")} UTC`, 14, textEndY + 12);
 
+      // Item photos from check results
+      if ((check as any).items) {
+        (check as any).items.forEach((it: any) => {
+          if (it.photoUrl) {
+            const yStart = doc.getY();
+            if (yStart > 250) doc.addPage();
+            doc.setFontSize(8);
+            doc.text(`Item Photo: ${it.itemLabel}`, 10, doc.getY() + 4);
+            try { doc.addImage(it.photoUrl, "JPEG", 120, doc.getY(), 64, 40); }
+            catch(e) { try { doc.addImage(it.photoUrl, "PNG", 120, doc.getY(), 64, 40); } catch(e2) {} }
+            doc.setY(doc.getY() + 44);
+          }
+        });
+      }
       // Embedded photo box state — LARGER for full readability
       doc.setDrawColor("#E2E8F0");
       doc.setFillColor("#E2E8F0");
