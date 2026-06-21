@@ -522,6 +522,33 @@ app.post('/auth/register', async (c) => {
   return c.json({ success: true, company: newCompany, driver: defaultDriver });
 });
 
+// POST /api/auth/seed-templates — Publish built-in templates for existing company
+app.post('/auth/seed-templates', async (c) => {
+  const db = getDbOrThrow(c);
+  const { companyId } = await c.req.json();
+  if (!companyId) return c.json({ error: "Company ID is required" }, 400);
+  
+  const builtInTemplates = [
+    { name: "Scaffolding Fleet Daily Check", desc: "DVSA-focused walkaround for scaffolding flatbeds", items: [{label:"Load Restraint Straps & Ratchets",group:"loading",guidance:"Inspect ratchet straps for fraying or cuts",requiresPhoto:true},{label:"Scaffold Tube Overhang Restraint",group:"loading",guidance:"Check tubes and fittings are properly restrained",requiresPhoto:true},{label:"Guardrails & Edge Protection",group:"loading",guidance:"Verify guardrails are secure",requiresPhoto:true},{label:"Tie-Down Points & Lashing Rings",group:"loading",guidance:"Inspect anchor points",requiresPhoto:false},{label:"Leaf Springs & Suspension",group:"exterior",guidance:"Check leaf springs for cracks",requiresPhoto:true},{label:"Tail Lamp & Marker Light Cluster",group:"exterior",guidance:"Check rear lighting not obstructed",requiresPhoto:true},{label:"Sideguards & Under-Run Protection",group:"exterior",guidance:"Verify sideguards mounted",requiresPhoto:true},{label:"Overhang Marker Boards & Flags",group:"exterior",guidance:"Check marker boards visible",requiresPhoto:true},{label:"Chassis & Body Condition",group:"exterior",guidance:"Inspect chassis rails",requiresPhoto:false}] },
+    { name: "Haulage & Trailer Daily Check", desc: "Full DVSA check with trailer coupling photos", items: [{label:"Fifth Wheel Coupling Lock",group:"exterior",guidance:"Verify fifth wheel engaged",requiresPhoto:true,requiresTrailer:true},{label:"Air & Electrical Lines",group:"exterior",guidance:"Check air lines connected",requiresPhoto:false,requiresTrailer:true},{label:"Load Restraint Curtains & Straps",group:"loading",guidance:"Inspect cargo curtains",requiresPhoto:true},{label:"Trailer Landing Legs",group:"exterior",guidance:"Verify legs wound up",requiresPhoto:false,requiresTrailer:true},{label:"Wheel Nut Security",group:"exterior",guidance:"Check wheel nuts",requiresPhoto:false},{label:"Container Twistlock Securement",group:"loading",guidance:"Verify twistlocks engaged",requiresPhoto:true,requiresTrailer:true},{label:"Reflective Markings",group:"exterior",guidance:"Verify reflective tape present",requiresPhoto:false,requiresTrailer:true},{label:"Tyres Tread & Condition",group:"exterior",guidance:"Check tread depth",requiresPhoto:false}] },
+    { name: "Owner-Operator Daily Check", desc: "Streamlined check for single-vehicle operators", items: [{label:"Tyres, Wheels & Wheel Nuts",group:"exterior",guidance:"Check tread depth",requiresPhoto:false},{label:"Lights, Indicators & Reflectors",group:"exterior",guidance:"Verify lights functional",requiresPhoto:false},{label:"Fluid Levels & Leaks",group:"exterior",guidance:"Check oil and coolant",requiresPhoto:false},{label:"Load Securement",group:"loading",guidance:"Verify loads restrained",requiresPhoto:true},{label:"Brakes & Air System",group:"interior",guidance:"Check brake feel",requiresPhoto:false},{label:"Mirrors & Visibility",group:"interior",guidance:"Clean mirrors",requiresPhoto:false}] },
+  ];
+  
+  let created = 0;
+  for (const tpl of builtInTemplates) {
+    const existing = await db.prepare("SELECT id FROM templates WHERE companyId = ? AND name = ?").bind(companyId, tpl.name).first();
+    if (existing) continue;
+    const tplId = "tmpl-seed-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
+    await db.prepare("INSERT INTO templates (id, companyId, name, description, items, createdAt) VALUES (?, ?, ?, ?, ?, ?)")
+      .bind(tplId, companyId, tpl.name, tpl.desc, JSON.stringify(tpl.items), new Date().toISOString()).run();
+    created++;
+  }
+  
+  return c.json({ success: true, created, message: created > 0 ? created + " built-in templates added" : "Templates already exist" });
+});
+
+
+
 // Map SQLite Company record properties dynamically to client properties (fallback if column is missing)
 const mapCompanyDbToClient = (company: any) => {
   if (!company) return company;
