@@ -1723,17 +1723,17 @@ const loadDatabaseState = async (silently = false) => {
         <div style={{position:'fixed',top:'40%',left:'50%',width:600,height:2,background:'linear-gradient(90deg,transparent,rgba(254,166,25,0.08),transparent)',pointerEvents:'none'}} />
 
         {/* Main card container */}
-        <div style={{width:'100%',maxWidth:960,display:'grid',gridTemplateColumns:'1fr',gap:0,borderRadius:24,overflow:'hidden',boxShadow:'0 20px 60px rgba(0,0,0,0.10),0 4px 16px rgba(0,0,0,0.06)',border:'1.5px solid rgba(229,229,224,0.8)',position:'relative',zIndex:1}} className="lg:grid-cols-[1fr_1fr]">
+        <div style={{width:'100%',maxWidth:560,borderRadius:20,overflow:'hidden',boxShadow:'0 12px 40px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04)',border:'1.5px solid rgba(229,229,224,0.8)',position:'relative',zIndex:1}}>
 
           {/* LEFT PANEL — Brand & Social Proof */}
-          <div style={{background:'linear-gradient(160deg,#1a1c1b 0%,#2c2e2d 100%)',padding:'48px 44px',display:'none',flexDirection:'column',justifyContent:'space-between',position:'relative',overflow:'hidden'}} className="lg:flex">
+          <div style={{background:'linear-gradient(160deg,#1a1c1b 0%,#2c2e2d 100%)',padding:'32px 32px',display:'none',flexDirection:'column',justifyContent:'center',position:'relative',overflow:'hidden',textAlign:'center'}}>
             {/* Subtle pattern */}
             <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(rgba(254,166,25,0.08) 1px,transparent 1px)',backgroundSize:'28px 28px',pointerEvents:'none'}} />
             <div style={{position:'absolute',bottom:0,left:0,right:0,height:'50%',background:'linear-gradient(to top,rgba(0,0,0,0.3),transparent)',pointerEvents:'none'}} />
 
             <div style={{position:'relative',zIndex:1}}>
               {/* Logo */}
-              <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:48}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:12,marginBottom:8}}>
                 <div style={{width:44,height:44,background:'linear-gradient(135deg,#fea619,#f08000)',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 24px rgba(254,166,25,0.4)'}}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
