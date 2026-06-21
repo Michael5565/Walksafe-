@@ -1334,13 +1334,13 @@ const loadDatabaseState = async (silently = false) => {
       const safeItems: any[] = [];
       if (Array.isArray(checkPayload.items)) {
         for (const it of checkPayload.items) {
-          safeItems.push({ itemKey: String(it?.itemKey ?? ""), itemLabel: String(it?.itemLabel ?? ""), result: it?.result === "fail" ? "fail" : "pass", sequenceOrder: Number(it?.sequenceOrder ?? 0), photoUrl: typeof it?.photoUrl === "string" ? it.photoUrl.substring(0, 500000) : "" });
+          safeItems.push({ itemKey: String(it?.itemKey ?? ""), itemLabel: String(it?.itemLabel ?? ""), result: it?.result === "fail" ? "fail" : "pass", sequenceOrder: Number(it?.sequenceOrder ?? 0), photoUrl: typeof it?.photoUrl === "string" ? it.photoUrl : "" });
         }
       }
       const safeResults: any[] = [];
       if (Array.isArray(checkPayload.results)) {
         for (const r of checkPayload.results) {
-          safeResults.push({ itemKey: String(r?.itemKey ?? ""), itemLabel: String(r?.itemLabel ?? ""), severity: String(r?.severity ?? "major"), description: String(r?.description ?? ""), photoUrl: typeof r?.photoUrl === "string" ? r.photoUrl.substring(0, 500000) : "" });
+          safeResults.push({ itemKey: String(r?.itemKey ?? ""), itemLabel: String(r?.itemLabel ?? ""), severity: String(r?.severity ?? "major"), description: String(r?.description ?? ""), photoUrl: typeof r?.photoUrl === "string" ? r.photoUrl : "" });
         }
       }
       const wirePayload = {
