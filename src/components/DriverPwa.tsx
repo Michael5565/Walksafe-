@@ -336,6 +336,8 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const [defectSeverity, setDefectSeverity] = useState<DefectSeverity>('major');
   const [defectDescription, setDefectDescription] = useState<string>("");
   const [defectPhoto, setDefectPhoto] = useState<string>("");
+  const [requiredPhotoUrl, setRequiredPhotoUrl] = useState<string>("");
+  const [requiredPhotoItemKey, setRequiredPhotoItemKey] = useState<string | null>(null);
   const [miscDamageNotes, setMiscDamageNotes] = useState<string>("");
   const [miscDamagePhotoUrl, setMiscDamagePhotoUrl] = useState<string>("");
   const [showGuidance, setShowGuidance] = useState<boolean>(false);
@@ -766,16 +768,29 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const handleItemPass = () => {
     if (!assignedVehicle) return;
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
+
+    // If this item requires a photo and no photo has been taken, open camera first
+    if (currentItem.requiresPhoto && !requiredPhotoUrl) {
+      setRequiredPhotoItemKey(currentItem.key);
+      setCameraMode('defect');  // Reuse camera but for mandatory photo
+      return;
+    }
     
     // Save pass state
-    const resultItem = {
+    const resultItem: any = {
       itemKey: currentItem.key,
       itemLabel: currentItem.label,
       result: 'pass' as const
     };
+    if (requiredPhotoUrl) {
+      resultItem.photoUrl = requiredPhotoUrl;
+      setRequiredPhotoUrl("");
+      setRequiredPhotoItemKey(null);
+    }
     
     const updated = [...activeCheckResults.filter(r => r.itemKey !== currentItem.key), resultItem];
     setActiveCheckResults(updated);
+    setRequiredPhotoUrl("");
 
     // Subtle audio feedback for speedy, professional touch input confirmation
     try {
@@ -806,7 +821,14 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     if (!assignedVehicle) return;
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
 
-    const resultItem = {
+    // If this item requires a photo and no photo has been taken, open camera first
+    if (currentItem.requiresPhoto && !requiredPhotoUrl) {
+      setRequiredPhotoItemKey(currentItem.key);
+      setCameraMode('defect');  // Reuse camera but for mandatory photo
+      return;
+    }
+
+    const resultItem: any = {
       itemKey: currentItem.key,
       itemLabel: currentItem.label,
       result: 'fail' as const,
@@ -817,6 +839,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
 
     const updated = [...activeCheckResults.filter(r => r.itemKey !== currentItem.key), resultItem];
     setActiveCheckResults(updated);
+    setRequiredPhotoUrl("");
     setIsReportingDefect(false);
 
     if (defectSeverity === 'dangerous') {
@@ -3144,6 +3167,8 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
           <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-black/80 to-transparent p-4 flex items-center justify-between z-20">
             <button
               onClick={() => {
+                setRequiredPhotoItemKey(null);
+                setRequiredPhotoUrl("");
                 setCameraMode(null);
               }}
               className="text-on-primary hover:text-on-surface font-sans text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 focus:outline-hidden cursor-pointer bg-surface-container/60 backdrop-blur-sm py-1.5 px-3 rounded-lg"
@@ -3222,7 +3247,13 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                     const dataUrl = canvas.toDataURL("image/jpeg", quality);
                     
                     if (cameraMode === 'defect') {
-                      setDefectPhoto(dataUrl);
+                      if (requiredPhotoItemKey) {
+                        setRequiredPhotoUrl(dataUrl);
+                        setCameraMode(null);
+                        setRequiredPhotoItemKey(null);
+                      } else {
+                        setDefectPhoto(dataUrl);
+                      }
                     } else if (cameraMode === 'misc') {
                       setMiscDamagePhotoUrl(dataUrl);
                     }

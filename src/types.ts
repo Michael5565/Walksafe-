@@ -107,12 +107,63 @@ export interface Defect {
 }
 
 // Full 27-item checklist structure
+
+// Built-in Scaffolding & Haulage templates with mandatory photo requirements
+export const BUILT_IN_TEMPLATES: { name: string; description: string; items: Omit<ChecklistTemplateItem, "key">[] }[] = [
+  {
+    name: "Scaffolding Fleet Daily Check",
+    description: "DVSA-focused walkaround for scaffolding flatbeds with mandatory load securement photos",
+    items: [
+      { label: "Load Restraint Straps & Ratchets", group: "loading", guidance: "Inspect all ratchet straps for fraying, cuts, or damaged tensioning mechanisms. Each strap must be tensioned and the tail secured.", requiresPhoto: true },
+      { label: "Scaffold Tube Overhang Restraint", group: "loading", guidance: "Check that scaffold tubes, boards, and fittings are properly restrained. Overhanging loads must be flagged with red/white markers.", requiresPhoto: true },
+      { label: "Guardrails & Edge Protection", group: "loading", guidance: "Verify that side guardrails, posts, and edge protection are secure and undamaged. Exposed scaffold tubes in transit create immediate danger.", requiresPhoto: true },
+      { label: "Tie-Down Points & Lashing Rings", group: "loading", guidance: "Inspect all tie-down anchor points on the flatbed for deformation, cracks, or corrosion. Ensure lashing rings rotate freely.", requiresPhoto: false },
+      { label: "Leaf Springs & Suspension", group: "exterior", guidance: "Check leaf springs for cracks, broken leaves, or displacement. Splayed or collapsed springs indicate overloading.", requiresPhoto: true },
+      { label: "Tail Lamp & Marker Light Cluster", group: "exterior", guidance: "Check all rear lighting functions. Scaffolding loads frequently obstruct rear lamps. Verify visibility from 45-degree angles.", requiresPhoto: true },
+      { label: "Nearside & Offside Mirrors", group: "exterior", guidance: "Confirm mirrors are intact, clean, and correctly adjusted for the loaded vehicle width. Wide loads may obstruct mirror views.", requiresPhoto: false },
+      { label: "Sideguards & Under-Run Protection", group: "exterior", guidance: "Verify sideguards are securely mounted and not deformed by loading/unloading. Minimum ground clearance rules apply.", requiresPhoto: true },
+      { label: "Overhang Marker Boards & Flags", group: "exterior", guidance: "Check that red/white striped marker boards and overhang flags are clean, visible, and properly attached to projecting loads.", requiresPhoto: true },
+      { label: "Chassis & Body Condition", group: "exterior", guidance: "Inspect chassis rails for cracks or deformation from repeated heavy loading. Check flatbed deck for rot or broken planks.", requiresPhoto: false },
+    ]
+  },
+  {
+    name: "Haulage & Trailer Daily Check",
+    description: "Full 27-point DVSA check with mandatory trailer coupling and load restraint photos",
+    items: [
+      { label: "Fifth Wheel Coupling Lock", group: "exterior", guidance: "Verify fifth wheel is fully engaged around kingpin. Check secondary locking pin is fully home and handle is in locked position.", requiresPhoto: true, requiresTrailer: true },
+      { label: "Air & Electrical Lines", group: "exterior", guidance: "Check red (emergency) and yellow (service) air lines are securely connected with no audible leaks. Suspend connectors to prevent damage.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Load Restraint Curtains & Straps", group: "loading", guidance: "Inspect cargo curtains for rips or worn webbing. Ensure all internal load straps are tensioned and load is immobilized.", requiresPhoto: true },
+      { label: "Trailer Landing Legs", group: "exterior", guidance: "Verify landing legs are fully wound up, handle stowed, and gear selector in neutral/high gear position.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Wheel Nut Security (All Axles)", group: "exterior", guidance: "Visual check of all wheel nuts across tractor and trailer axles. Look for loose indicators, rust streaks, or shininess.", requiresPhoto: false },
+      { label: "Brake Performance & Air Pressure", group: "interior", guidance: "Verify correct air pressure build-up. Test footbrake and trailer brake application. Listen for air leaks.", requiresPhoto: false },
+      { label: "Container Twistlock Securement", group: "loading", guidance: "If carrying intermodal containers, verify all 4 twistlocks are engaged and locked. Check ISO corner casting alignment.", requiresPhoto: true, requiresTrailer: true },
+      { label: "Reflective Markings & Conspicuity", group: "exterior", guidance: "Verify reflective tape on trailer sides and rear is present, clean, not peeling, and meets DVSA conspicuity requirements.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Tyres Tread & Condition (All Wheels)", group: "exterior", guidance: "Check tread depth across all positions. Inspect sidewalls for bulges, cuts, or exposed cords. Check tyre pressures.", requiresPhoto: false },
+      { label: "Spray Suppression & Mudguards", group: "exterior", guidance: "Check mudguards and spray suppression skirts are complete, not damaged, and meet DVSA standards for HGV.", requiresPhoto: false },
+    ]
+  },
+  {
+    name: "Owner-Operator Daily Check",
+    description: "Streamlined check for single-vehicle operators covering core DVSA requirements",
+    items: [
+      { label: "Tyres, Wheels & Wheel Nuts", group: "exterior", guidance: "Check tread depth, sidewall condition, and wheel nut security on all positions.", requiresPhoto: false },
+      { label: "Lights, Indicators & Reflectors", group: "exterior", guidance: "Verify all lights are clean and functional including headlamps, indicators, brake, tail, fog, and hazard lights.", requiresPhoto: false },
+      { label: "Fluid Levels & Leaks", group: "exterior", guidance: "Check oil, coolant, screen wash, and AdBlue levels. Inspect underneath for drips or puddles.", requiresPhoto: false },
+      { label: "Load Securement", group: "loading", guidance: "Verify all loads are properly restrained. Check straps, ropes, or nets are tight and anchorage points are secure.", requiresPhoto: true },
+      { label: "Brakes & Air System", group: "interior", guidance: "Check brake pedal feel, handbrake hold, and listen for air leaks. Verify warning lights clear on startup.", requiresPhoto: false },
+      { label: "Mirrors & Visibility", group: "interior", guidance: "Clean and adjust all mirrors. Ensure windscreen is clear of chips or cracks in driver vision area.", requiresPhoto: false },
+      { label: "Body & Chassis Condition", group: "exterior", guidance: "Quick visual of body panels, doors, and chassis for any visible damage or corrosion.", requiresPhoto: false },
+    ]
+  },
+];
+
 export interface ChecklistTemplateItem {
   key: string;
   label: string;
-  group: 'interior' | 'exterior';
+  group: 'interior' | 'exterior' | 'loading' | 'defect';
   guidance: string;
   requiresTrailer?: boolean;
+  requiresPhoto?: boolean;
 }
 
 export const CHECKLIST_ITEMS: ChecklistTemplateItem[] = [
@@ -298,6 +349,56 @@ export const CHECKLIST_ITEMS: ChecklistTemplateItem[] = [
     group: 'exterior',
     guidance: 'Final walkaround inspect. Check for major tail lift defects, visible loose parts, or overall structural warping.'
   }
+];
+
+
+// Built-in Scaffolding & Haulage templates with mandatory photo requirements
+export const BUILT_IN_TEMPLATES: { name: string; description: string; items: Omit<ChecklistTemplateItem, "key">[] }[] = [
+  {
+    name: "Scaffolding Fleet Daily Check",
+    description: "DVSA-focused walkaround for scaffolding flatbeds with mandatory load securement photos",
+    items: [
+      { label: "Load Restraint Straps & Ratchets", group: "loading", guidance: "Inspect all ratchet straps for fraying, cuts, or damaged tensioning mechanisms. Each strap must be tensioned and the tail secured.", requiresPhoto: true },
+      { label: "Scaffold Tube Overhang Restraint", group: "loading", guidance: "Check that scaffold tubes, boards, and fittings are properly restrained. Overhanging loads must be flagged with red/white markers.", requiresPhoto: true },
+      { label: "Guardrails & Edge Protection", group: "loading", guidance: "Verify that side guardrails, posts, and edge protection are secure and undamaged. Exposed scaffold tubes in transit create immediate danger.", requiresPhoto: true },
+      { label: "Tie-Down Points & Lashing Rings", group: "loading", guidance: "Inspect all tie-down anchor points on the flatbed for deformation, cracks, or corrosion. Ensure lashing rings rotate freely.", requiresPhoto: false },
+      { label: "Leaf Springs & Suspension", group: "exterior", guidance: "Check leaf springs for cracks, broken leaves, or displacement. Splayed or collapsed springs indicate overloading.", requiresPhoto: true },
+      { label: "Tail Lamp & Marker Light Cluster", group: "exterior", guidance: "Check all rear lighting functions. Scaffolding loads frequently obstruct rear lamps. Verify visibility from 45-degree angles.", requiresPhoto: true },
+      { label: "Nearside & Offside Mirrors", group: "exterior", guidance: "Confirm mirrors are intact, clean, and correctly adjusted for the loaded vehicle width. Wide loads may obstruct mirror views.", requiresPhoto: false },
+      { label: "Sideguards & Under-Run Protection", group: "exterior", guidance: "Verify sideguards are securely mounted and not deformed by loading/unloading. Minimum ground clearance rules apply.", requiresPhoto: true },
+      { label: "Overhang Marker Boards & Flags", group: "exterior", guidance: "Check that red/white striped marker boards and overhang flags are clean, visible, and properly attached to projecting loads.", requiresPhoto: true },
+      { label: "Chassis & Body Condition", group: "exterior", guidance: "Inspect chassis rails for cracks or deformation from repeated heavy loading. Check flatbed deck for rot or broken planks.", requiresPhoto: false },
+    ]
+  },
+  {
+    name: "Haulage & Trailer Daily Check",
+    description: "Full 27-point DVSA check with mandatory trailer coupling and load restraint photos",
+    items: [
+      { label: "Fifth Wheel Coupling Lock", group: "exterior", guidance: "Verify fifth wheel is fully engaged around kingpin. Check secondary locking pin is fully home and handle is in locked position.", requiresPhoto: true, requiresTrailer: true },
+      { label: "Air & Electrical Lines", group: "exterior", guidance: "Check red (emergency) and yellow (service) air lines are securely connected with no audible leaks. Suspend connectors to prevent damage.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Load Restraint Curtains & Straps", group: "loading", guidance: "Inspect cargo curtains for rips or worn webbing. Ensure all internal load straps are tensioned and load is immobilized.", requiresPhoto: true },
+      { label: "Trailer Landing Legs", group: "exterior", guidance: "Verify landing legs are fully wound up, handle stowed, and gear selector in neutral/high gear position.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Wheel Nut Security (All Axles)", group: "exterior", guidance: "Visual check of all wheel nuts across tractor and trailer axles. Look for loose indicators, rust streaks, or shininess.", requiresPhoto: false },
+      { label: "Brake Performance & Air Pressure", group: "interior", guidance: "Verify correct air pressure build-up. Test footbrake and trailer brake application. Listen for air leaks.", requiresPhoto: false },
+      { label: "Container Twistlock Securement", group: "loading", guidance: "If carrying intermodal containers, verify all 4 twistlocks are engaged and locked. Check ISO corner casting alignment.", requiresPhoto: true, requiresTrailer: true },
+      { label: "Reflective Markings & Conspicuity", group: "exterior", guidance: "Verify reflective tape on trailer sides and rear is present, clean, not peeling, and meets DVSA conspicuity requirements.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Tyres Tread & Condition (All Wheels)", group: "exterior", guidance: "Check tread depth across all positions. Inspect sidewalls for bulges, cuts, or exposed cords. Check tyre pressures.", requiresPhoto: false },
+      { label: "Spray Suppression & Mudguards", group: "exterior", guidance: "Check mudguards and spray suppression skirts are complete, not damaged, and meet DVSA standards for HGV.", requiresPhoto: false },
+    ]
+  },
+  {
+    name: "Owner-Operator Daily Check",
+    description: "Streamlined check for single-vehicle operators covering core DVSA requirements",
+    items: [
+      { label: "Tyres, Wheels & Wheel Nuts", group: "exterior", guidance: "Check tread depth, sidewall condition, and wheel nut security on all positions.", requiresPhoto: false },
+      { label: "Lights, Indicators & Reflectors", group: "exterior", guidance: "Verify all lights are clean and functional including headlamps, indicators, brake, tail, fog, and hazard lights.", requiresPhoto: false },
+      { label: "Fluid Levels & Leaks", group: "exterior", guidance: "Check oil, coolant, screen wash, and AdBlue levels. Inspect underneath for drips or puddles.", requiresPhoto: false },
+      { label: "Load Securement", group: "loading", guidance: "Verify all loads are properly restrained. Check straps, ropes, or nets are tight and anchorage points are secure.", requiresPhoto: true },
+      { label: "Brakes & Air System", group: "interior", guidance: "Check brake pedal feel, handbrake hold, and listen for air leaks. Verify warning lights clear on startup.", requiresPhoto: false },
+      { label: "Mirrors & Visibility", group: "interior", guidance: "Clean and adjust all mirrors. Ensure windscreen is clear of chips or cracks in driver vision area.", requiresPhoto: false },
+      { label: "Body & Chassis Condition", group: "exterior", guidance: "Quick visual of body panels, doors, and chassis for any visible damage or corrosion.", requiresPhoto: false },
+    ]
+  },
 ];
 
 export interface ChecklistTemplate {
