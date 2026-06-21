@@ -364,7 +364,6 @@ export default function ManagerDashboard({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
   const [publishTemplates, setPublishTemplates] = useState<{name:string;desc:string;selected:boolean}[]>([]);
-  const [showTour, setShowTour] = useState(false);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
   useEffect(() => { const id = setInterval(() => { try { setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })); } catch(e) {} }, 1000); return () => clearInterval(id); }, []);
@@ -3675,48 +3674,7 @@ export default function ManagerDashboard({
       )}
 
 
-      {showTour && (() => {
-          const tourSteps = [
-            { tab: "overview", title: "Dashboard Overview", desc: "See today check status, open defects, fleet health. Use the sync button to refresh data." },
-            { tab: "vehicles", title: "Add Your Vehicles", desc: "Go to Vehicle Fleet tab. Click Register New Asset and enter your UK registration to auto-fill via DVLA." },
-            { tab: "drivers", title: "Add Drivers", desc: "In Drivers & PINs tab, click Add Driver. Set a 4-digit PIN and assign a vehicle. Print QR code stickers for quick access." },
-            { tab: "templates", title: "Compliance Templates", desc: "In Templates tab, click + Add Built-in Templates. Choose Scaffolding or Haulage checklists with mandatory photo requirements for DVSA-proof walkarounds." },
-            { tab: "schedules", title: "Schedule Checks", desc: "Go to Compliance Schedules tab. Set daily/weekly recurring walkaround checks for each vehicle and driver." },
-          ];
-          const step = Math.min(tourStep, tourSteps.length - 1);
-          const current = tourSteps[step];
-          return (
-            <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
-              <div className="bg-white max-w-md rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex gap-1.5">
-                      {tourSteps.map((_, i) => (
-                        <div key={i} className={"w-6 h-1 rounded-full " + (i === step ? "bg-blue-600" : "bg-gray-200")} />
-                      ))}
-                    </div>
-                    <button onClick={() => setShowTour(false)} className="text-gray-400 hover:text-gray-600 text-lg leading-none cursor-pointer">&times;</button>
-                  </div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0">{step + 1}</span>
-                    <h2 className="text-lg font-bold text-gray-900">{current.title}</h2>
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{current.desc}</p>
-                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
-                    <button onClick={() => { if (step > 0) setTourStep(step - 1); }} className={"text-sm font-medium px-3 py-1.5 rounded-lg cursor-pointer " + (step > 0 ? "text-gray-600 hover:bg-gray-100" : "text-gray-300")} disabled={step === 0}>Back</button>
-                    <div className="flex gap-2">
-                      {step < tourSteps.length - 1 ? (
-                        <button onClick={() => { setTourStep(step + 1); try { setActiveTab(current.tab as any); } catch(e) {} }} className="px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 cursor-pointer">Next</button>
-                      ) : (
-                        <button onClick={() => setShowTour(false)} className="px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 cursor-pointer">Done</button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+      
     </div>
   );
 }
