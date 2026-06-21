@@ -4,7 +4,7 @@ import {
   Search, Download, Users, Wrench, FileText, Check, Settings, 
   MapPin, Calendar, Clock, Lock, Trash2, Edit, AlertOctagon, Menu, ChevronDown, LogOut, ShieldCheck, ArrowRight, CreditCard, Eye, Filter
 } from "lucide-react";
-import { Vehicle, Driver, WalkaroundCheck, Defect, Company, Announcement, ScheduledChecklist, Notification as WalkSafeNotification, ChecklistTemplate, MaintenanceRecord, Document, AlertRule, FuelRecord, ExpenseRecord, Part, WorkOrder, VehiclePosition, DriverScore } from "../types";
+import { Vehicle, Driver, WalkaroundCheck, Defect, Company, Announcement, ScheduledChecklist, Notification as WalkSafeNotification, ChecklistTemplate, MaintenanceRecord, Document, AlertRule, FuelRecord, ExpenseRecord, Part, WorkOrder, VehiclePosition, DriverScore, BuiltInTemplate } from "../types";
 import { generateDVSA_PDF } from "../utils/pdfGenerator";
 import { isScheduleDueToday } from "../utils/scheduleUtils";
 import SignaturePad from "./SignaturePad";
@@ -314,6 +314,7 @@ interface ManagerDashboardProps {
   schedules: ScheduledChecklist[];
   notifications: WalkSafeNotification[];
   templates?: ChecklistTemplate[];
+  builtInTemplates?: BuiltInTemplate[];
   onAddVehicle: (veh: any) => Promise<void>;
   onAddDriver: (drv: any) => Promise<void>;
   onUpdateDriver?: (driverId: string, drvPayload: Partial<Driver>) => Promise<void>;
@@ -337,6 +338,7 @@ interface ManagerDashboardProps {
 
 export default function ManagerDashboard({
   vehicles, drivers, company, checks, defects, announcements, schedules, notifications, templates = [],
+  builtInTemplates = [],
   onAddVehicle, onAddDriver, onUpdateDriver, onDeleteDriver, onUpdateVehicle, onDeleteVehicle,
   onCloseDefect, onUpdateCompany, onAddAnnouncement, onAddSchedule, onSaveTemplate, onDeleteTemplate, onResetDriverPin,
   onMarkNotificationsAsRead, onTriggerRefresh, onLogOutWorkspace
@@ -2914,11 +2916,8 @@ export default function ManagerDashboard({
                   <Plus className="w-4 h-4" /> New Template
                 </button>
                 <button type="button" onClick={() => {
-                  setPublishTemplates([
-                    { name: "Scaffolding Fleet Daily Check", desc: "10 items with load securement photos for scaffolding flatbeds", selected: true },
-                    { name: "Haulage & Trailer Daily Check", desc: "8 items with trailer coupling photos for logistics fleets", selected: false },
-                    { name: "Owner-Operator Daily Check", desc: "6 items streamlined for single-vehicle operators", selected: false },
-                  ]);
+                  const names = builtInTemplates.map(t => ({ name: t.name, desc: t.description + " (" + t.items.filter(i => i.requiresPhoto).length + " mandatory photos)", selected: false }));
+                  setPublishTemplates(names);
                   setShowTemplatePicker(true);
                 }} className="px-3 py-2 border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1">
                   + Add Built-in Templates
@@ -2964,10 +2963,18 @@ export default function ManagerDashboard({
                         <span className="font-data-mono text-data-mono text-on-surface-variant text-xs">{tpl.items.length} items</span>
                       </div>
                       {tpl.description && <p className="font-body-sm text-body-sm text-on-surface-variant mb-4">{tpl.description}</p>}
-                      <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="flex flex-wrap gap-2 mb-2">
                         {[...new Set(tpl.items.map(i => i.group))].map(g => (
                           <span key={g} className="px-2 py-0.5 bg-surface-container text-on-surface-variant text-[10px] font-label-caps rounded uppercase">{g}</span>
                         ))}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {builtInTemplates.filter(bt => bt.name === tpl.name).map(bt => bt.vehicleType.map(vt => (
+                          <span key={vt} className={"px-1.5 py-0.5 text-[9px] font-bold rounded uppercase " + (vt === "hgv_trailer" ? "bg-purple-100 text-purple-700" : vt === "hgv" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700")}>{vt.replace(/_/g, " ")}</span>
+                        )))}
+                        {tpl.items.filter(i => i.requiresPhoto).length > 0 && (
+                          <span className="px-1.5 py-0.5 text-[9px] font-bold rounded uppercase bg-amber-100 text-amber-700">Camera required</span>
+                        )}
                       </div>
                       <div className="mt-auto pt-3 border-t border-border-subtle flex gap-2">
                         <button onClick={() => {
@@ -3535,7 +3542,86 @@ export default function ManagerDashboard({
         </div>
       )}
       {/* Template Builder Modal */}
-      {showTemplateModal && (
+      
+      {/* ===== BUILT-IN TEMPLATE PICKER MODAL ===== */}
+      {showTemplatePicker && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowTemplatePicker(false)}>
+          <div className="bg-white w-full max-w-lg mx-4 rounded-2xl shadow-2xl border border-border-subtle overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-5 border-b border-border-subtle flex items-center justify-between">
+              <div>
+                <h3 className="font-title-sm text-title-sm text-primary">Add Built-in Templates</h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Select templates to publish to your fleet. Drivers will see templates matching their vehicle type.</p>
+              </div>
+              <button onClick={() => setShowTemplatePicker(false)} className="p-2 hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
+                <X className="w-5 h-5 text-on-surface-variant" />
+              </button>
+            </div>
+            <div className="px-6 py-4 max-h-[400px] overflow-y-auto space-y-3">
+              {builtInTemplates.map((tpl, idx) => {
+                const entry = publishTemplates[idx] || { name: tpl.name, desc: tpl.description, selected: false };
+                return (
+                  <label key={tpl.id} className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${entry.selected ? "border-secondary-container bg-secondary-container/5" : "border-border-subtle hover:border-secondary-container/30"}`}>
+                    <input type="checkbox" checked={entry.selected} onChange={() => {
+                      const updated = [...publishTemplates];
+                      updated[idx] = { ...updated[idx], selected: !updated[idx].selected };
+                      setPublishTemplates(updated);
+                    }} className="mt-0.5 w-4 h-4 rounded accent-secondary-container cursor-pointer" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-title-sm text-title-sm text-primary font-bold">{tpl.name}</span>
+                        <span className="text-[10px] font-label-caps text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">{tpl.items.length} items</span>
+                      </div>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant mb-2">{entry.desc}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {tpl.vehicleType.map(vt => (
+                          <span key={vt} className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${vt === "hgv_trailer" ? "bg-purple-100 text-purple-700" : vt === "hgv" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>{vt.replace(/_/g, " ")}</span>
+                        ))}
+                        {tpl.items.filter(i => i.requiresPhoto).length > 0 && (
+                          <span className="px-2 py-0.5 text-[10px] font-bold rounded uppercase bg-amber-100 text-amber-700">Camera required</span>
+                        )}
+                      </div>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+            <div className="px-6 py-4 border-t border-border-subtle flex items-center justify-between bg-surface-container-low">
+              <span className="text-xs text-on-surface-variant">{publishTemplates.filter(e => e.selected).length} of {publishTemplates.length} selected</span>
+              <div className="flex gap-2">
+                <button onClick={() => setShowTemplatePicker(false)} className="px-4 py-2 border border-border-subtle text-on-surface-variant font-bold text-xs rounded-lg cursor-pointer hover:bg-surface-container transition-colors">Cancel</button>
+                <button onClick={async () => {
+                  const selected = publishTemplates.filter(e => e.selected);
+                  if (selected.length === 0) { alert("Select at least one template."); return; }
+                  setShowTemplatePicker(false);
+                  for (const entry of selected) {
+                    const found = builtInTemplates.find(t => t.name === entry.name);
+                    if (!found) continue;
+                    if (onSaveTemplate) {
+                      await onSaveTemplate(null, {
+                        name: found.name,
+                        description: found.description,
+                        items: found.items.map((it, i) => ({
+                          key: String(i + 1),
+                          label: it.label,
+                          group: it.group,
+                          guidance: it.guidance,
+                          requiresTrailer: !!it.requiresTrailer,
+                          requiresPhoto: !!it.requiresPhoto,
+                        }))
+                      });
+                    }
+                  }
+                  if (onTriggerRefresh) onTriggerRefresh();
+                }} className={`px-6 py-2 bg-primary text-white font-bold text-xs rounded-lg cursor-pointer transition-all hover:opacity-90 ${publishTemplates.filter(e => e.selected).length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+                  Publish Selected ({publishTemplates.filter(e => e.selected).length})
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTemplateModal && ({showTemplateModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowTemplateModal(false)}>
           <div className="bg-white w-full max-w-2xl border border-border-subtle shadow-xl overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()} style={{ borderRadius: '0.5rem' }}>
             <div className="p-6 border-b border-border-subtle flex items-center justify-between">

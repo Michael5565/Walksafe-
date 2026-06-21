@@ -305,7 +305,67 @@ export const CHECKLIST_ITEMS: ChecklistTemplateItem[] = [
 
 
 // Built-in Scaffolding & Haulage templates with mandatory photo requirements
-export const BUILT_IN_TEMPLATES: { name: string; description: string; items: Omit<ChecklistTemplateItem, "key">[] }[] = [
+export interface BuiltInTemplate {
+  id: string;
+  name: string;
+  description: string;
+  vehicleType: ('lgv' | 'hgv' | 'hgv_trailer')[];
+  items: Omit<ChecklistTemplateItem, "key">[];
+}
+
+export const BUILT_IN_TEMPLATES: BuiltInTemplate[] = [
+  {
+    id: "builtin-scaffolding",
+    name: "Scaffolding Fleet Daily Check",
+    description: "DVSA-focused walkaround for scaffolding flatbeds with mandatory load securement photos",
+    vehicleType: ["hgv"],
+    items: [
+      { label: "Load Restraint Straps & Ratchets", group: "loading", guidance: "Inspect all ratchet straps for fraying, cuts, or damaged tensioning mechanisms.", requiresPhoto: true },
+      { label: "Scaffold Tube Overhang Restraint", group: "loading", guidance: "Check that scaffold tubes, boards, and fittings are properly restrained.", requiresPhoto: true },
+      { label: "Guardrails & Edge Protection", group: "loading", guidance: "Verify side guardrails, posts, and edge protection are secure and undamaged.", requiresPhoto: true },
+      { label: "Tie-Down Points & Lashing Rings", group: "loading", guidance: "Inspect all tie-down anchor points on the flatbed for deformation or cracks.", requiresPhoto: false },
+      { label: "Leaf Springs & Suspension", group: "exterior", guidance: "Check leaf springs for cracks, broken leaves, or displacement.", requiresPhoto: true },
+      { label: "Tail Lamp & Marker Light Cluster", group: "exterior", guidance: "Check all rear lighting functions for scaffolding load obstruction.", requiresPhoto: true },
+      { label: "Nearside & Offside Mirrors", group: "exterior", guidance: "Confirm mirrors are intact and adjusted for loaded vehicle width.", requiresPhoto: false },
+      { label: "Sideguards & Under-Run Protection", group: "exterior", guidance: "Verify sideguards are securely mounted.", requiresPhoto: true },
+      { label: "Overhang Marker Boards & Flags", group: "exterior", guidance: "Check red/white marker boards are visible and properly attached.", requiresPhoto: true },
+      { label: "Chassis & Body Condition", group: "exterior", guidance: "Inspect chassis rails for cracks from repeated heavy loading.", requiresPhoto: false },
+    ]
+  },
+  {
+    id: "builtin-haulage",
+    name: "Haulage & Trailer Daily Check",
+    description: "Full DVSA check with mandatory trailer coupling and load restraint photos",
+    vehicleType: ["hgv", "hgv_trailer"],
+    items: [
+      { label: "Fifth Wheel Coupling Lock", group: "exterior", guidance: "Verify fifth wheel is fully engaged around kingpin.", requiresPhoto: true, requiresTrailer: true },
+      { label: "Air & Electrical Lines", group: "exterior", guidance: "Check air lines are securely connected with no leaks.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Load Restraint Curtains & Straps", group: "loading", guidance: "Inspect cargo curtains and straps for tension.", requiresPhoto: true },
+      { label: "Trailer Landing Legs", group: "exterior", guidance: "Verify landing legs are fully wound up and handle stowed.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Wheel Nut Security", group: "exterior", guidance: "Visual check of all wheel nuts across tractor and trailer.", requiresPhoto: false },
+      { label: "Brake Performance & Air Pressure", group: "interior", guidance: "Verify correct air pressure build-up.", requiresPhoto: false },
+      { label: "Container Twistlock Securement", group: "loading", guidance: "Verify all twistlocks are engaged and locked.", requiresPhoto: true, requiresTrailer: true },
+      { label: "Reflective Markings", group: "exterior", guidance: "Verify reflective tape is present, clean, and not peeling.", requiresPhoto: false, requiresTrailer: true },
+      { label: "Tyres Tread & Condition", group: "exterior", guidance: "Check tread depth and sidewalls for bulges or cuts.", requiresPhoto: false },
+      { label: "Spray Suppression", group: "exterior", guidance: "Check mudguards and spray suppression skirts.", requiresPhoto: false },
+    ]
+  },
+  {
+    id: "builtin-owner-operator",
+    name: "Owner-Operator Daily Check",
+    description: "Streamlined check for single-vehicle operators covering core DVSA requirements",
+    vehicleType: ["lgv", "hgv"],
+    items: [
+      { label: "Tyres, Wheels & Nuts", group: "exterior", guidance: "Check tread depth and wheel nut security.", requiresPhoto: false },
+      { label: "Lights & Indicators", group: "exterior", guidance: "Verify all lights are clean and functional.", requiresPhoto: false },
+      { label: "Fluid Levels & Leaks", group: "exterior", guidance: "Check oil, coolant, screen wash levels. Inspect for leaks.", requiresPhoto: false },
+      { label: "Load Securement", group: "loading", guidance: "Verify all loads are properly restrained.", requiresPhoto: true },
+      { label: "Brakes & Air System", group: "interior", guidance: "Check brake pedal feel and listen for air leaks.", requiresPhoto: false },
+      { label: "Mirrors & Visibility", group: "interior", guidance: "Clean and adjust all mirrors.", requiresPhoto: false },
+      { label: "Body & Chassis", group: "exterior", guidance: "Quick visual for any visible damage or corrosion.", requiresPhoto: false },
+    ]
+  },
+];
   {
     name: "Scaffolding Fleet Daily Check",
     description: "DVSA-focused walkaround for scaffolding flatbeds with mandatory load securement photos",

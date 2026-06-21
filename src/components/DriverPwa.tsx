@@ -80,6 +80,7 @@ interface DriverPwaProps {
   announcements: Announcement[];
   schedules: ScheduledChecklist[];
   templates?: ChecklistTemplate[];
+  builtInTemplates?: BuiltInTemplate[];
   onCheckSubmitted: (checkData: any) => Promise<any>;
   onTriggerRefresh: () => void;
   onLogOutWorkspace?: () => void;
@@ -101,6 +102,7 @@ export default function DriverPwa({
   announcements,
   schedules,
   templates: templatesFromProps,
+  builtInTemplates: builtInTemplates = [],
   onCheckSubmitted,
   onTriggerRefresh,
   onLogOutWorkspace,

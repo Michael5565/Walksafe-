@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, FormEvent, useRef, Suspense, lazy } from "react";
-import { Company, Vehicle, Driver, WalkaroundCheck, Defect, Announcement, ScheduledChecklist, Notification as WalkSafeNotification, ChecklistTemplate } from "./types";
+import { Company, Vehicle, Driver, WalkaroundCheck, Defect, Announcement, ScheduledChecklist, Notification as WalkSafeNotification, ChecklistTemplate, BuiltInTemplate, BUILT_IN_TEMPLATES } from "./types";
 import { Shield, Truck, Users, RefreshCw, AlertTriangle, Cpu, Wifi, WifiOff, Building, Lock, Key, Check, Plus, AlertCircle, ArrowRight, CornerDownRight, LogOut, Smartphone, Laptop, Bell, Megaphone, CalendarRange, X, Mail, Eye, EyeOff, Clock } from "lucide-react";
 import { auth, db as firestore, ensureAuth } from "./lib/firebase";
 import { collection, addDoc, serverTimestamp, query, where, getDocs, setDoc, doc, onSnapshot } from "firebase/firestore";
@@ -2128,6 +2128,7 @@ const loadDatabaseState = async (silently = false) => {
               onSaveTemplate={handleSaveTemplate}
               onDeleteTemplate={handleDeleteTemplate}
               templates={templates}
+              builtInTemplates={BUILT_IN_TEMPLATES}
               onUpdateCompany={handleUpdateCompany}
               onUpdateDriver={handleUpdateDriver}
             />
@@ -2158,6 +2159,7 @@ const loadDatabaseState = async (silently = false) => {
               onSaveTemplate={handleSaveTemplate}
               onDeleteTemplate={handleDeleteTemplate}
               templates={templates}
+              builtInTemplates={BUILT_IN_TEMPLATES}
               onResetDriverPin={handleResetDriverPin}
               onMarkNotificationsAsRead={handleMarkNotificationsAsRead}
               onTriggerRefresh={loadDatabaseState}
