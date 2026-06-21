@@ -337,14 +337,14 @@ export default function ManagerDashboard({
   onCloseDefect, onUpdateCompany, onAddAnnouncement, onAddSchedule, onSaveTemplate, onDeleteTemplate, onResetDriverPin,
   onMarkNotificationsAsRead, onTriggerRefresh, onLogOutWorkspace
 }: ManagerDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'operations' | 'vehicles' | 'drivers' | 'defects' | 'records' | 'settings' | 'schedules' | 'billing'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'operations' | 'vehicles' | 'drivers' | 'defects' | 'records' | 'settings' | 'schedules' | 'billing' | 'templates'>('overview');
   
   // Plan-based feature gating
   const planTier = company.plan || 'starter';
   const allowedTabs: Record<string, string[]> = {
-    'solo': ['overview', 'defects', 'vehicles', 'drivers', 'billing', 'settings'],
-    'owner-driver': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'settings', 'billing'],
-    'starter': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'operations', 'schedules', 'settings', 'billing'],
+    'solo': ['overview', 'defects', 'vehicles', 'drivers', 'templates', 'billing', 'settings'],
+    'owner-driver': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'templates', 'settings', 'billing'],
+    'starter': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'operations', 'schedules', 'templates', 'settings', 'billing'],
     'growth': ['overview', 'analytics', 'fleetmap', 'vehicles', 'maintenance', 'fuel', 'parts', 'workorders', 'schedules', 'defects', 'records', 'operations', 'drivers', 'templates', 'billing', 'settings'],
     'enterprise': ['overview', 'analytics', 'fleetmap', 'vehicles', 'maintenance', 'fuel', 'parts', 'workorders', 'schedules', 'defects', 'records', 'operations', 'drivers', 'templates', 'billing', 'settings'],
   };
