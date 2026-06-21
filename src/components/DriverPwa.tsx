@@ -2155,6 +2155,32 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                   </div>
 
                   {/* Action row to exit workspace */}
+                  {/* App Update */}
+                  <div className="bg-surface-card border border-border-subtle rounded p-card-padding">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-0.5">App Version</h4>
+                        <p className="font-body-sm text-body-sm text-on-surface-variant">Check if a newer version is available</p>
+                      </div>
+                      <button onClick={() => {
+                        if ("serviceWorker" in navigator) {
+                          navigator.serviceWorker.ready.then(reg => {
+                            reg.update().then(() => {
+                              triggerAlert("Checking for updates... If a new version is found, the app will reload automatically.", "Update Check");
+                            }).catch(() => {
+                              triggerAlert("Could not check for updates. Check your connection.", "Update Error");
+                            });
+                          });
+                        } else {
+                          triggerAlert("Service Worker not supported on this browser.", "Update Error");
+                        }
+                      }} className="px-4 py-2 bg-primary text-white font-bold text-xs rounded-lg hover:opacity-90 transition-all cursor-pointer">
+                        CHECK FOR UPDATE
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Action row to exit workspace */}
                   {onLogOutWorkspace && (
                     <button
                       onClick={() => {
@@ -2966,6 +2992,31 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-border-subtle">
                   <span className="font-body-md text-body-sm text-on-surface">App Version</span>
                   <span className="font-data-mono text-data-mono text-secondary-container font-bold">1.0.4</span>
+                </div>
+              </div>
+
+              {/* App Update */}
+              <div className="bg-surface-card border border-border-subtle rounded p-card-padding">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-0.5">App Version</h4>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant">Check if a newer version is available</p>
+                  </div>
+                  <button onClick={() => {
+                    if ("serviceWorker" in navigator) {
+                      navigator.serviceWorker.ready.then(reg => {
+                        reg.update().then(() => {
+                          triggerAlert("Checking for updates... If a new version is found, the app will reload automatically.", "Update Check");
+                        }).catch(() => {
+                          triggerAlert("Could not check for updates. Check your connection.", "Update Error");
+                        });
+                      });
+                    } else {
+                      triggerAlert("Service Worker not supported on this browser.", "Update Error");
+                    }
+                  }} className="px-4 py-2 bg-primary text-white font-bold text-xs rounded-lg hover:opacity-90 transition-all cursor-pointer">
+                    CHECK FOR UPDATE
+                  </button>
                 </div>
               </div>
 
