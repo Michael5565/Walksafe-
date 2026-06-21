@@ -342,7 +342,7 @@ export default function App() {
 const loadDatabaseState = async (silently = false) => {
     // Debounce: skip if called within 300ms of the last call
     const now = Date.now();
-    if (now - _loadDbLastCall < 300) { return; }
+    if (now - _loadDbLastCall < 2000) { return; }
     _loadDbLastCall = now;
     if (!wsSession) {
       setLoading(false);
@@ -428,6 +428,13 @@ const loadDatabaseState = async (silently = false) => {
       }
     }
 
+    // Cache: skip full reload if loaded within last 10s
+    const lastLoad = parseInt(localStorage.getItem("walksafe_last_full_load") || "0");
+    if (silently && Date.now() - lastLoad < 10000) {
+      if (!silently) setLoading(false);
+      return;
+    }
+    localStorage.setItem("walksafe_last_full_load", String(Date.now()));
     if (!silently) setLoading(true);
     
     const cid = wsSession.company.id;
