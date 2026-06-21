@@ -16,6 +16,8 @@ const DriverPwa = lazy(() => import("./components/DriverPwa"));
 const ManagerDashboard = lazy(() => import("./components/ManagerDashboard"));
 const SignupFlow = lazy(() => import("./components/SignupFlow"));
 const AuthAction = lazy(() => import("./pages/AuthAction"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 
 // Backup fallback states in case Express server is compiling/initializing in background
 
@@ -1643,7 +1645,7 @@ const loadDatabaseState = async (silently = false) => {
 
   useEffect(() => {
     if (!wsSession) {
-      if (currentPath !== "/" && currentPath !== "/login" && currentPath !== "/signup") {
+      if (currentPath !== "/" && currentPath !== "/login" && currentPath !== "/signup" && currentPath !== "/verify" && currentPath !== "/reset-password") {
         navigateTo("/");
       }
     } else {
@@ -1656,6 +1658,12 @@ const loadDatabaseState = async (silently = false) => {
   if (!wsSession) {
     if (currentPath.startsWith("/auth/")) {
       return <AuthAction />;
+    }
+    if (currentPath === "/reset-password") {
+      return <ResetPassword />;
+    }
+    if (currentPath === "/verify") {
+      return <VerifyEmail />;
     }
     if (currentPath === "/") {
       return (
@@ -1886,6 +1894,7 @@ const loadDatabaseState = async (silently = false) => {
                 <div>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
                     <label style={{fontSize:11,fontWeight:700,color:'#47464b',textTransform:'uppercase',letterSpacing:'0.05em'}}>Password</label>
+                    <button type="button" onClick={() => navigateTo('/reset-password')} style={{fontSize:10,fontWeight:700,color:'#fea619',background:'none',border:'none',cursor:'pointer',textDecoration:'underline',textUnderlineOffset:2,textTransform:'uppercase',letterSpacing:'0.04em',padding:0}}>Forgot?</button>
                   </div>
                   <div style={{position:'relative'}}>
                     <Lock style={{position:'absolute',left:13,top:'50%',transform:'translateY(-50%)',width:15,height:15,color:'#a0a09a'}} />
