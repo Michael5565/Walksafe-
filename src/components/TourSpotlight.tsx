@@ -53,7 +53,15 @@ export default function TourSpotlight({ step, onNext, onBack, onClose, onTabChan
       setTooltipStyle(style);
       setReady(true);
     } else {
-      setReady(false);
+      // Fallback: center the tooltip on screen
+      setRect(null);
+      const cardW = 320;
+      setTooltipStyle({
+        position: "fixed", zIndex: 1001,
+        top: "50%", left: "50%",
+        transform: "translate(-50%, -50%)",
+      });
+      setReady(true);
     }
   };
 
