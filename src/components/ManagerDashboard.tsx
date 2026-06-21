@@ -26,7 +26,6 @@ function UkPlate({ registration, size = "sm" }: { registration: string; size?: "
   const plateH = size === "lg" ? "h-10" : size === "md" ? "h-8" : "h-6";
   const blueW = size === "lg" ? "w-3" : "w-2";
   return (
-<>
     <div className={`inline-flex items-center bg-plate-yellow rounded-sm border border-black/10 overflow-hidden uk-plate-shadow ${plateH}`}>
       <div className={`${blueW} bg-plate-blue flex flex-col items-center justify-center h-full shrink-0`}>
         <span className="text-[6px] text-white font-bold leading-none">GB</span>
@@ -2878,6 +2877,7 @@ export default function ManagerDashboard({
                       const veh = doc.vehicleId ? vehicles.find(v => v.id === doc.vehicleId) : null;
                       const isExpiring = doc.expiryDate && doc.expiryDate < new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
                       return (
+<>
                         <div key={doc.id} className={`p-4 border ${isExpiring ? 'border-danger-red/30 bg-danger-red/5' : 'border-border-subtle bg-surface-card'} flex flex-col gap-2`}>
                           <div className="flex justify-between items-start">
                             <span className="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant">{doc.type.toUpperCase()}</span>
