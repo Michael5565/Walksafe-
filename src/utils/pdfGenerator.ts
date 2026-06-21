@@ -415,33 +415,32 @@ const templateName = safeCheck.templateName || undefined;
   }
 
   // -- CHECK ITEM PHOTOS (pass/fail photos for all checks) --
-  // Debug: how many items have photoUrl?
-  if ((check as any).items && typeof doc.getY === "function") {
-    const itemsWithPhoto = (check as any).items.filter((i: any) => i.photoUrl).length;
-    const totalItems = (check as any).items.length;
-    console.log("[PDF] Items with photoUrl:", itemsWithPhoto, "of", totalItems);
-    (check as any).items.forEach((it: any) => {
-      if (it.photoUrl && it.photoUrl.length > 50) {
-        const startY = doc.getY();
-        if (startY > 250) { doc.addPage(); }
-        doc.setFont("Helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor("#000000");
-        doc.text(it.itemLabel, 10, startY + 5);
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(6);
-        const status = it.result === "fail" ? "FAIL" : "PASS";
-        doc.text("Result: " + status, 10, startY + 10);
-        // Use addImage without format param to let jsPDF auto-detect
+  // -- INLINE ITEM PHOTOS (addImage with auto-detection) --
+  // try simple addImage with auto-detect from data URL
+  if ((check as any).items) {
+    const itemsArr = (check as any).items;
+    for (let pi = 0; pi < itemsArr.length; pi++) {
+      const pit = itemsArr[pi];
+      if (pit.photoUrl && typeof pit.photoUrl === "string" && pit.photoUrl.length > 100) {
         try {
-          doc.addImage(it.photoUrl, 125, startY + 1, 60, 38);
-        } catch(imgErr) {
-          console.warn("[PDF] addImage failed for", it.itemLabel, imgErr);
-          doc.text("[Photo error]", 125, startY + 20);
+          const sy = doc.getY();
+          if (sy > 250) doc.addPage();
+          doc.setFont("Helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor("#000000");
+          doc.text(String(pit.itemLabel || "Item " + (pi+1)), 10, sy + 5);
+          doc.setFont("Helvetica", "normal");
+          doc.setFontSize(6);
+          doc.text("Result: " + (pit.result === "fail" ? "FAIL" : "PASS"), 10, sy + 10);
+          // addImage with data URL - no format param for auto-detect
+          doc.addImage(pit.photoUrl, 125, sy + 1, 60, 38);
+          doc.setY(sy + 42);
+        } catch(e) {
+          console.warn("[PDF] photo skip:", e);
+          // Skip this photo silently rather than crash
         }
-        doc.setY(startY + 42);
       }
-    });
+    }
   }
 
   // -- MISCELLANEOUS DAMAGE & FIELD NOTES SECTION --
