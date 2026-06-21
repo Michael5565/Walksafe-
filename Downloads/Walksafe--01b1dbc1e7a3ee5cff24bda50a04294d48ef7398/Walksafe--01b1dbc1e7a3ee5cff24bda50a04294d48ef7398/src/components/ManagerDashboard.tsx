@@ -211,20 +211,6 @@ function AnnouncementPublisherForm({ onSubmit }: { onSubmit: (data: any) => Prom
         </div>
       </div>
 
-      {showTour && (
-        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-primary mb-4">Welcome to WalkSafe</h2>
-            <div className="space-y-3 mb-6">
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">1</span><div><p className="font-semibold text-sm">Dashboard</p><p className="text-xs text-gray-500">Check status, defects, fleet health</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">2</span><div><p className="font-semibold text-sm">Add Vehicles & Drivers</p><p className="text-xs text-gray-500">Register fleet with DVLA lookup</p></div></div>
-              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">3</span><div><p className="font-semibold text-sm">Compliance Templates</p><p className="text-xs text-gray-500">Built-in scaffolding/haulage checklists with mandatory photos</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">4</span><div><p className="font-semibold text-sm">Schedule & Track</p><p className="text-xs text-gray-500">Recurring checks and PDF audit trails</p></div></div>
-            </div>
-            <button onClick={() => setShowTour(false)} className="w-full py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 cursor-pointer">Got it</button>
-          </div>
-        </div>
-      )}
 
     </form>
   );
@@ -291,20 +277,6 @@ function ChecklistSchedulerForm({ vehicles, drivers, templates, onSubmit }: { ve
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <input type="checkbox" checked={isRecurring} onChange={(e) => { setIsRecurring(e.target.checked); if (e.target.checked && frequency === 'once') setFrequency('weekly'
 
-      {showTour && (
-        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-primary mb-4">Welcome to WalkSafe</h2>
-            <div className="space-y-3 mb-6">
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">1</span><div><p className="font-semibold text-sm">Dashboard</p><p className="text-xs text-gray-500">Check status, defects, fleet health</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">2</span><div><p className="font-semibold text-sm">Add Vehicles</p><p className="text-xs text-gray-500">Register fleet with DVLA lookup</p></div></div>
-              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">3</span><div><p className="font-semibold text-sm">Compliance Templates</p><p className="text-xs text-gray-500">Built-in scaffolding checklists with photos</p></div></div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg"><span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">4</span><div><p className="font-semibold text-sm">Schedule & Track</p><p className="text-xs text-gray-500">Recurring checks and PDF audit trails</p></div></div>
-            </div>
-            <button onClick={() => setShowTour(false)} className="w-full py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 cursor-pointer">Got it</button>
-          </div>
-        </div>
-      )}
 ); }}
             className="w-4 h-4 rounded text-secondary-container accent-secondary-container border-border-subtle" />
           <div>
@@ -361,7 +333,6 @@ function ChecklistSchedulerForm({ vehicles, drivers, templates, onSubmit }: { ve
   const [globalSearch, setGlobalSearch] = useState("");
   const [publishTemplates, setPublishTemplates] = useState<{name:string;desc:string;selected:boolean}[]>([]);
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-  const [showTour, setShowTour] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
   useEffect(() => { const id = setInterval(() => { try { setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })); } catch(e) {} }, 1000); return () => clearInterval(id); }, []);
   useEffect(() => { const t = setInterval(() => setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })), 1000); return () => clearInterval(t); }, []);
