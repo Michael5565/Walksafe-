@@ -329,6 +329,36 @@ interface ManagerDashboardProps {
   onMarkNotificationsAsRead: () => Promise<void>;
   onTriggerRefresh: () => void;
   onLogOutWorkspace?: () => void;
+
+      )}
+      {showTour && (
+        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-8">
+              <h2 className="text-xl font-bold text-primary mb-4">Welcome to WalkSafe</h2>
+              <div className="space-y-4">
+                <div className="flex gap-3 p-3 bg-blue-50 rounded-lg">
+                  <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">1</span>
+                  <div><p className="font-semibold text-sm">Dashboard</p><p className="text-xs text-gray-500 mt-0.5">See today check status, open defects, and fleet health.</p></div>
+                </div>
+                <div className="flex gap-3 p-3 bg-blue-50 rounded-lg">
+                  <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">2</span>
+                  <div><p className="font-semibold text-sm">Add Vehicles</p><p className="text-xs text-gray-500 mt-0.5">Register your fleet using DVLA lookup. Add drivers with PINs.</p></div>
+                </div>
+                <div className="flex gap-3 p-3 bg-amber-50 rounded-lg">
+                  <span className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">3</span>
+                  <div><p className="font-semibold text-sm">Compliance Templates</p><p className="text-xs text-gray-500 mt-0.5">Use built-in scaffolding or haulage templates with mandatory photo requirements for DVSA-proof checks.</p></div>
+                </div>
+                <div className="flex gap-3 p-3 bg-blue-50 rounded-lg">
+                  <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0">4</span>
+                  <div><p className="font-semibold text-sm">Schedule &amp; Track</p><p className="text-xs text-gray-500 mt-0.5">Set recurring checks. Get instant defect alerts. Export PDF audit trails.</p></div>
+                </div>
+              </div>
+              <button onClick={() => setShowTour(false)} className="w-full mt-6 py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-all cursor-pointer">Got it</button>
+            </div>
+          </div>
+        </div>
+      )}
 }
 
 export default function ManagerDashboard({
@@ -360,6 +390,12 @@ export default function ManagerDashboard({
   const [scheduleFilter, setScheduleFilter] = useState<'all' | 'pending' | 'completed' | 'overdue'>('all');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
+  const [publishTemplates, setPublishTemplates] = useState<{name:string;desc:string;selected:boolean}[]>([]);
+  const [showTour, setShowTour] = useState(false);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+  useEffect(() => { const id = setInterval(() => { try { setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })); } catch(e) {} }, 1000); return () => clearInterval(id); }, []);
+  useEffect(() => { const t = setInterval(() => setCurrentTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })), 1000); return () => clearInterval(t); }, []);
   const [vehicleFilter, setVehicleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -1074,7 +1110,7 @@ export default function ManagerDashboard({
           </h2>
           <span className="h-4 w-px bg-border-subtle"></span>
           <span className="font-data-mono text-data-mono text-on-surface-variant">
-            UTC {new Date().toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            UTC {currentTime}
           </span>
         </div>
         <div className="flex items-center gap-6">
@@ -2898,23 +2934,15 @@ export default function ManagerDashboard({
                 }} className="flex items-center gap-2 bg-primary text-secondary-container px-6 py-3 font-bold font-label-caps text-label-caps hover:opacity-90 transition-all cursor-pointer active:scale-[0.98]">
                   <Plus className="w-4 h-4" /> New Template
                 </button>
-                <button type="button" onClick={async () => {
-                  try {
-                    const res = await fetch('/api/auth/seed-templates', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ companyId: company.id }),
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                      onTriggerRefresh();
-                      alert(data.message);
-                    }
-                  } catch(e) {
-                    alert('Failed to seed templates');
-                  }
+                <button type="button" onClick={() => {
+                  setPublishTemplates([
+                    { name: "Scaffolding Fleet Daily Check", desc: "10 items with load securement photos for scaffolding flatbeds", selected: true },
+                    { name: "Haulage & Trailer Daily Check", desc: "8 items with trailer coupling photos for logistics fleets", selected: false },
+                    { name: "Owner-Operator Daily Check", desc: "6 items streamlined for single-vehicle operators", selected: false },
+                  ]);
+                  setShowTemplatePicker(true);
                 }} className="px-3 py-2 border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1">
-                  Publish Built-in
+                  + Add Built-in Templates
                 </button>
               </div>
 

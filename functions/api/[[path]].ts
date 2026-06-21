@@ -511,6 +511,7 @@ app.post('/auth/register', async (c) => {
       { name: "Owner-Operator Daily Check", desc: "Streamlined check for single-vehicle operators", items: [{label:"Tyres, Wheels & Wheel Nuts",group:"exterior",guidance:"Check tread depth",requiresPhoto:false},{label:"Lights, Indicators & Reflectors",group:"exterior",guidance:"Verify lights functional",requiresPhoto:false},{label:"Fluid Levels & Leaks",group:"exterior",guidance:"Check oil and coolant",requiresPhoto:false},{label:"Load Securement",group:"loading",guidance:"Verify loads restrained",requiresPhoto:true},{label:"Brakes & Air System",group:"interior",guidance:"Check brake feel",requiresPhoto:false},{label:"Mirrors & Visibility",group:"interior",guidance:"Clean mirrors",requiresPhoto:false}] },
     ];
     for (const tpl of builtInTemplates) {
+    if (selectedNames && !selectedNames.includes(tpl.name)) continue;
       const tplId = "tmpl-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
       await db.prepare("INSERT INTO templates (id, companyId, name, description, items, createdAt) SELECT ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM templates WHERE companyId = ? AND name = ?)")
         .bind(tplId, cleanId, tpl.name, tpl.desc, JSON.stringify(tpl.items), new Date().toISOString(), cleanId, tpl.name).run();
@@ -525,7 +526,7 @@ app.post('/auth/register', async (c) => {
 // POST /api/auth/seed-templates — Publish built-in templates for existing company
 app.post('/auth/seed-templates', async (c) => {
   const db = getDbOrThrow(c);
-  const { companyId } = await c.req.json();
+  const { companyId, names: selectedNames } = await c.req.json();
   if (!companyId) return c.json({ error: "Company ID is required" }, 400);
   
   const builtInTemplates = [
@@ -536,6 +537,7 @@ app.post('/auth/seed-templates', async (c) => {
   
   let created = 0;
   for (const tpl of builtInTemplates) {
+    if (selectedNames && !selectedNames.includes(tpl.name)) continue;
     const existing = await db.prepare("SELECT id FROM templates WHERE companyId = ? AND name = ?").bind(companyId, tpl.name).first();
     if (existing) continue;
     const tplId = "tmpl-seed-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
