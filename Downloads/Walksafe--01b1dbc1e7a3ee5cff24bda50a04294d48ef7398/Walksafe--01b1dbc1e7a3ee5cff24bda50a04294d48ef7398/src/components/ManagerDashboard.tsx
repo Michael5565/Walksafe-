@@ -1076,7 +1076,7 @@ export default function ManagerDashboard({
           </h2>
           <span className="h-4 w-px bg-border-subtle"></span>
           <span className="font-data-mono text-data-mono text-on-surface-variant">
-            UTC {new Date().toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            UTC {currentTime}
           </span>
         </div>
         <div className="flex items-center gap-6">
