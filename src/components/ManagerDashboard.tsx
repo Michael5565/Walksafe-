@@ -1094,8 +1094,7 @@ export default function ManagerDashboard({
             <span className="font-data-mono text-data-mono text-primary font-bold">DVSA REF: 8820-X</span>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={() => setShowTour(true)}
-              onClick={() => setTourStep(0)}
+            <button onClick={() => { setShowTour(true); setTourStep(0); }}
               className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded cursor-pointer">
               help
             </button>
