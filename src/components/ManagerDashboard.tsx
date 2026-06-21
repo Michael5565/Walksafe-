@@ -3674,6 +3674,24 @@ export default function ManagerDashboard({
         </div>
       )}
 
+
+      {showTour && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowTour(false)}>
+          <div className="bg-white max-w-md rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">?</span>
+              <h2 className="text-lg font-bold text-gray-900">Using WalkSafe</h2>
+            </div>
+            <div className="space-y-2">
+              <div className="flex gap-2 p-2 bg-blue-50 rounded-lg"><span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 text-xs">1</span><div><p className="font-semibold text-sm text-gray-900">Dashboard</p><p className="text-xs text-gray-500">Check today compliance status and open defects</p></div></div>
+              <div className="flex gap-2 p-2 bg-blue-50 rounded-lg"><span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 text-xs">2</span><div><p className="font-semibold text-sm text-gray-900">Vehicles & Drivers</p><p className="text-xs text-gray-500">Add vehicles via DVLA lookup, assign PINs to drivers</p></div></div>
+              <div className="flex gap-2 p-2 bg-amber-50 rounded-lg"><span className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 text-xs">3</span><div><p className="font-semibold text-sm text-gray-900">Templates</p><p className="text-xs text-gray-500">Use built-in checklists with mandatory photo requirements</p></div></div>
+              <div className="flex gap-2 p-2 bg-blue-50 rounded-lg"><span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 text-xs">4</span><div><p className="font-semibold text-sm text-gray-900">Schedule</p><p className="text-xs text-gray-500">Set recurring checks, export PDF audit reports</p></div></div>
+            </div>
+            <button onClick={() => setShowTour(false)} className="w-full mt-4 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-lg hover:bg-blue-700 cursor-pointer">Got it</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
