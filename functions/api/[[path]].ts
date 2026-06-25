@@ -1112,7 +1112,6 @@ app.post('/drivers', async (c) => {
   // Send welcome email to driver
   if (emailToUse) {
     const appUrl = "https://app.getwalksafe.co.uk";
-    const qrUrl = "https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=" + encodeURIComponent(appUrl);
     const companyRow = await db.prepare("SELECT name FROM company WHERE id = ?").bind(companyId).first();
     const companyNameHTML = (companyRow && companyRow.name) || "Your Fleet";
     await sendZeptoMail(c.env, emailToUse,
@@ -1127,11 +1126,6 @@ app.post('/drivers', async (c) => {
       "<p style=\"margin:0;font-size:28px;font-weight:800;color:#1a1c1b;letter-spacing:0.1em;font-family:monospace;\">" + pin + "</p>" +
       "<a href=\"" + appUrl + "/magic/" + installToken + "\" style=\"display:inline-block;background:#fea619;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;margin-bottom:12px;\">One-Click Login</a><br/>" +
       "<p style=\"color:#777;font-size:12px;line-height:1.5;margin:0 0 20px;\">Open the app on your phone, enter <strong>" + emailToUse + "</strong> as your email and <strong>" + pin + "</strong> as your PIN to start your daily walkaround checks.</p>" +
-      "<div style=\"text-align:center;\">" +
-      "<img src=\"" + qrUrl + "\" width=\"120\" height=\"120\" style=\"border-radius:8px;\" alt=\"Scan to open WalkSafe\" />" +
-      "<p style=\"color:#a0a09a;font-size:10px;margin:4px 0 0;\">Or open directly:</p>" +
-      "<p style=\"margin:2px 0 0;\"><a href=\"" + appUrl + "\" style=\"color:#fea619;font-size:12px;font-weight:700;text-decoration:none;\">app.getwalksafe.co.uk</a></p>" +
-      "</div>" +
       "</div>" +
       "<div style=\"text-align:center;margin-top:16px;\"><p style=\"color:#a0a09a;font-size:11px;margin:0;\">WalkSafe Fleet Compliance &copy; 2026</p></div>" +
       "</div>").catch(e => console.warn("[DriverEmail] Failed to send welcome email:", e));
