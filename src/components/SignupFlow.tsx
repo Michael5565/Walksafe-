@@ -72,11 +72,12 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
       monthlyPrice: 4.99,
       maxVehicles: 1,
       features: [
-        '1 Active Commercial Vehicle',
-        '1 Main Driver Profile',
-        'DVSA compliant walkaround checks',
-        'Cloud-backed PDF audit reports',
-        'Full offline-first logging capabilities'
+        '1 Vehicle',
+        '27-Point DVSA Checklist',
+        '15-Month Audit Retention',
+        'GPS Timestamp Logs',
+        'Defect Photo Uploads',
+        'Offline PWA'
       ],
       highlight: false,
     },
@@ -87,11 +88,13 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
       monthlyPrice: 14.99,
       maxVehicles: 3,
       features: [
-        'Up to 3 Active Fleet Vehicles',
-        'Unlimited driver PIN accounts',
-        'Central Manager compliance dashboard',
-        'Real-time immediate defect notifications',
-        'PDF report downloads and archiving'
+        'Up to 3 Vehicles',
+        'Everything in Solo',
+        'Unlimited Driver Accounts',
+        'Compliance Dashboard',
+        'Real-Time Defect Alerts',
+        'Bulk PDF Export',
+        'QR Code Labels'
       ],
       highlight: true,
     },
@@ -102,11 +105,13 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
       monthlyPrice: 34.99,
       maxVehicles: 10,
       features: [
-        'Up to 10 Active Fleet Vehicles',
-        'Unlimited operators & managers',
-        'Advanced visual metrics analytics board',
-        'Audit schedule builder & automation',
-        'Priority technical support channels'
+        'Up to 10 Vehicles',
+        'Everything in Starter',
+        'Custom Checklist Templates',
+        'Scheduled Recurring Audits',
+        'Multi-Depot Management',
+        'API Dashboard Data',
+        'Priority Support'
       ],
       highlight: false,
     },
@@ -117,11 +122,12 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
       monthlyPrice: 0, // Contact us for pricing
       maxVehicles: 99,
       features: [
-        'Up to 99 Active Fleet Vehicles',
-        'Unlimited managers and drivers',
-        'Custom safety signature verification',
-        'Developer API & Custom Webhooks',
-        'BACS Direct Debit fee optimized'
+        'Up to 99 Vehicles',
+        'Everything in Growth',
+        'Custom Safety Signatures',
+        'Developer API & Webhooks',
+        'BACS Direct Debit',
+        'Dedicated Account Manager'
       ],
       highlight: false,
     }
