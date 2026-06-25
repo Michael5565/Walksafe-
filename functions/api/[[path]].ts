@@ -1503,20 +1503,14 @@ app.post('/checks', async (c) => {
         if (hasFail) {
           summary = driverName + " reported " + defectCount + " defect(s) during the walkaround check for " + vehReg + ".";
           if (isGround) summary += " The vehicle has been GROUNDED due to dangerous defect(s).";
-          const defectDetails = results.map((r: any) => "
-- " + (r.itemLabel || r.itemKey) + ": " + (r.severity || "major") + (r.description ? " - " + r.description : "")).join("");
-          summary += "
-
-Defects:" + defectDetails;
+          const defectDetails = results.map((r: any) => "  - " + (r.itemLabel || r.itemKey) + ": " + (r.severity || "major") + (r.description ? " - " + r.description : "")).join("");
+          summary += "  Defects:" + defectDetails;
         } else {
           summary = driverName + " completed a clean walkaround check for " + vehReg + ". No defects found.";
         }
-        summary += "
-
-View full report: " + appUrl3;
+        summary += "  View full report: " + appUrl3;
         const subject = "WalkSafe - " + vehReg + " - " + (hasFail ? (isGround ? "GROUNDED" : defectCount + " defect(s)") : "PASSED");
-        sendZeptoMail(c.env, compRow.email, subject, buildEmailHtml(subject, summary.replace(/
-/g, "<br/>"))).catch(()=>{});
+        sendZeptoMail(c.env, compRow.email, subject, buildEmailHtml(subject, summary.replace(/  /g, "<br/>"))).catch(()=>{});
       }
     } catch(e) {}
   })();
