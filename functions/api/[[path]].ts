@@ -1131,7 +1131,8 @@ app.post('/drivers', async (c) => {
       "<p style=\"color:#777;font-size:12px;line-height:1.5;margin:0 0 20px;\">Open the app on your phone, enter <strong>" + emailToUse + "</strong> as your email and <strong>" + pin + "</strong> as your PIN to start your daily walkaround checks.</p>" +
       "<div style=\"text-align:center;\">" +
       "<img src=\"" + qrUrl + "\" width=\"120\" height=\"120\" style=\"border-radius:8px;\" alt=\"Scan to open WalkSafe\" />" +
-      "<p style=\"color:#a0a09a;font-size:10px;margin:4px 0 0;\">Scan QR code to open the app</p>" +
+      "<p style=\"color:#a0a09a;font-size:10px;margin:4px 0 0;\">Or open directly:</p>" +
+      "<p style=\"margin:2px 0 0;\"><a href=\"" + appUrl + "\" style=\"color:#fea619;font-size:12px;font-weight:700;text-decoration:none;\">app.getwalksafe.co.uk</a></p>" +
       "</div>" +
       "</div>" +
       "<div style=\"text-align:center;margin-top:16px;\"><p style=\"color:#a0a09a;font-size:11px;margin:0;\">WalkSafe Fleet Compliance &copy; 2026</p></div>" +
