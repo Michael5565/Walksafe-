@@ -1026,12 +1026,13 @@ try {
       }
     });
 
-    // 2. Check Item Photos (from required photo items)
+    // 2. Check Item Photos (from required photo items) — skip if already in defects
+    const defectItemKeys = new Set(defects.filter(d => d.photoUrl).map(d => d.itemKey));
     checks.forEach(c => {
       const isMyCheck = company.isSoloOperator || c.driverId === currentDriver?.id;
       if (c.items && isMyCheck) {
         c.items.forEach(it => {
-          if ((it as any).photoUrl) {
+          if ((it as any).photoUrl && !defectItemKeys.has(it.itemKey)) {
             const veh = vehicles.find(v => v.id === c.vehicleId);
             list.push({
               id: `item-${c.id}-${it.itemKey}`,

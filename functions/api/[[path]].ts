@@ -1510,9 +1510,9 @@ app.post('/checks', async (c) => {
         }
         summary += "  View full report: " + appUrl3;
         const subject = "WalkSafe - " + vehReg + " - " + (hasFail ? (isGround ? "GROUNDED" : defectCount + " defect(s)") : "PASSED");
-        sendZeptoMail(c.env, compRow.email, subject, buildEmailHtml(subject, summary.replace(/  /g, "<br/>"))).catch(()=>{});
+        sendZeptoMail(c.env, compRow.email, subject, buildEmailHtml(subject, summary.replace(/  /g, "<br/>"))).catch((e2)=>console.warn("[EmailAlert] Consolidated email send failed:", e2));
       }
-    } catch(e) {}
+    } catch(e) { console.warn("[EmailAlert] Consolidated email handler error:", e); }
   })();
 
   return c.json({
