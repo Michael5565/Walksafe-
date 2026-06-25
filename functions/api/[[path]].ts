@@ -122,6 +122,19 @@ async function getToken(clientEmail: string, privateKey: string) {
   return data.access_token;
 }
 
+async function sendEmailAlert(db, env, companyId, subject, htmlBody) {
+  try {
+    const comp: any = await db.prepare("SELECT email FROM company WHERE id = ?").bind(companyId).first();
+    if (comp && comp.email) {
+      await sendZeptoMail(env, comp.email, subject, htmlBody);
+      console.log("[EmailAlert] Sent to", comp.email, ":", subject);
+    }
+  } catch (e) {
+    console.warn("[EmailAlert] Failed:", e);
+  }
+}
+
+
 async function sendFcmPush(env: Bindings, token: string, title: string, body: string) {
   if (!env.FCM_PROJECT_ID || !env.FCM_CLIENT_EMAIL || !env.FCM_PRIVATE_KEY) {
     console.warn("[FCM] Configuration missing (PROJECT_ID, CLIENT_EMAIL, or PRIVATE_KEY)");
@@ -801,6 +814,37 @@ app.post('/auth/forgot-password', async (c) => {
   return c.json({ success: true, message: "A password reset link has been sent to your email." });
 });
 
+// POST /api/auth/send-test-alert — Send test notification to company manager
+app.post(/auth/send-test-alert, async (c) => {
+  const db = getDbOrThrow(c);
+  const companyId = c.req.header(x-company-id);
+  if (!companyId) return c.json({ error: "X-Company-Id header is required" }, 401);
+  try {
+    const comp: any = await db.prepare("SELECT email, name FROM company WHERE id = ?").bind(companyId).first();
+    if (!comp || !comp.email) {
+      return c.json({ error: "No email on file for this company. Add your work email in Company Settings." }, 400);
+    }
+    await sendZeptoMail(c.env, comp.email,
+      "WalkSafe — Test Notification",
+      "<div style=\"font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;\">" +
+      "<div style=\"text-align:center;margin-bottom:24px;\"><span style=\"font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;\">Walk<span style=\"color:#fea619;\">Safe</span></span></div>" +
+      "<div style=\"background:#fff;border-radius:12px;padding:32px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);\">" +
+      "<h2 style=\"color:#1a1c1b;font-size:18px;margin:0 0 12px;\">Test Notification</h2>" +
+      "<p style=\"color:#47464b;font-size:14px;line-height:1.5;margin:0 0 24px;\">This is a test email from WalkSafe to verify your email delivery and notification settings.</p>" +
+      "<div style=\"background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin-bottom:24px;\">" +
+      "<p style=\"color:#16a34a;font-size:13px;font-weight:600;margin:0;\">✅ Email delivery confirmed!</p>" +
+      "</div>" +
+      "<p style=\"color:#777;font-size:12px;line-height:1.5;\">You will now receive email alerts for defects, grounded vehicles, and other compliance events configured in your WalkSafe dashboard.</p>" +
+      "</div>" +
+      "<div style=\"text-align:center;margin-top:16px;\"><p style=\"color:#a0a09a;font-size:11px;margin:0;\">WalkSafe Fleet Compliance © 2026</p></div>" +
+      "</div>");
+    return c.json({ success: true, message: "Test notification sent to " + comp.email });
+  } catch (e) {
+    console.error("[TestAlert] Failed:", e);
+    return c.json({ error: "Failed to send test notification. Check ZEPTOMAIL_API_KEY env var." }, 500);
+  }
+});
+
 // 4. GET /api/auth/workspace-drivers/:id
 app.get('/auth/workspace-drivers/:id', async (c) => {
   const db = getDbOrThrow(c);
@@ -1422,6 +1466,9 @@ app.post('/checks', async (c) => {
     console.warn("Push dispatch error:", pushErr);
   }
 
+  // --- EMAIL ALERT ---
+  await sendEmailAlert(db, c.env, companyId, "WalkSafe: " + pushTitle, "<div style=\"font-family:Arial;padding:20px\"><h2>" + pushTitle + "</h2><p>" + pushMessage + "</p><hr><p style=\"color:#777\">WalkSafe Fleet Compliance</p></div>");
+
   return c.json({
     id: checkId,
     vehicleId,
@@ -1570,7 +1617,12 @@ app.post('/announcements', async (c) => {
         await sendFcmPush(c.env, subRecord.fcmToken as string, `📢 Announcement: ${title}`, msgExcerpt);
       }
     }
+      }
+  }
   } catch (err) {}
+
+  // --- EMAIL ALERT ---
+  await sendEmailAlert(db, c.env, companyId, "WalkSafe Announcement: " + title, "<div style=\"font-family:Arial;padding:20px\"><h2>📢 " + title + "</h2><p>" + (msgExcerpt || "") + "</p><hr><p style=\"color:#777\">WalkSafe Fleet Compliance</p></div>");
 
   return c.json({
     id,
@@ -1653,7 +1705,12 @@ app.post('/schedules', async (c) => {
         await sendFcmPush(c.env, subRecord.fcmToken as string, pushTitle, pushMessage);
       }
     }
+      }
+  }
   } catch (err) {}
+
+  // --- EMAIL ALERT ---
+  await sendEmailAlert(db, c.env, companyId, "WalkSafe Defect Alert: " + pushTitle, "<div style=\"font-family:Arial;padding:20px\"><h2>" + pushTitle + "</h2><p>" + pushMessage + "</p><hr><p style=\"color:#777\">WalkSafe Fleet Compliance</p></div>");
 
   return c.json({
     id,
@@ -1747,6 +1804,8 @@ app.put('/schedules/:id', async (c) => {
         }
       }
     } catch (err) {}
+    // --- EMAIL ALERT ---
+    await sendEmailAlert(db, c.env, companyId, "WalkSafe Vehicle Grounded: " + pushTitle, "<div style=\"font-family:Arial;padding:20px\"><h2>" + pushTitle + "</h2><p>" + pushMessage + "</p><hr><p style=\"color:#777\">WalkSafe Fleet Compliance</p></div>");
   }
 
   return c.json({ success: true });

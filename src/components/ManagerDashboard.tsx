@@ -683,7 +683,25 @@ export default function ManagerDashboard({
     loadAlertRules();
   };
 
-  const handleDeleteAlertRule = async (ruleId: string) => {
+  const handleSendTestAlert = async () => {
+    try {
+      const res = await fetch("/api/auth/send-test-alert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Company-Id": company.id },
+        body: JSON.stringify({ type: "test" })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert("Test notification sent! Check your email and device.");
+      } else {
+        alert("Failed: " + (data.error || "Unknown error"));
+      }
+    } catch (e) {
+      alert("Network error sending test notification.");
+    }
+  };
+
+    const handleDeleteAlertRule = async (ruleId: string) => {
     await fetch(`/api/alert-rules/${ruleId}`, { method: 'DELETE', headers: { 'X-Company-Id': company.id } });
     loadAlertRules();
   };
@@ -2448,7 +2466,14 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                 </div>
 
                 
-                <div className="flex justify-end pt-4 border-t border-border-subtle">
+                <div className="flex items-center justify-between pt-4 border-t border-border-subtle">
+                  <button type="button" onClick={handleSendTestAlert} className="px-4 py-2 border border-secondary-container text-secondary-container font-bold text-xs rounded-lg hover:bg-secondary-container/10 transition-all cursor-pointer">
+                    Send Test Notification
+                  </button>
+                  <button type="submit" className="px-6 py-3 bg-primary text-on-primary font-label-caps text-label-caps font-bold hover:opacity-90 transition-all cursor-pointer">
+                    {compSavedMsg ? "SAVED ✓" : "Save Settings"}
+                  </button>
+                </div>
                   <button type="submit" className="px-6 py-3 bg-primary text-on-primary font-label-caps text-label-caps font-bold hover:opacity-90 transition-all cursor-pointer">
                     {compSavedMsg ? 'SAVED ✓' : 'Save Settings'}
                   </button>
