@@ -1648,7 +1648,6 @@ app.post('/announcements', async (c) => {
       }
     }
       }
-  }
   } catch (err) {}
 
   // --- EMAIL ALERT ---
