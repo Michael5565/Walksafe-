@@ -339,7 +339,7 @@ export default function SignupFlow({ onLoginSuccess, onBackToLogin }: SignupFlow
             body: JSON.stringify({ email: auth.currentUser.email, uid: auth.currentUser.uid }),
           });
           if (res.ok) {
-            setResendTimer(60);
+            setResendTimer(120);
             setVerifyStatusMsg("Verification link has been resent! Please check your inbox.");
           } else {
             const data = await res.json();

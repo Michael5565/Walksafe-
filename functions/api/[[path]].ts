@@ -762,9 +762,9 @@ app.post('/auth/forgot-password', async (c) => {
   }
 
   // Rate limit: check existing unexpired token within last 60s
-  const recent = await db.prepare("SELECT id FROM password_reset_tokens WHERE email = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC LIMIT 1").bind(cleanEmail, new Date().toISOString()).first();
-  if (recent) {
-    return c.json({ error: "A reset email was already sent recently. Please check your inbox or wait before requesting again." }, 429);
+  const recentPwd = await db.prepare("SELECT id FROM password_reset_tokens WHERE email = ? AND created_at > ? ORDER BY created_at DESC LIMIT 1").bind(cleanEmail, new Date(Date.now() - 120 * 1000).toISOString()).first();
+  if (recentPwd) {
+    return c.json({ error: "A password reset email was already sent recently. Please check your inbox or wait 2 minutes before requesting again." }, 429);
   }
 
   const token = generateVerifyToken();
@@ -2552,10 +2552,9 @@ app.post("/auth/send-verify-link", async (c) => {
   const cleanEmail = email.toLowerCase().trim();
 
   // Rate limit: check existing unexpired token within last 60s
-  const recent = await db.prepare("SELECT id FROM email_verification_tokens WHERE email = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC LIMIT 1").bind(cleanEmail, new Date().toISOString()).first();
-  if (recent) {
-    const rec = recent;
-    return c.json({ error: "A verification email was already sent recently. Please check your inbox or wait before requesting again." }, 429);
+  const recentVerify = await db.prepare("SELECT id FROM email_verification_tokens WHERE email = ? AND created_at > ? ORDER BY created_at DESC LIMIT 1").bind(cleanEmail, new Date(Date.now() - 120 * 1000).toISOString()).first();
+  if (recentVerify) {
+    return c.json({ error: "A verification email was already sent recently. Please check your inbox or wait 2 minutes before requesting again." }, 429);
   }
 
   const token = generateVerifyToken();
