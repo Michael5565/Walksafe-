@@ -2474,12 +2474,8 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                     {compSavedMsg ? "SAVED ✓" : "Save Settings"}
                   </button>
                 </div>
-                  <button type="submit" className="px-6 py-3 bg-primary text-on-primary font-label-caps text-label-caps font-bold hover:opacity-90 transition-all cursor-pointer">
-                    {compSavedMsg ? 'SAVED ✓' : 'Save Settings'}
-                  </button>
-                </div>
               </form>
-            </div>
+
           )}
 
           {/* ===== TAB: BILLING ===== */}
