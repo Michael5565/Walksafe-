@@ -429,7 +429,7 @@ const templateName = safeCheck.templateName || undefined;
     for (let pi2 = 0; pi2 < photoItems2.length; pi2++) {
       const pit2 = photoItems2[pi2];
       const url2 = pit2.photoUrl || photoLookup2[pit2.itemKey];
-      if (url2 if (url2 && typeof url2 === "string" && url2.length > 100) {if (url2 && typeof url2 === "string" && url2.length > 100) { typeof url2 === "string" if (url2 && typeof url2 === "string" && url2.length > 100) {if (url2 && typeof url2 === "string" && url2.length > 100) { url2.length > 100 && !defectKeys.has(pit2.itemKey)) {
+      if (url2 && typeof url2 === "string" && url2.length > 100 && !defectKeys.has(pit2.itemKey)) {
         try {
           if (y > 250) { doc.addPage(); y = 15; }
           doc.setFont("Helvetica", "bold");
