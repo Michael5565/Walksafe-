@@ -1647,7 +1647,6 @@ app.post('/announcements', async (c) => {
         await sendFcmPush(c.env, subRecord.fcmToken as string, `📢 Announcement: ${title}`, msgExcerpt);
       }
     }
-      }
   } catch (err) {}
 
   // --- EMAIL ALERT ---
