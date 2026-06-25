@@ -1474,7 +1474,6 @@ app.post('/checks', async (c) => {
 
   } catch (_schErr) { console.error("[Schedule] Completion error:", _schErr); }
 
-    (async () => { try { const c2: any = await db.prepare("SELECT email FROM company WHERE id = ?").bind(companyId).first(); if (c2 && c2.email) { const dn = driverLabel || "A driver"; const subj = "WalkSafe - " + dn + " " + (hasFail ? "defects reported" : "check completed"); const body = dn + " " + (hasFail ? "reported defects" : "completed a clean check") + "."; sendZeptoMail(c.env, c2.email, subj, buildEmailHtml(subj, body)).catch(()=>{}); } } catch(e){} })();
 // --- TRIGGER PUSH SYNC ---
   // This notifies all registered devices in the workspace.
   try {
@@ -1490,8 +1489,37 @@ app.post('/checks', async (c) => {
     console.warn("Push dispatch error:", pushErr);
   }
 
-  // --- EMAIL ALERT ---
-  await sendEmailAlert(db, c.env, companyId, "WalkSafe: " + pushTitle, buildEmailHtml(pushTitle, pushMessage));
+  // --- EMAIL ALERT (consolidated) ---
+  (async () => {
+    try {
+      const compRow: any = await db.prepare("SELECT email, name FROM company WHERE id = ?").bind(companyId).first();
+      if (compRow && compRow.email) {
+        const appUrl3 = "https://app.getwalksafe.co.uk";
+        const vehReg = regLabel || "unknown";
+        const driverName = driverLabel || "A driver";
+        const isGround = results && results.some((r: any) => r.severity === 'dangerous');
+        const defectCount = results ? results.length : 0;
+        let summary = "";
+        if (hasFail) {
+          summary = driverName + " reported " + defectCount + " defect(s) during the walkaround check for " + vehReg + ".";
+          if (isGround) summary += " The vehicle has been GROUNDED due to dangerous defect(s).";
+          const defectDetails = results.map((r: any) => "
+- " + (r.itemLabel || r.itemKey) + ": " + (r.severity || "major") + (r.description ? " - " + r.description : "")).join("");
+          summary += "
+
+Defects:" + defectDetails;
+        } else {
+          summary = driverName + " completed a clean walkaround check for " + vehReg + ". No defects found.";
+        }
+        summary += "
+
+View full report: " + appUrl3;
+        const subject = "WalkSafe - " + vehReg + " - " + (hasFail ? (isGround ? "GROUNDED" : defectCount + " defect(s)") : "PASSED");
+        sendZeptoMail(c.env, compRow.email, subject, buildEmailHtml(subject, summary.replace(/
+/g, "<br/>"))).catch(()=>{});
+      }
+    } catch(e) {}
+  })();
 
   return c.json({
     id: checkId,
@@ -1729,9 +1757,6 @@ app.post('/schedules', async (c) => {
     }
   } catch (err) {}
 
-  // --- EMAIL ALERT ---
-  await sendEmailAlert(db, c.env, companyId, "WalkSafe Defect Alert: " + pushTitle, buildEmailHtml(pushTitle, pushMessage));
-
   return c.json({
     id,
     companyId,
@@ -1824,8 +1849,6 @@ app.put('/schedules/:id', async (c) => {
         }
       }
     } catch (err) {}
-    // --- EMAIL ALERT ---
-    await sendEmailAlert(db, c.env, companyId, "WalkSafe Vehicle Grounded: " + pushTitle, buildEmailHtml(pushTitle, pushMessage));
   }
 
   return c.json({ success: true });

@@ -2434,10 +2434,7 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                   <h4 className="font-title-sm text-title-sm text-primary mb-4">Automated Alerts</h4>
                   <div className="space-y-3">
                     {[
-                      { trigger: 'defect_logged', label: 'When a defect is logged' },
                       { trigger: 'mot_expiring', label: 'When MOT is expiring (30 days)' },
-                      { trigger: 'schedule_due', label: 'When a schedule is due' },
-                      { trigger: 'vehicle_grounded', label: 'When a vehicle is grounded' },
                     ].map(t => {
                       const existing = alertRules.find(r => r.trigger === t.trigger);
                       return (
