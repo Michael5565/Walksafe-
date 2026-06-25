@@ -1503,7 +1503,7 @@ app.post('/checks', async (c) => {
         if (hasFail) {
           summary = driverName + " reported " + defectCount + " defect(s) during the walkaround check for " + vehReg + ".";
           if (isGround) summary += " The vehicle has been GROUNDED due to dangerous defect(s).";
-          const defectDetails = results.map((r: any) => "  - " + (r.itemLabel || r.itemKey) + ": " + (r.severity || "major") + (r.description ? " - " + r.description : "")).join("");
+          const defectDetails = results && results.length > 0 ? results.map((r: any) => "  - " + (r.itemLabel || r.itemKey) + ": " + (r.severity || "major") + (r.description ? " - " + r.description : "")).join("") : "";
           summary += "  Defects:" + defectDetails;
         } else {
           summary = driverName + " completed a clean walkaround check for " + vehReg + ". No defects found.";
