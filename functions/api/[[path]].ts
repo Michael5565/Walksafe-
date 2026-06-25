@@ -778,7 +778,7 @@ app.post('/auth/forgot-password', async (c) => {
   const url = new URL(c.req.url);
   const resetUrl = url.protocol + "//" + url.host + "/reset-password?token=" + token;
 
-  await sendZeptoMail(c.env, cleanEmail,
+  const mailResult = await sendZeptoMail(c.env, cleanEmail,
     "Reset your WalkSafe password",
     '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;">' +
     '<div style="text-align:center;margin-bottom:24px;"><span style="font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;">Walk<span style="color:#fea619;">Safe</span></span></div>' +
@@ -794,6 +794,10 @@ app.post('/auth/forgot-password', async (c) => {
     '</div>'
   );
 
+  if (!mailResult || mailResult.error) {
+    console.error("[ZeptoMail] Password reset email failed to send:", mailResult?.error || mailResult);
+    return c.json({ error: "Could not send password reset email. Email service may be unavailable. Please try again later." }, 503);
+  }
   return c.json({ success: true, message: "A password reset link has been sent to your email." });
 });
 
@@ -2565,7 +2569,7 @@ app.post("/auth/send-verify-link", async (c) => {
   const url = new URL(c.req.url);
   const verifyUrl = url.protocol + "//" + url.host + "/verify?token=" + token;
 
-  await sendZeptoMail(c.env, cleanEmail,
+  const mailResult2 = await sendZeptoMail(c.env, cleanEmail,
     "Verify your WalkSafe email address",
     '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;">' +
     '<div style="text-align:center;margin-bottom:24px;"><span style="font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;">Walk<span style="color:#fea619;">Safe</span></span></div>' +
@@ -2581,6 +2585,10 @@ app.post("/auth/send-verify-link", async (c) => {
     '</div>'
   );
 
+  if (!mailResult2 || mailResult2.error) {
+    console.error("[ZeptoMail] Verification email failed to send:", mailResult2?.error || mailResult2);
+    return c.json({ error: "Could not send verification email. Email service may be unavailable. Please try again later." }, 503);
+  }
   return c.json({ success: true, message: "Verification email sent" });
 });
 
