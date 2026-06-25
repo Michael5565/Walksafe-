@@ -357,7 +357,7 @@ const templateName = safeCheck.templateName || undefined;
       }
 
       // Repair information (Closed status)
-      doc.line(10, y + upperHeight, 200, y + upperHeight);
+      doc.line(10, y + upperHeight + 2, 200, y + upperHeight + 2);
       
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(9);
