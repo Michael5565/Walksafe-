@@ -2475,6 +2475,7 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                   </button>
                 </div>
               </form>
+              </div>
 
           )}
 
