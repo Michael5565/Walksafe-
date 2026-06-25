@@ -1124,7 +1124,8 @@ app.post('/drivers', async (c) => {
       "<div style=\"background:#f4f4f2;border-radius:10px;padding:16px;margin-bottom:20px;\">" +
       "<p style=\"margin:0 0 8px;font-size:12px;color:#777;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;\">Your Login PIN</p>" +
       "<p style=\"margin:0;font-size:28px;font-weight:800;color:#1a1c1b;letter-spacing:0.1em;font-family:monospace;\">" + pin + "</p>" +
-      "</div>" +
+      "</div>
+      "<a href=\"" + appUrl + "/auth/magic-login/" + installToken + "\" style=\"display:inline-block;background:#fea619;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;margin-bottom:20px;\">One-Click Login</a><br/>" +" +
       "<a href=\"" + appUrl + "\" style=\"display:inline-block;background:#1a1c1b;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;margin-bottom:20px;\">Open WalkSafe</a>" +
       "<p style=\"color:#777;font-size:12px;line-height:1.5;margin:0 0 20px;\">Open the app on your phone, enter <strong>" + emailToUse + "</strong> as your email and <strong>" + pin + "</strong> as your PIN to start your daily walkaround checks.</p>" +
       "<div style=\"text-align:center;\">" +
@@ -1479,7 +1480,8 @@ app.post('/checks', async (c) => {
 
   } catch (_schErr) { console.error("[Schedule] Completion error:", _schErr); }
 
-  // --- TRIGGER PUSH SYNC ---
+    (async () => { try { const c2: any = await db.prepare("SELECT email FROM company WHERE id = ?").bind(companyId).first(); if (c2 && c2.email) { const dn = driverLabel || "A driver"; const subj = "WalkSafe - " + dn + " " + (hasFail ? "defects reported" : "check completed"); const body = dn + " " + (hasFail ? "reported defects" : "completed a clean check") + "."; sendZeptoMail(c.env, c2.email, subj, buildEmailHtml(subj, body)).catch(()=>{}); } } catch(e){} })();
+// --- TRIGGER PUSH SYNC ---
   // This notifies all registered devices in the workspace.
   try {
     const { results: pushSubs }: any = await db.prepare("SELECT fcmToken FROM push_subscriptions WHERE companyId = ?").bind(companyId).all();
