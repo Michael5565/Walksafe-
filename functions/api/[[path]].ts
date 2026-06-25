@@ -1490,7 +1490,7 @@ app.post('/checks', async (c) => {
   }
 
   // --- EMAIL ALERT (consolidated) ---
-  (async () => {
+  await (async () => {
     try {
       const compRow: any = await db.prepare("SELECT email, name FROM company WHERE id = ?").bind(companyId).first();
       if (compRow && compRow.email) {

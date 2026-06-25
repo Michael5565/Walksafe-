@@ -917,7 +917,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       setLastSubmittedCheck(newlyCreated);
       
       // Auto-jump to the main active screen
-      setPhase('roadside');
+      setPhase('home');
       // Immediately ground the vehicle if dangerous defect was reported
       if (reportedFailures.some(r => r.severity === 'dangerous')) {
         setAssignedVehicle(prev => prev ? { ...prev, isGrounded: true } : prev);
