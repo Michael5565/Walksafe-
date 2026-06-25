@@ -1493,7 +1493,8 @@ app.post('/checks', async (c) => {
   await (async () => {
     try {
       const compRow: any = await db.prepare("SELECT email, name FROM company WHERE id = ?").bind(companyId).first();
-      if (compRow && compRow.email) {
+      console.log("[EmailAlert] Company email found: " + compRow.email);
+        if (compRow && compRow.email) {
         const appUrl3 = "https://app.getwalksafe.co.uk";
         const vehReg = regLabel || "unknown";
         const driverName = driverLabel || "A driver";
