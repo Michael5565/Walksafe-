@@ -1113,8 +1113,9 @@ app.post('/drivers', async (c) => {
   if (emailToUse) {
     const appUrl = "https://app.getwalksafe.co.uk";
     const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(appUrl);
-    const companyNameHTML = body.companyName || "Your Fleet";
-    sendZeptoMail(c.env, emailToUse,
+    const companyRow = await db.prepare("SELECT name FROM company WHERE id = ?").bind(companyId).first();
+    const companyNameHTML = (companyRow && companyRow.name) || "Your Fleet";
+    await sendZeptoMail(c.env, emailToUse,
       "Welcome to WalkSafe — Your Login Details",
       "<div style=\"font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;\">" +
       "<div style=\"text-align:center;margin-bottom:24px;\"><span style=\"font-size:28px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;\">Walk<span style=\"color:#fea619;\">Safe</span></span></div>" +
