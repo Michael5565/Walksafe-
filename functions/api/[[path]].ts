@@ -206,6 +206,18 @@ async function sendZeptoMail(env, toEmail, subject, htmlContent) {
   }
 }
 
+function buildEmailHtml(title, body) {
+  return '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;">' +
+    '<div style="text-align:center;margin-bottom:24px;"><span style="font-size:28px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;">Walk<span style="color:#fea619;">Safe</span></span></div>' +
+    '<div style="background:#fff;border-radius:12px;padding:32px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">' +
+    '<h2 style="color:#1a1c1b;font-size:18px;margin:0 0 12px;">' + title + '</h2>' +
+    '<p style="color:#47464b;font-size:14px;line-height:1.5;margin:0 0 24px;">' + body + '</p>' +
+    '</div>' +
+    '<div style="text-align:center;margin-top:16px;"><p style="color:#a0a09a;font-size:11px;margin:0;">WalkSafe Fleet Compliance &copy; 2026</p></div>' +
+    '</div>';
+}
+
+// --- Firebase Admin Auth Helper (reuses existing FCM service account) ---
 // --- Firebase Admin Auth Helper (reuses existing FCM service account) ---
 async function getFirebaseAdminToken(env) {
   if (!env.FCM_CLIENT_EMAIL || !env.FCM_PRIVATE_KEY) return null;
@@ -826,18 +838,7 @@ app.post(/auth/send-test-alert, async (c) => {
     }
     await sendZeptoMail(c.env, comp.email,
       "WalkSafe — Test Notification",
-      "<div style=\"font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;\">" +
-      "<div style=\"text-align:center;margin-bottom:24px;\"><span style=\"font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;\">Walk<span style=\"color:#fea619;\">Safe</span></span></div>" +
-      "<div style=\"background:#fff;border-radius:12px;padding:32px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);\">" +
-      "<h2 style=\"color:#1a1c1b;font-size:18px;margin:0 0 12px;\">Test Notification</h2>" +
-      "<p style=\"color:#47464b;font-size:14px;line-height:1.5;margin:0 0 24px;\">This is a test email from WalkSafe to verify your email delivery and notification settings.</p>" +
-      "<div style=\"background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin-bottom:24px;\">" +
-      "<p style=\"color:#16a34a;font-size:13px;font-weight:600;margin:0;\">✅ Email delivery confirmed!</p>" +
-      "</div>" +
-      "<p style=\"color:#777;font-size:12px;line-height:1.5;\">You will now receive email alerts for defects, grounded vehicles, and other compliance events configured in your WalkSafe dashboard.</p>" +
-      "</div>" +
-      "<div style=\"text-align:center;margin-top:16px;\"><p style=\"color:#a0a09a;font-size:11px;margin:0;\">WalkSafe Fleet Compliance © 2026</p></div>" +
-      "</div>");
+      buildEmailHtml("Test Notification", "This is a test email from WalkSafe to verify your email delivery and notification settings. ✅"))
     return c.json({ success: true, message: "Test notification sent to " + comp.email });
   } catch (e) {
     console.error("[TestAlert] Failed:", e);
@@ -1107,6 +1108,33 @@ app.post('/drivers', async (c) => {
     INSERT INTO drivers (id, companyId, fullName, email, phone, pin, defaultVehicleId, assignedVehicleIds, installToken, createdAt)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(id, companyId, fullName, emailToUse, phone, pin, defaultVehicleId, assignedVehicleIdsVal, installToken, createdAt).run();
+
+  // Send welcome email to driver
+  if (emailToUse) {
+    const appUrl = "https://app.getwalksafe.co.uk";
+    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(appUrl);
+    const companyNameHTML = body.companyName || "Your Fleet";
+    sendZeptoMail(c.env, emailToUse,
+      "Welcome to WalkSafe — Your Login Details",
+      "<div style=\"font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;\">" +
+      "<div style=\"text-align:center;margin-bottom:24px;\"><span style=\"font-size:28px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;\">Walk<span style=\"color:#fea619;\">Safe</span></span></div>" +
+      "<div style=\"background:#fff;border-radius:12px;padding:32px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);\">" +
+      "<h2 style=\"color:#1a1c1b;font-size:18px;margin:0 0 6px;\">Welcome, " + fullName + "! 👋</h2>" +
+      "<p style=\"color:#47464b;font-size:14px;line-height:1.5;margin:0 0 20px;\">You have been registered for WalkSafe digital compliance checks by <strong>" + companyNameHTML + "</strong>.</p>" +
+      "<div style=\"background:#f4f4f2;border-radius:10px;padding:16px;margin-bottom:20px;\">" +
+      "<p style=\"margin:0 0 8px;font-size:12px;color:#777;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;\">Your Login PIN</p>" +
+      "<p style=\"margin:0;font-size:28px;font-weight:800;color:#1a1c1b;letter-spacing:0.1em;font-family:monospace;\">" + pin + "</p>" +
+      "</div>" +
+      "<a href=\"" + appUrl + "\" style=\"display:inline-block;background:#1a1c1b;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;margin-bottom:20px;\">Open WalkSafe</a>" +
+      "<p style=\"color:#777;font-size:12px;line-height:1.5;margin:0 0 20px;\">Open the app on your phone, enter <strong>" + emailToUse + "</strong> as your email and <strong>" + pin + "</strong> as your PIN to start your daily walkaround checks.</p>" +
+      "<div style=\"text-align:center;\">" +
+      "<img src=\"" + qrUrl + "\" width=\"120\" height=\"120\" style=\"border-radius:8px;\" alt=\"Scan to open WalkSafe\" />" +
+      "<p style=\"color:#a0a09a;font-size:10px;margin:4px 0 0;\">Scan QR code to open the app</p>" +
+      "</div>" +
+      "</div>" +
+      "<div style=\"text-align:center;margin-top:16px;\"><p style=\"color:#a0a09a;font-size:11px;margin:0;\">WalkSafe Fleet Compliance &copy; 2026</p></div>" +
+      "</div>").catch(e => console.warn("[DriverEmail] Failed to send welcome email:", e));
+  }
 
   return c.json({
     id,
@@ -1467,7 +1495,7 @@ app.post('/checks', async (c) => {
   }
 
   // --- EMAIL ALERT ---
-  await sendEmailAlert(db, c.env, companyId, "WalkSafe: " + pushTitle, "<div style=\"font-family:Arial;padding:20px\"><h2>" + pushTitle + "</h2><p>" + pushMessage + "</p><hr><p style=\"color:#777\">WalkSafe Fleet Compliance</p></div>");
+  await sendEmailAlert(db, c.env, companyId, "WalkSafe: " + pushTitle, buildEmailHtml(pushTitle, pushMessage));
 
   return c.json({
     id: checkId,
@@ -1622,7 +1650,7 @@ app.post('/announcements', async (c) => {
   } catch (err) {}
 
   // --- EMAIL ALERT ---
-  await sendEmailAlert(db, c.env, companyId, "WalkSafe Announcement: " + title, "<div style=\"font-family:Arial;padding:20px\"><h2>📢 " + title + "</h2><p>" + (msgExcerpt || "") + "</p><hr><p style=\"color:#777\">WalkSafe Fleet Compliance</p></div>");
+  await sendEmailAlert(db, c.env, companyId, "WalkSafe Announcement: " + title, buildEmailHtml("📢 " + title, msgExcerpt || ""));
 
   return c.json({
     id,
@@ -1710,7 +1738,7 @@ app.post('/schedules', async (c) => {
   } catch (err) {}
 
   // --- EMAIL ALERT ---
-  await sendEmailAlert(db, c.env, companyId, "WalkSafe Defect Alert: " + pushTitle, "<div style=\"font-family:Arial;padding:20px\"><h2>" + pushTitle + "</h2><p>" + pushMessage + "</p><hr><p style=\"color:#777\">WalkSafe Fleet Compliance</p></div>");
+  await sendEmailAlert(db, c.env, companyId, "WalkSafe Defect Alert: " + pushTitle, buildEmailHtml(pushTitle, pushMessage));
 
   return c.json({
     id,
@@ -1805,7 +1833,7 @@ app.put('/schedules/:id', async (c) => {
       }
     } catch (err) {}
     // --- EMAIL ALERT ---
-    await sendEmailAlert(db, c.env, companyId, "WalkSafe Vehicle Grounded: " + pushTitle, "<div style=\"font-family:Arial;padding:20px\"><h2>" + pushTitle + "</h2><p>" + pushMessage + "</p><hr><p style=\"color:#777\">WalkSafe Fleet Compliance</p></div>");
+    await sendEmailAlert(db, c.env, companyId, "WalkSafe Vehicle Grounded: " + pushTitle, buildEmailHtml(pushTitle, pushMessage));
   }
 
   return c.json({ success: true });
