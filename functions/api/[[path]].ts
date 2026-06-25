@@ -827,9 +827,9 @@ app.post('/auth/forgot-password', async (c) => {
 });
 
 // POST /api/auth/send-test-alert — Send test notification to company manager
-app.post(/auth/send-test-alert, async (c) => {
+app.post("/auth/send-test-alert", async (c) => {
   const db = getDbOrThrow(c);
-  const companyId = c.req.header(x-company-id);
+  const companyId = c.req.header('x-company-id');
   if (!companyId) return c.json({ error: "X-Company-Id header is required" }, 401);
   try {
     const comp: any = await db.prepare("SELECT email, name FROM company WHERE id = ?").bind(companyId).first();
@@ -838,7 +838,7 @@ app.post(/auth/send-test-alert, async (c) => {
     }
     await sendZeptoMail(c.env, comp.email,
       "WalkSafe — Test Notification",
-      buildEmailHtml("Test Notification", "This is a test email from WalkSafe to verify your email delivery and notification settings. ✅"))
+      buildEmailHtml("Test Notification", "This is a test email from WalkSafe to verify your email delivery and notification settings. ✅"));
     return c.json({ success: true, message: "Test notification sent to " + comp.email });
   } catch (e) {
     console.error("[TestAlert] Failed:", e);
