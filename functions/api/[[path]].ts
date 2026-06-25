@@ -8,7 +8,7 @@ type Bindings = {
   FCM_CLIENT_EMAIL?: string;
   FCM_PRIVATE_KEY?: string;
   PAYSTACK_SECRET_KEY?: string;
-  BREVO_API_KEY?: string;
+  ZEPTOMAIL_API_KEY?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api');
@@ -167,28 +167,28 @@ async function sendFcmPush(env: Bindings, token: string, title: string, body: st
 }
 
 
-// --- Brevo Email Helper ---
-async function sendBrevoEmail(env, toEmail, subject, htmlContent) {
-  if (!env.BREVO_API_KEY) {
-    console.warn("[Brevo] API key not configured, skipping email send");
+// --- ZeptoMail Email Helper ---
+async function sendZeptoMail(env, toEmail, subject, htmlContent) {
+  if (!env.ZEPTOMAIL_API_KEY) {
+    console.warn("[ZeptoMail] API key not configured, skipping email send");
     return null;
   }
   try {
-    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    const res = await fetch("https://api.zeptomail.com/v1.1/email", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "api-key": env.BREVO_API_KEY },
+      headers: { "Content-Type": "application/json", "Authorization": "Zoho-enczapikey " + env.ZEPTOMAIL_API_KEY },
       body: JSON.stringify({
-        sender: { name: "WalkSafe", email: "noreply@getwalksafe.co.uk" },
-        to: [{ email: toEmail }],
+        from: { address: "noreply@getwalksafe.co.uk", name: "WalkSafe" },
+        to: [{ email_address: { address: toEmail, name: "" } }],
         subject,
-        htmlContent,
+        htmlbody: htmlContent,
       }),
     });
     const result = await res.json();
-    console.log("[Brevo] Email result:", JSON.stringify(result));
+    console.log("[ZeptoMail] Email result:", JSON.stringify(result));
     return result;
   } catch (err) {
-    console.error("[Brevo] Send failed:", err);
+    console.error("[ZeptoMail] Send failed:", err);
     return null;
   }
 }
@@ -778,7 +778,7 @@ app.post('/auth/forgot-password', async (c) => {
   const url = new URL(c.req.url);
   const resetUrl = url.protocol + "//" + url.host + "/reset-password?token=" + token;
 
-  await sendBrevoEmail(c.env, cleanEmail,
+  await sendZeptoMail(c.env, cleanEmail,
     "Reset your WalkSafe password",
     '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;">' +
     '<div style="text-align:center;margin-bottom:24px;"><span style="font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;">Walk<span style="color:#fea619;">Safe</span></span></div>' +
@@ -2539,7 +2539,7 @@ app.delete('/alert-rules/:id', async (c) => {
 
 // --- Custom Email Verification Endpoints ---
 
-// POST /api/auth/send-verify-link — Generate token, store in D1, send email via Brevo
+// POST /api/auth/send-verify-link — Generate token, store in D1, send email via ZeptoMail
 app.post("/auth/send-verify-link", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: "DB not bound" }, 500);
@@ -2565,7 +2565,7 @@ app.post("/auth/send-verify-link", async (c) => {
   const url = new URL(c.req.url);
   const verifyUrl = url.protocol + "//" + url.host + "/verify?token=" + token;
 
-  await sendBrevoEmail(c.env, cleanEmail,
+  await sendZeptoMail(c.env, cleanEmail,
     "Verify your WalkSafe email address",
     '<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f7;border-radius:16px;">' +
     '<div style="text-align:center;margin-bottom:24px;"><span style="font-size:24px;font-weight:800;letter-spacing:0.04em;color:#1a1c1b;">Walk<span style="color:#fea619;">Safe</span></span></div>' +
