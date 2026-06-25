@@ -1732,8 +1732,6 @@ app.post('/schedules', async (c) => {
       if (subRecord.fcmToken) {
         await sendFcmPush(c.env, subRecord.fcmToken as string, pushTitle, pushMessage);
       }
-    }
-      }
   }
   } catch (err) {}
 
