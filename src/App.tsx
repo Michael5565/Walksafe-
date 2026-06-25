@@ -143,6 +143,7 @@ export default function App() {
   useEffect(() => {
     const cachedVersion = localStorage.getItem('walksafe_app_version');
     if (cachedVersion !== APP_VERSION) {
+    if (cachedVersion === null) {console.log("[PWA] First install detected - clearing any stale session data");localStorage.removeItem("walksafe_workspace_session");localStorage.removeItem("walksafe_driver_session");}
       // Clear all walksafe-prefixed cache keys
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {

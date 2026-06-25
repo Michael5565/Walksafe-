@@ -1112,7 +1112,7 @@ app.post('/drivers', async (c) => {
   // Send welcome email to driver
   if (emailToUse) {
     const appUrl = "https://app.getwalksafe.co.uk";
-    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(appUrl);
+    const qrUrl = "https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=" + encodeURIComponent(appUrl);
     const companyRow = await db.prepare("SELECT name FROM company WHERE id = ?").bind(companyId).first();
     const companyNameHTML = (companyRow && companyRow.name) || "Your Fleet";
     await sendZeptoMail(c.env, emailToUse,
@@ -1126,7 +1126,7 @@ app.post('/drivers', async (c) => {
       "<p style=\"margin:0 0 8px;font-size:12px;color:#777;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;\">Your Login PIN</p>" +
       "<p style=\"margin:0;font-size:28px;font-weight:800;color:#1a1c1b;letter-spacing:0.1em;font-family:monospace;\">" + pin + "</p>" +
       "</div>" +
-      "<a href=\"" + appUrl + "/auth/magic-login/" + installToken + "\" style=\"display:inline-block;background:#fea619;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;margin-bottom:20px;\">One-Click Login</a><br/>" +
+      "<a href=\"" + appUrl + "/magic/" + installToken + "\" style=\"display:inline-block;background:#fea619;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;margin-bottom:20px;\">One-Click Login</a><br/>" +
       "<a href=\"" + appUrl + "\" style=\"display:inline-block;background:#1a1c1b;color:#fff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;margin-bottom:20px;\">Open WalkSafe</a>" +
       "<p style=\"color:#777;font-size:12px;line-height:1.5;margin:0 0 20px;\">Open the app on your phone, enter <strong>" + emailToUse + "</strong> as your email and <strong>" + pin + "</strong> as your PIN to start your daily walkaround checks.</p>" +
       "<div style=\"text-align:center;\">" +
