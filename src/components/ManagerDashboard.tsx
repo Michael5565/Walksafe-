@@ -3107,9 +3107,9 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                     <p className="font-body-sm text-body-sm text-on-surface-variant min-h-[40px] mt-1">For independent owner-operators.</p>
                     <div className="mt-6"><span className="font-display-lg text-display-lg text-primary">£4.99</span><span className="text-on-surface-variant">/mo</span></div>
                     <ul className="mt-8 space-y-3 flex-1">
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> 1 Vehicle License</li>
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Basic Digital Logbook</li>
-                      <li className="flex items-center gap-2 text-body-sm opacity-40 line-through"><span className="material-symbols-outlined text-lg">cancel</span> DVSA Earned Recognition</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> 1 Vehicle</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> 27-Point DVSA Checklist</li>
+                      <li className="flex items-center gap-2 text-body-sm opacity-40 line-through"><span className="material-symbols-outlined text-lg">cancel</span> 15-Month Audit Retention</li>
                     </ul>
                     <button onClick={() => handlePlanUpgrade('owner-driver', 1)} className="mt-8 w-full py-3 border border-primary text-primary font-bold font-label-caps hover:bg-primary hover:text-on-primary transition-all cursor-pointer">
                       {company.plan === 'owner-driver' ? 'CURRENT PLAN' : 'SELECT'}
@@ -3121,9 +3121,9 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                     <p className="font-body-sm text-body-sm text-on-surface-variant min-h-[40px] mt-1">Small fleets growing their operations.</p>
                     <div className="mt-6"><span className="font-display-lg text-display-lg text-primary">£14.99</span><span className="text-on-surface-variant">/mo</span></div>
                     <ul className="mt-8 space-y-3 flex-1">
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Up to 5 Vehicles</li>
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Defect Triage System</li>
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Automated Comms</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Up to 3 Vehicles</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Unlimited Driver Accounts</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Compliance Dashboard</li>
                     </ul>
                     <button onClick={() => handlePlanUpgrade('starter', 5)} className="mt-8 w-full py-3 border border-primary text-primary font-bold font-label-caps hover:bg-primary hover:text-on-primary transition-all cursor-pointer">
                       {company.plan === 'starter' ? 'CURRENT PLAN' : 'SELECT'}
@@ -3136,10 +3136,10 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                     <p className="font-body-sm text-body-sm text-on-surface-variant min-h-[40px] mt-1">The compliance standard for mid-sized haulage.</p>
                     <div className="mt-6"><span className="font-display-lg text-display-lg text-primary">£34.99</span><span className="text-on-surface-variant">/mo</span></div>
                     <ul className="mt-8 space-y-3 flex-1">
-                      <li className="flex items-center gap-2 text-body-sm font-semibold"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Up to 20 Vehicles</li>
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> ER Compliance Dashboard</li>
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Priority Support 24/7</li>
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Maintenance API access</li>
+                      <li className="flex items-center gap-2 text-body-sm font-semibold"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Up to 10 Vehicles</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Real-Time Defect Alerts</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Priority Support</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> API Dashboard Data</li>
                     </ul>
                     <button onClick={() => handlePlanUpgrade('growth', 20)} className="mt-8 w-full py-3 bg-surface-container-low text-primary text-center font-bold font-label-caps border border-primary/10 cursor-pointer">
                       {company.plan === 'growth' ? 'CURRENT PLAN' : 'SELECT'}
@@ -3151,8 +3151,8 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                     <p className="font-body-sm text-body-sm text-on-surface-variant min-h-[40px] mt-1">Multi-site logistics &amp; large fleets.</p>
                     <div className="mt-6"><span className="font-display-lg text-display-lg text-primary">POA</span></div>
                     <ul className="mt-8 space-y-3 flex-1">
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Unlimited Vehicles</li>
-                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Custom Integrations</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Up to 99 Vehicles</li>
+                      <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Custom Safety Signatures</li>
                       <li className="flex items-center gap-2 text-body-sm"><span className="material-symbols-outlined text-compliance-green text-lg">check_circle</span> Dedicated Account Manager</li>
                     </ul>
                     <button onClick={() => handlePlanUpgrade('enterprise', 999)} className="mt-8 w-full py-3 bg-primary text-white font-bold font-label-caps hover:bg-primary/90 transition-all cursor-pointer">
