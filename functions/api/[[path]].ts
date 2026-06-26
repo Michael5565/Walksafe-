@@ -27,6 +27,8 @@ app.onError((err, c) => {
   console.error("Cloudflare Functions Error:", err);
   return c.json({ error: err.message || "An unexpected error occurred" }, 500);
 });
+
+
 // POST /api/auth/reset-password — Validate token, update password
 app.post('/auth/reset-password', async (c) => {
   const db = getDbOrThrow(c);
@@ -1610,6 +1612,19 @@ app.put('/defects/:id/reopen', async (c) => {
   const defect: any = await db.prepare("SELECT * FROM defects WHERE id = ? AND companyId = ?").bind(id, companyId).first();
   if (!defect) return c.json({ error: "Defect not found" }, 404);
   await db.prepare("UPDATE defects SET status = 'open', engineerName = NULL, repairDescription = NULL, partsUsed = NULL, repairCompletedAt = NULL, engineerSignature = NULL, closedBy = NULL, closedAt = NULL WHERE id = ? AND companyId = ?").bind(id, companyId).run();
+  
+
+// 16c. PUT /api/defects/:id/status
+app.put("/defects/:id/status", async (c) => {
+  const db = getDbOrThrow(c);
+  const companyId = c.req.header("x-company-id");
+  if (!companyId) return c.json({ error: "X-Company-Id header is required" }, 401);
+  const id = c.req.param("id");
+  const { status } = await c.req.json();
+  const valid = ["open", "in_repair", "closed"];
+  if (!valid.includes(status)) return c.json({ error: "Invalid status" }, 400);
+  try { await db.prepare("ALTER TABLE defects ADD COLUMN status TEXT DEFAULT \"open\"").run(); } catch(e) {}
+  await db.prepare("UPDATE defects SET status = ? WHERE id = ? AND companyId = ?").bind(status, id, companyId).run();
   return c.json({ success: true });
 });
 

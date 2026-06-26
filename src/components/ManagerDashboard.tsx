@@ -2056,6 +2056,8 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                           const targetStatus = columnStatus;
                           if (targetStatus === "closed") {
                             try { await fetch("/api/defects/" + defectId + "/close", { method: "PUT", headers: { "Content-Type": "application/json", "X-Company-Id": company.id }, body: JSON.stringify({ closedBy: "Fleet Manager" }) }); } catch (e) {}
+                          } else if (targetStatus === "in_repair") {
+                            try { fetch("/api/defects/" + defectId + "/status", { method: "PUT", headers: { "Content-Type": "application/json", "X-Company-Id": company.id }, body: JSON.stringify({ status: "in_repair" }) }); } catch (e) {}
                           } else if (targetStatus === "open") {
                             try { await fetch("/api/defects/" + defectId + "/reopen", { method: "PUT", headers: { "Content-Type": "application/json", "X-Company-Id": company.id } }); } catch (e) {}
                           }
