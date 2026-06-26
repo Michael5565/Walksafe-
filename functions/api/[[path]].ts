@@ -1376,7 +1376,7 @@ app.post('/checks', async (c) => {
         new Date().toISOString()
       ).run();
 
-      if (itemFail.severity === 'dangerous') {
+      if (["dangerous","major"].includes(itemFail.severity)) {
         // Ground the vehicle instantly
         await db.prepare("UPDATE vehicles SET isGrounded = 1 WHERE id = ? AND companyId = ?").bind(vehicleId, companyId).run();
       }
@@ -1391,7 +1391,7 @@ app.post('/checks', async (c) => {
   const regLabel = vehicle ? vehicle.registration : "Unknown Vehicle";
 
   // Dispatch warnings and alerts
-  const pushTitle = hasFail ? (results && results.some((r: any) => r.severity === 'dangerous') ? `⛔ GROUNDED: ${regLabel}` : `⚠️ Faults Logged: ${regLabel}`) : `✅ Clean Check: ${regLabel}`;
+  const pushTitle = hasFail ? (results && results.some((r: any) => ["dangerous","major"].includes(r.severity)) ? `⛔ GROUNDED: ${regLabel}` : `⚠️ Faults Logged: ${regLabel}`) : `✅ Clean Check: ${regLabel}`;
   const pushMessage = hasFail ? `Driver ${driverLabel} reported defects.` : `Driver ${driverLabel} submitted a clean walkaround.`;
 
   if (quickCheckAlert) {
@@ -1408,7 +1408,7 @@ app.post('/checks', async (c) => {
   }
 
   if (hasFail) {
-    const isDangerous = results && results.some((r: any) => r.severity === 'dangerous');
+    const isDangerous = results && results.some((r: any) => ["dangerous","major"].includes(r.severity));
     await db.prepare(`
       INSERT INTO notifications (id, companyId, type, title, message, isRead, createdAt)
       VALUES (?, ?, ?, ?, ?, 0, ?)
@@ -1500,12 +1500,12 @@ app.post('/checks', async (c) => {
         const appUrl3 = "https://app.getwalksafe.co.uk";
         const vehReg = regLabel || "unknown";
         const driverName = driverLabel || "A driver";
-        const isGround = results && results.some((r: any) => r.severity === 'dangerous');
+        const isGround = results && results.some((r: any) => ["dangerous","major"].includes(r.severity));
         const defectCount = results ? results.length : 0;
         let summary = "";
         if (hasFail) {
           summary = driverName + " reported " + defectCount + " defect(s) during the walkaround check for " + vehReg + ".";
-          if (isGround) summary += " The vehicle has been GROUNDED due to dangerous defect(s).";
+          if (isGround) summary += " The vehicle has been GROUNDED due to serious defect(s).";
           const defectDetails = results && results.length > 0 ? results.map((r: any) => "  - " + (r.itemLabel || r.itemKey) + ": " + (r.severity || "major") + (r.description ? " - " + r.description : "")).join("") : "";
           summary += "  Defects:" + defectDetails;
         } else {
