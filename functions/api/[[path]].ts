@@ -1612,6 +1612,9 @@ app.put('/defects/:id/reopen', async (c) => {
   const defect: any = await db.prepare("SELECT * FROM defects WHERE id = ? AND companyId = ?").bind(id, companyId).first();
   if (!defect) return c.json({ error: "Defect not found" }, 404);
   await db.prepare("UPDATE defects SET status = 'open', engineerName = NULL, repairDescription = NULL, partsUsed = NULL, repairCompletedAt = NULL, engineerSignature = NULL, closedBy = NULL, closedAt = NULL WHERE id = ? AND companyId = ?").bind(id, companyId).run();
+  return c.json({ success: true });
+});
+
   
 
 // 16c. PUT /api/defects/:id/status
