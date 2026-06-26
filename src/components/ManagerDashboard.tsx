@@ -2043,7 +2043,7 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
               {defectViewMode === 'kanban' && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[400px]">
                 {(['open', 'in_repair', 'closed'] as const).map(columnStatus => {
-                  const columnDefs = defects.filter(d => d.status === columnStatus);
+                  const columnDefs = defects.filter(d => d.status === columnStatus && (gallerySeverityFilter === "all" || d.severity === gallerySeverityFilter));
                   const columnLabel = columnStatus === 'open' ? 'OPEN' : columnStatus === 'in_repair' ? 'IN PROGRESS' : 'CLOSED';
                   const columnColor = columnStatus === 'open' ? 'border-danger-red/30 bg-danger-red/5' : columnStatus === 'in_repair' ? 'border-major-defect-orange/30 bg-major-defect-orange/5' : 'border-compliance-green/30 bg-compliance-green/5';
                   return (
