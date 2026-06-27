@@ -452,6 +452,8 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const triggerAlert = (message: string, title: string = "Notice") => {
     setMessageModal({ title, message });
   };
+  // Override native alert to use custom UI
+  window.alert = (msg: string) => { triggerAlert(msg, "Notice"); };
 
   // Solo Operator Vehicles states
   const [newReg, setNewReg] = useState("");
