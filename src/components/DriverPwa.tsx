@@ -446,7 +446,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const [isUpdatingDriver, setIsUpdatingDriver] = useState(false);
 
   // Message Modal state
-  const [messageModal, setMessageModal] = useState<{title: string, message: string} | null>(null);
+  const [messageModal, setMessageModal] = useState<{title: string, message: string, onConfirm?: () => void, onCancel?: () => void, isConfirm?: boolean} | null>(null);
 
   // QR Code Modal
   const [qrCodeModalLink, setQrCodeModalLink] = useState<string | null>(null);
@@ -456,8 +456,13 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const triggerAlert = (message: string, title: string = "Notice") => {
     setMessageModal({ title, message });
   };
+  const triggerConfirm = (message: string, title: string, onConfirm: () => void) => {
+    setMessageModal({ title, message, onConfirm, isConfirm: true });
+  };
   // Override native alert to use custom UI
   window.alert = (msg: string) => { triggerAlert(msg, "Notice"); };
+  // Override native confirm to not block the UI — use triggerConfirm instead
+  window.confirm = (() => true) as unknown as typeof window.confirm;
 
   // Solo Operator Vehicles states
   const [newReg, setNewReg] = useState("");
@@ -2075,7 +2080,7 @@ try {
                         {vehicles.length > 1 && (
                           <button
                             onClick={async () => {
-                              if (confirm(`Are you sure you want to retire asset ${v.registration} from WalkSafe monitoring? This cannot be undone.`)) {
+                              triggerConfirm(`Are you sure you want to retire asset ${v.registration} from WalkSafe monitoring? This cannot be undone.`, "Retire Asset", async () => {
                                 if (onDeleteVehicle) {
                                   try {
                                     await onDeleteVehicle(v.id);
@@ -2098,7 +2103,7 @@ try {
                                     alert("Failed to retire asset.");
                                   }
                                 }
-                              }
+                              });
                             }}
                             className="bg-surface-container-low p-2 text-danger-red rounded-lg hover:bg-danger-red/10 border border-border-subtle cursor-pointer"
                           >
@@ -2380,9 +2385,9 @@ try {
                   {onLogOutWorkspace && (
                     <button
                       onClick={() => {
-                        if (confirm("Disconnect and exit this driver capsule portal session? Working records will persist safely.")) {
+                        triggerConfirm("Disconnect and exit this driver capsule portal session? Working records will persist safely.", "Disconnect", () => {
                           onLogOutWorkspace();
-                        }
+                        });
                       }}
                       className="w-full bg-danger-red/10 border border-rose-200 text-danger-red font-bold py-3 px-4 rounded flex items-center justify-center gap-1.5 hover:bg-rose-100 transition-colors cursor-pointer text-xs"
                     >
@@ -2526,11 +2531,11 @@ try {
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm("Are you sure you want to cancel this active walkaround check? Your current check answers will be discarded.")) {
+                      triggerConfirm("Are you sure you want to cancel this active walkaround check? Your current check answers will be discarded.", "Cancel Check", () => {
                         setPhase('home');
                         setCurrentItemIndex(0);
                         setActiveCheckResults([]);
-                      }
+                      });
                     }}
                     className="text-danger-red hover:text-danger-red/80 font-bold text-[10px] uppercase tracking-wider bg-danger-red/5 border border-danger-red/20 px-2 py-0.5 rounded transition-all cursor-pointer"
                   >
@@ -3429,7 +3434,9 @@ try {
               {onLogOutWorkspace && (
                 <button
                   onClick={() => {
-                    if (confirm("Disconnect and exit this driver session?")) onLogOutWorkspace();
+                    triggerConfirm("Disconnect and exit this driver session?", "Logout", () => {
+                      onLogOutWorkspace();
+                    });
                   }}
                   className="w-full bg-danger-red/10 border border-danger-red/20 text-danger-red font-bold py-3 px-4 rounded flex items-center justify-center gap-1.5 hover:bg-danger-red/20 transition-colors cursor-pointer font-body-md"
                 >
@@ -3586,12 +3593,29 @@ try {
           <div className="bg-white rounded w-full max-w-sm shadow-md p-6 text-center border border-border-subtle">
             <h5 className="font-sans font-bold text-lg text-primary mb-2">{messageModal.title}</h5>
             <p className="text-sm text-on-surface-variant mb-6">{messageModal.message}</p>
-            <button
-              onClick={() => setMessageModal(null)}
-              className="w-full py-2.5 px-4 bg-surface-container text-primary font-semibold text-xs rounded hover:bg-surface-container-high transition-colors cursor-pointer"
-            >
-              OK
-            </button>
+            {messageModal.isConfirm ? (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setMessageModal(null); messageModal.onCancel?.(); }}
+                  className="flex-1 py-2.5 px-4 bg-surface-container text-primary font-semibold text-xs rounded hover:bg-surface-container-high transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => { setMessageModal(null); messageModal.onConfirm?.(); }}
+                  className="flex-1 py-2.5 px-4 bg-secondary-container text-on-secondary-container font-bold text-xs rounded hover:opacity-90 transition-all cursor-pointer"
+                >
+                  Yes
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setMessageModal(null)}
+                className="w-full py-2.5 px-4 bg-surface-container text-primary font-semibold text-xs rounded hover:bg-surface-container-high transition-colors cursor-pointer"
+              >
+                OK
+              </button>
+            )}
           </div>
         </div>
       )}
