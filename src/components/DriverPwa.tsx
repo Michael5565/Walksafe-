@@ -2965,6 +2965,34 @@ try {
               >
                 RETURN HOME
               </button>
+
+              {/* Flag Monitors to Office */}
+              {activeCheckResults.filter(r => r.result === "monitor").length > 0 && (
+                <button
+                  onClick={async () => {
+                    const monitorItems = activeCheckResults.filter(r => r.result === "monitor");
+                    try {
+                      await fetch("/api/auth/flag-monitors", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          vehicleId: assignedVehicle.id,
+                          vehicleReg: assignedVehicle.registration,
+                          driverName: currentDriver?.fullName,
+                          monitors: monitorItems.map(r => ({ itemLabel: r.itemLabel, photoUrl: (r as any)?.photoUrl }))
+                        })
+                      });
+                      alert("Monitors flagged to office for next PMI booking.");
+                    } catch(e) {
+                      console.warn("Flag monitors failed:", e);
+                      alert("Could not flag monitors. Please try again.");
+                    }
+                  }}
+                  className="w-full bg-amber-500 text-white font-bold py-3 text-center rounded shadow-sm hover:bg-amber-600 uppercase cursor-pointer text-sm mt-2"
+                >
+                  FLAG MONITORS FOR PMI BOOKING
+                </button>
+              )}
             </div>
           )}
 
