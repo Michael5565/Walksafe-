@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { handle } from 'hono/cloudflare-pages';
+import { jsPDF } from 'jspdf';
 
 type Bindings = {
   DB: D1Database;
@@ -1590,6 +1591,140 @@ app.post('/checks', async (c) => {
   });
 });
 
+// Fallback PDF generator that works without jspdf (for Workers compatibility)
+function generateSimplePDF(check: any, vehicle: any, driver: any, company: any, defects: any[]): Uint8Array {
+  const vehReg = vehicle ? vehicle.registration.toUpperCase() : "UNKNOWN";
+  const drvName = driver ? driver.fullName : "Unknown Driver";
+  const compName = company ? company.name : "Unknown Company";
+  const checkDate = check?.checkDate || "Unknown";
+  const isPassed = check?.result === "nil_defect";
+  const items: any[] = JSON.parse(check?.items || '[]');
+  const failedItems = items.filter((i: any) => i.result === 'fail');
+  const monitorItems = items.filter((i: any) => i.result === 'monitor');
+  const lines: string[] = [];
+
+  const add = (s: string) => lines.push(s);
+  const esc = (s: string) => (s || "").replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  
+  // --- PDF objects ---
+  const objects: any[] = [];
+  let objNum = 0;
+  const obj = (content: string) => { objNum++; return { num: objNum, content }; };
+
+  // Build PDF content as a simple structured document
+  let content = "";
+  content += "BT\n";
+  content += "/F1 20 Tf\n";
+  content += "50 770 Td\n";
+  content += `(WALKSAFE - DAILY COMPLIANCE RECORD) Tj\n`;
+  content += "0 -15 Td\n";
+  content += "/F1 10 Tf\n";
+  content += `(Vehicle: ${esc(vehReg)}) Tj\n`;
+  content += "0 -12 Td\n";
+  content += `(Driver: ${esc(drvName)}) Tj\n`;
+  content += "0 -12 Td\n";
+  content += `(Company: ${esc(compName)}) Tj\n`;
+  content += "0 -12 Td\n";
+  content += `(Date: ${esc(checkDate)}) Tj\n`;
+  content += "0 -12 Td\n";
+  content += `(Result: ${isPassed ? "PASSED - NIL DEFECT" : "DEFECTS REPORTED"}) Tj\n`;
+  content += "0 -12 Td\n";
+  content += `(Duration: ${Math.floor((check?.durationSeconds || 0)/60)}m ${(check?.durationSeconds || 0)%60}s) Tj\n`;
+  
+  content += "0 -25 Td\n";
+  content += "/F1 14 Tf\n";
+  content += `(CHECKLIST ITEMS) Tj\n`;
+  content += "0 -15 Td\n";
+  
+  items.forEach((item: any, idx: number) => {
+    const resultLabel = item.result === "fail" ? "FAIL" : item.result === "monitor" ? "MONITOR" : "PASS";
+    const label = item.itemLabel || "Unknown";
+    if (idx > 0) content += "0 -10 Td\n";
+    content += `/F1 9 Tf\n`;
+    content += `(${idx+1}. ${esc(label)} - ${resultLabel}) Tj\n`;
+  });
+
+  if (failedItems.length > 0) {
+    content += "0 -20 Td\n";
+    content += "/F1 12 Tf\n";
+    content += `(DEFECTS (${failedItems.length})) Tj\n`;
+    content += "0 -15 Td\n";
+    failedItems.forEach((fi: any) => {
+      const def = (defects || []).find((d: any) => d.itemKey === fi.itemKey);
+      content += "/F1 9 Tf\n";
+      content += `(  ${esc(fi.itemLabel)} - ${def ? (def.severity || "major").toUpperCase() : "MAJOR"}) Tj\n`;
+      content += "0 -8 Td\n";
+      if (fi.notes || def?.description) {
+        content += `/F1 8 Tf\n`;
+        content += `(  "${esc(fi.notes || def?.description || "").substring(0,80)}") Tj\n`;
+        content += "0 -8 Td\n";
+      }
+    });
+  }
+
+  if (monitorItems.length > 0) {
+    content += "0 -15 Td\n";
+    content += "/F1 12 Tf\n";
+    content += `(MONITORS FOR PMI REVIEW (${monitorItems.length})) Tj\n`;
+    content += "0 -12 Td\n";
+    monitorItems.forEach((mi: any) => {
+      content += "/F1 9 Tf\n";
+      content += `(  ${esc(mi.itemLabel)}) Tj\n`;
+      content += "0 -8 Td\n";
+    });
+  }
+
+  content += "0 -25 Td\n";
+  content += "/F1 8 Tf\n";
+  content += `(Record: WS-${esc(check?.id || "").substring(0,16)}) Tj\n`;
+  content += "0 -8 Td\n";
+  content += `(Generated: ${new Date().toISOString()}) Tj\n`;
+  content += "ET\n";
+
+  // Page object
+  const pageContent = obj(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+  
+  // Font
+  const fontObj = obj(`<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>`);
+  
+  // Page
+  const pageObj = obj(`<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Contents ${pageContent.num} 0 R /Resources << /Font << /F1 ${fontObj.num} 0 R >> >> >>`);
+  
+  // Pages
+  const pagesObj = obj(`<< /Type /Pages /Kids [${pageObj.num} 0 R] /Count 1 >>`);
+  
+  // Catalog
+  const catalogObj = obj(`<< /Type /Catalog /Pages ${pagesObj.num} 0 R >>`);
+
+  // Build file
+  const pdf = [`%PDF-1.4`];
+  
+  const offsets: number[] = [];
+  for (const o of [catalogObj, pagesObj, pageObj, fontObj, pageContent]) {
+    offsets.push(pdf.join("\n").length + 1);
+    pdf.push(`${o.num} 0 obj`);
+    pdf.push(o.content);
+    pdf.push("endobj");
+  }
+
+  const xrefOffset = pdf.join("\n").length + 1;
+  pdf.push("xref");
+  pdf.push(`0 ${objNum + 1}`);
+  pdf.push("0000000000 65535 f ");
+  for (let i = 1; i <= objNum; i++) {
+    const offset = offsets[i - 1];
+    pdf.push(`${String(offset).padStart(10, "0")} 00000 n `);
+  }
+  pdf.push("trailer");
+  pdf.push(`<< /Size ${objNum + 1} /Root 1 0 R >>`);
+  pdf.push("startxref");
+  pdf.push(String(xrefOffset));
+  pdf.push("%%EOF");
+
+  const text = pdf.join("\n");
+  return new TextEncoder().encode(text);
+}
+
 // 14b. GET /api/reports/:checkId/pdf — Generate and download the same DVSA PDF as the app
 app.get('/reports/:checkId/pdf', async (c) => {
   const db = getDbOrThrow(c);
@@ -1608,7 +1743,6 @@ app.get('/reports/:checkId/pdf', async (c) => {
     const vehReg = vehicle ? vehicle.registration.toUpperCase() : "UNKNOWN";
 
     // Use jsPDF directly to generate the same DVSA-style PDF the app creates
-    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
     const primaryColor = "#0D1F2D";
@@ -1923,9 +2057,25 @@ app.get('/reports/:checkId/pdf', async (c) => {
         'Content-Length': pdfBuffer.byteLength.toString()
       }
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error("[PDF Report] Error:", e);
-    return c.html(`<!doctype html><html><head><meta charset="utf-8"><title>WalkSafe Report</title><style>body{font-family:Arial,sans-serif;text-align:center;padding:40px;color:#991b1b;}h1{font-size:20px;}</style></head><body><h1>Could not generate PDF report</h1><p>Please try again from the WalkSafe app.</p></body></html>`);
+    const errMsg = e?.message || String(e);
+    // Fallback: generate a simple PDF without jspdf
+    try {
+      const vehReg = "REPORT";
+      const checkDate = "unknown";
+      const pdf = generateSimplePDF(check, vehicle, driver, company, defects);
+      return new Response(pdf, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="WalkSafe_${vehReg}_${check.checkDate || "report"}.pdf"`,
+        }
+      });
+    } catch (e2: any) {
+      console.error("[PDF Report] Fallback also failed:", e2);
+      return c.html(`<!doctype html><html><head><meta charset="utf-8"><title>WalkSafe Report</title><style>body{font-family:Arial,sans-serif;text-align:center;padding:40px;color:#991b1b;}h1{font-size:20px;}</style></head><body><h1>Could not generate PDF report</h1><p>${errMsg}</p></body></html>`);
+    }
   }
 });
 
