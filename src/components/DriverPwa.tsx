@@ -4,7 +4,7 @@ import {
   BookOpen, ChevronDown, Check, AlertOctagon, User, Phone, ArrowLeft, ArrowRight, Download, Lock,
   Trash2, LogOut, CheckSquare, Calendar, Camera, MapPin, Image, Megaphone, Flag
 } from "lucide-react";
-import { Vehicle, Driver, WalkaroundCheck, Defect, Company, CHECKLIST_ITEMS, CheckItemResult, DefectSeverity, Announcement, ScheduledChecklist, ChecklistTemplate, BuiltInTemplate } from "../types";
+import { Vehicle, Driver, WalkaroundCheck, Defect, Company, CHECKLIST_ITEMS, ChecklistTemplateItem, CheckItemResult, DefectSeverity, Announcement, ScheduledChecklist, ChecklistTemplate, BuiltInTemplate } from "../types";
 import SignaturePad from "./SignaturePad";
 import { generateDVSA_PDF } from "../utils/pdfGenerator";
 import { isScheduleDueToday } from "../utils/scheduleUtils";
@@ -712,7 +712,12 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       const found = templatesFromProps.find(t => t.id === templateId);
       if (found) return found.items.filter(it => !it.requiresTrailer || vehicle.type === 'hgv_trailer');
     }
-    // 2. No template selected — use the standard DVSA 27-point checklist (the default)
+    // 2. No template selected — match a built-in template by vehicle type if available
+    if (builtInTemplates && builtInTemplates.length > 0) {
+      const matchedTpl = builtInTemplates.find(t => t.vehicleType.includes(vehicle.type));
+      if (matchedTpl) return matchedTpl.items as ChecklistTemplateItem[];
+    }
+    // 3. Fall back to the standard DVSA 27-point checklist (the default)
     return CHECKLIST_ITEMS.filter(it => !it.requiresTrailer || vehicle.type === 'hgv_trailer');
   };
 
@@ -1072,7 +1077,7 @@ try {
     const list: {
       id: string;
       url: string;
-      sourceType: 'defect' | 'miscellaneous';
+      sourceType: 'defect' | 'miscellaneous' | 'monitoring';
       category: string;
       notes: string;
       date: string;
@@ -1112,12 +1117,13 @@ try {
         c.items.forEach(it => {
           if ((it as any).photoUrl && !defectItemKeys.has(it.itemKey)) {
             const veh = vehicles.find(v => v.id === c.vehicleId);
+            const isMonitor = it.result === 'monitor';
             list.push({
               id: `item-${c.id}-${it.itemKey}`,
               url: (it as any).photoUrl,
-              sourceType: "defect" as const,
+              sourceType: isMonitor ? "monitoring" as const : "defect" as const,
               category: it.itemLabel || "Check Item",
-              notes: `Required photo for: ${it.itemLabel}`,
+              notes: isMonitor ? `🔍 Monitoring: ${it.itemLabel}` : `Required photo for: ${it.itemLabel}`,
               date: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-GB") : c.checkDate,
               vehicleReg: veh ? veh.registration.toUpperCase() : "Unknown",
               driverName: currentDriver?.fullName || "Operator"
@@ -1141,6 +1147,31 @@ try {
           date: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-GB") : c.checkDate,
           vehicleReg: veh ? veh.registration.toUpperCase() : "Unknown",
           driverName: currentDriver?.fullName || "Operator"
+        });
+      }
+    });
+
+    // 2b. Monitor Photos (from monitors field on checks)
+    checks.forEach(c => {
+      const isMyCheck = company.isSoloOperator || c.driverId === currentDriver?.id;
+      if (c.monitors && isMyCheck) {
+        c.monitors.forEach((m, idx) => {
+          if (m.photoUrl) {
+            const veh = vehicles.find(v => v.id === c.vehicleId);
+            // Avoid duplicates already captured from items
+            const dupKey = `item-${c.id}-${m.itemKey}`;
+            if (list.some(l => l.id === dupKey)) return;
+            list.push({
+              id: `mon-${c.id}-${idx}`,
+              url: m.photoUrl,
+              sourceType: "monitoring" as const,
+              category: m.itemLabel || "Monitored Item",
+              notes: m.notes ? `🔍 Monitor: ${m.notes}` : `🔍 Monitoring: ${m.itemLabel}`,
+              date: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-GB") : c.checkDate,
+              vehicleReg: veh ? veh.registration.toUpperCase() : "Unknown",
+              driverName: currentDriver?.fullName || "Operator"
+            });
+          }
         });
       }
     });
@@ -1193,9 +1224,11 @@ try {
                       : img.severity === 'major' 
                         ? 'bg-major-defect-orange/80 text-on-primary border border-orange-400/50' 
                         : 'bg-yellow-555/80 bg-yellow-500/80 text-primary border border-yellow-405/50 font-bold'
-                    : 'bg-surface-container/85 text-secondary-container border border-border-subtle/30'
+                    : img.sourceType === 'monitoring'
+                      ? 'bg-amber-500/80 text-primary border border-amber-400/50'
+                      : 'bg-surface-container/85 text-secondary-container border border-border-subtle/30'
                 }`}>
-                  {img.sourceType === 'defect' ? `${img.severity?.toUpperCase()} DEFECT` : "MISC DAMAGE"}
+                  {img.sourceType === 'defect' ? `${img.severity?.toUpperCase()} DEFECT` : img.sourceType === 'monitoring' ? 'MONITORING' : "MISC DAMAGE"}
                 </span>
 
                 {img.sourceType === 'defect' && img.status && (
@@ -3282,8 +3315,8 @@ try {
                 RETURN HOME
               </button>
 
-              {/* Flag Monitors to Office */}
-              {activeCheckResults.filter(r => r.result === "monitor").length > 0 && (
+              {/* Flag Monitors to Office — only on check pages, not history */}
+              {phase !== 'history' && activeCheckResults.filter(r => r.result === "monitor").length > 0 && (
                 <button
                   onClick={flagMonitorsForPmi}
                   disabled={!!pmiFlaggedAt}

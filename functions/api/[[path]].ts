@@ -1211,11 +1211,22 @@ app.get('/checks', async (c) => {
   const { results } = await db.prepare("SELECT * FROM checks WHERE companyId = ?").bind(companyId).all();
 
   // Convert array properties (deserialize JSON strings, map booleans)
-  const mapped = results.map((chk: any) => ({
-    ...chk,
-    quickCheckAlert: chk.quickCheckAlert === 1,
-    items: JSON.parse(chk.items || '[]')
-  }));
+  const mapped = results.map((chk: any) => {
+    const items = JSON.parse(chk.items || '[]');
+    let monitors: any[] = [];
+    // Try to parse stored monitors column; fall back to extracting from items
+    try {
+      monitors = chk.monitors ? JSON.parse(chk.monitors) : items.filter((i: any) => i.result === 'monitor');
+    } catch {
+      monitors = items.filter((i: any) => i.result === 'monitor');
+    }
+    return {
+      ...chk,
+      monitors,
+      quickCheckAlert: chk.quickCheckAlert === 1,
+      items
+    };
+  });
 
   return c.json(mapped);
 });
@@ -1238,7 +1249,8 @@ app.post('/checks', async (c) => {
     miscDamageNotes,
     miscDamagePhotoUrl,
     templateName,
-    scheduleId
+    scheduleId,
+    monitors
   } = await c.req.json();
 
   const serverCompletedAt = new Date().toISOString();
@@ -1271,8 +1283,8 @@ app.post('/checks', async (c) => {
   // Insert the Walkround compliance check record
   try {
     await db.prepare(`
-      INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, miscDamageNotes, miscDamagePhotoUrl, templateName)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, miscDamageNotes, miscDamagePhotoUrl, templateName, monitors)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       checkId,
       vehicleId,
@@ -1291,7 +1303,8 @@ app.post('/checks', async (c) => {
       longitude !== undefined ? longitude : null,
       miscDamageNotes !== undefined ? miscDamageNotes : "",
       miscDamagePhotoUrl !== undefined ? miscDamagePhotoUrl : "",
-      templateName !== undefined ? templateName : null
+      templateName !== undefined ? templateName : null,
+      monitors ? JSON.stringify(monitors) : null
     ).run();
   } catch (err: any) {
     try {
@@ -1304,10 +1317,13 @@ app.post('/checks', async (c) => {
       try {
         await db.prepare("ALTER TABLE checks ADD COLUMN templateName TEXT").run();
       } catch (e) {}
+      try {
+        await db.prepare("ALTER TABLE checks ADD COLUMN monitors TEXT").run();
+      } catch (e) {}
       
       await db.prepare(`
-        INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, miscDamageNotes, miscDamagePhotoUrl, templateName)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO checks (id, vehicleId, driverId, companyId, startedAt, completedAt, durationSeconds, result, driverSignature, checkDate, quickCheckAlert, items, createdAt, latitude, longitude, miscDamageNotes, miscDamagePhotoUrl, templateName, monitors)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         checkId,
         vehicleId,
@@ -1326,7 +1342,8 @@ app.post('/checks', async (c) => {
         longitude !== undefined ? longitude : null,
         miscDamageNotes !== undefined ? miscDamageNotes : "",
         miscDamagePhotoUrl !== undefined ? miscDamagePhotoUrl : "",
-        templateName !== undefined ? templateName : null
+        templateName !== undefined ? templateName : null,
+        monitors ? JSON.stringify(monitors) : null
       ).run();
     } catch (altErr) {
       await db.prepare(`
@@ -1499,23 +1516,57 @@ app.post('/checks', async (c) => {
         const driverName = driverLabel || "A driver";
         const isGround = results && results.some((r: any) => ["dangerous","major"].includes(r.severity));
         const defectCount = results ? results.length : 0;
-        let summary = "";
-        if (hasFail) {
-          summary = driverName + " reported " + defectCount + " defect(s) during the walkaround check for " + vehReg + ".";
-          if (isGround) summary += " The vehicle has been GROUNDED due to serious defect(s).";
-          const defectDetails = results && results.length > 0 ? results.map((r: any) => "  - " + (r.itemLabel || r.itemKey) + ": " + (r.severity || "major") + (r.description ? " - " + r.description : "")).join("") : "";
-          summary += "  Defects:" + defectDetails;
-        } else {
-          summary = driverName + " completed a clean walkaround check for " + vehReg + ". No defects found.";
-        }
         const monitorItems = Array.isArray(items) ? items.filter((it: any) => it.result === "monitor") : [];
-        if (monitorItems.length > 0) {
-          const monitorDetails = monitorItems.map((m: any) => "  - " + (m.itemLabel || m.itemKey) + (m.notes ? ": " + m.notes : "") + (m.photoUrl ? " (photo recorded)" : "")).join("");
-          summary += "  Monitors for PMI review (" + monitorItems.length + "):" + monitorDetails;
+
+        // Build email body HTML
+        let emailBodyHtml = "";
+        
+        // Vehicle & driver header
+        emailBodyHtml += '<table style="width:100%;margin-bottom:16px;border-collapse:collapse;">';
+        emailBodyHtml += '<tr><td style="font-size:14px;color:#47464b;padding:4px 0;"><strong>Vehicle:</strong> ' + vehReg + '</td></tr>';
+        emailBodyHtml += '<tr><td style="font-size:14px;color:#47464b;padding:4px 0;"><strong>Driver:</strong> ' + driverName + '</td></tr>';
+        emailBodyHtml += '<tr><td style="font-size:14px;color:#47464b;padding:4px 0;"><strong>Status:</strong> ' + (hasFail ? (isGround ? '⚠️ GROUNDED' : '⚠️ ' + defectCount + ' defect(s)') : '✅ PASSED') + '</td></tr>';
+        emailBodyHtml += '</table>';
+
+        // Defects section
+        if (hasFail && results && results.length > 0) {
+          emailBodyHtml += '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;margin-bottom:16px;">';
+          emailBodyHtml += '<h3 style="margin:0 0 8px;font-size:13px;color:#991b1b;">Reported Defects (' + defectCount + ')</h3>';
+          results.forEach((r: any) => {
+            emailBodyHtml += '<div style="padding:6px 0;border-bottom:1px solid #fecaca;font-size:13px;color:#7f1d1d;">';
+            emailBodyHtml += '  <span style="font-weight:bold;">' + (r.itemLabel || r.itemKey) + '</span> — <span style="text-transform:uppercase;">' + (r.severity || "major") + '</span>';
+            if (r.description) emailBodyHtml += '<br/><span style="color:#991b1b;font-size:12px;">' + r.description + '</span>';
+            emailBodyHtml += '</div>';
+          });
+          emailBodyHtml += '</div>';
+        } else {
+          emailBodyHtml += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:16px;">';
+          emailBodyHtml += '<p style="margin:0;font-size:13px;color:#166534;">' + driverName + ' completed a clean walkaround check for ' + vehReg + '. No defects found.</p>';
+          emailBodyHtml += '</div>';
         }
-        summary += "  View full report: " + appUrl3;
+
+        // Monitors section
+        if (monitorItems.length > 0) {
+          emailBodyHtml += '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:16px;">';
+          emailBodyHtml += '<h3 style="margin:0 0 8px;font-size:13px;color:#92400e;">Monitors for PMI Review (' + monitorItems.length + ')</h3>';
+          monitorItems.forEach((m: any) => {
+            emailBodyHtml += '<div style="padding:5px 0;border-bottom:1px solid #fde68a;font-size:13px;color:#78350f;">';
+            emailBodyHtml += '  <span>🔍 ' + (m.itemLabel || m.itemKey) + '</span>';
+            if (m.notes) emailBodyHtml += '<br/><span style="color:#92400e;font-size:11px;">📝 ' + m.notes + '</span>';
+            if (m.photoUrl) emailBodyHtml += '<br/><span style="color:#92400e;font-size:11px;">📷 Photo recorded</span>';
+            emailBodyHtml += '</div>';
+          });
+          emailBodyHtml += '</div>';
+        }
+
+        // Link section
+        emailBodyHtml += '<div style="text-align:center;margin-top:20px;">';
+        emailBodyHtml += '<a href="' + appUrl3 + '" style="display:inline-block;background:#fea619;color:#1a1c1b;text-decoration:none;font-weight:bold;font-size:13px;padding:10px 24px;border-radius:8px;">View Full Report on WalkSafe</a>';
+        emailBodyHtml += '<p style="color:#a0a09a;font-size:11px;margin-top:8px;">Open the report to download a PDF copy or review details.</p>';
+        emailBodyHtml += '</div>';
+
         const subject = "WalkSafe - " + vehReg + " - " + (hasFail ? (isGround ? "GROUNDED" : defectCount + " defect(s)") : "PASSED") + (monitorItems.length > 0 ? " + " + monitorItems.length + " monitor(s)" : "");
-        await sendZeptoMail(c.env, compRow.email, subject, buildEmailHtml(subject, summary.replace(/  /g, "<br/>"))).catch((e2)=>console.warn("[EmailAlert] Consolidated email send failed:", e2));
+        await sendZeptoMail(c.env, compRow.email, subject, buildEmailHtml(subject, emailBodyHtml)).catch((e2)=>console.warn("[EmailAlert] Consolidated email send failed:", e2));
       }
     } catch(e) { console.warn("[EmailAlert] Consolidated email handler error:", e); }
   })();
@@ -1533,6 +1584,7 @@ app.post('/checks', async (c) => {
     checkDate,
     quickCheckAlert,
     items,
+    monitors: monitors || [],
     createdAt
   });
 });
