@@ -2303,7 +2303,7 @@ try {
                 // --- PREVIOUS MONITORS SNIPPET ---
             {(() => {
               const prevChecks = checks.filter(c => c.vehicleId === assignedVehicle.id && c.items && c.items.some(i => i.result === "monitor")).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-              const activeMons = prevChecks.length > 0 ? prevChecks[0].monitors.filter((m: any) => !m.resolvedAt) : [];
+              const activeMons = prevChecks.length > 0 ? prevChecks[0].items.filter((m: any) => m.result === "monitor" && !m.resolvedAt) : [];
               if (activeMons.length === 0) return null;
               return (
                 <div className="mt-4 bg-amber-50 border border-amber-300 rounded-lg p-4">
