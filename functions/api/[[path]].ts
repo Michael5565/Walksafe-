@@ -1763,7 +1763,7 @@ app.get('/reports/:checkId/pdf', async (c) => {
     doc.setFontSize(8);
     doc.text("DVSA ROADWORTHINESS COMPLIANT", 196, 17.5, { align: "right" });
 
-    y = 28;
+    let y = 28;
     const todayStr = new Date().toISOString().split('T')[0];
     const motExpired = vehicle && vehicle.motExpiry && vehicle.motExpiry < todayStr;
     const taxExpired = vehicle && vehicle.taxExpiry && vehicle.taxExpiry < todayStr;
