@@ -218,6 +218,11 @@ function buildEmailHtml(title, body) {
     '<div style="text-align:center;margin-top:16px;"><p style="color:#a0a09a;font-size:11px;margin:0;">WalkSafe Fleet Compliance &copy; 2026</p></div>' +
     '</div>';
 }
+async function getFirebaseAdminToken(env) {
+  if (!env.FCM_CLIENT_EMAIL || !env.FCM_PRIVATE_KEY) return null;
+  return getToken(env.FCM_CLIENT_EMAIL, env.FCM_PRIVATE_KEY);
+}
+
 async function setFirebaseEmailVerified(env, uid) {
   const token = await getFirebaseAdminToken(env);
   if (!token) return false;
