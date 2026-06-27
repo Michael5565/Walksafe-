@@ -58,6 +58,7 @@ export interface CheckItemResult {
   result: ItemResult;
   sequenceOrder: number;
   photoUrl?: string;
+  notes?: string;
 }
 
 export interface WalkaroundCheck {
@@ -74,13 +75,14 @@ export interface WalkaroundCheck {
   checkDate: string; // YYYY-MM-DD
   quickCheckAlert?: boolean;
   items: CheckItemResult[];
+  itemPhotos?: { itemKey: string; photoUrl: string }[];
   createdAt: string;
   latitude?: number | null;
   longitude?: number | null;
   miscDamageNotes?: string;
   miscDamagePhotoUrl?: string;
   templateName?: string;
-  monitors?: { itemKey: string; itemLabel: string; photoUrl?: string; createdAt: string; resolvedAt?: string }[];
+  monitors?: { itemKey: string; itemLabel: string; photoUrl?: string; notes?: string; createdAt: string; resolvedAt?: string }[];
 }
 
 export interface Defect {
@@ -498,5 +500,3 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
 }
-
-

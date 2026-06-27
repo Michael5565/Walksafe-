@@ -79,6 +79,34 @@ const templateName = safeCheck.templateName || undefined;
     return { label: "PASS", color: passColor };
   };
 
+  const addImageContained = (imageUrl: string, x: number, boxY: number, boxW: number, boxH: number) => {
+    try {
+      let drawW = boxW;
+      let drawH = boxH;
+      let drawX = x;
+      let drawY = boxY;
+      try {
+        const props = doc.getImageProperties(imageUrl);
+        if (props?.width && props?.height) {
+          const scale = Math.min(boxW / props.width, boxH / props.height);
+          drawW = props.width * scale;
+          drawH = props.height * scale;
+          drawX = x + (boxW - drawW) / 2;
+          drawY = boxY + (boxH - drawH) / 2;
+        }
+      } catch (e) {}
+      doc.addImage(imageUrl, drawX, drawY, drawW, drawH);
+      return true;
+    } catch (e1) {
+      try {
+        doc.addImage(imageUrl, "JPEG", x, boxY, boxW, boxH);
+        return true;
+      } catch (e2) {
+        return false;
+      }
+    }
+  };
+
   // -- HEADER --
   doc.setFillColor(primaryColor);
   doc.rect(10, 10, 190, 12, "F");
@@ -310,7 +338,7 @@ const templateName = safeCheck.templateName || undefined;
       }
 
       // Calculate heights
-      const upperHeight = 28 + (descLines.length - 1) * 5; 
+      const upperHeight = Math.max(50, 34 + (descLines.length - 1) * 5); 
       const lowerHeight = def.status === "closed" ? 15 + repairLines.length * 5 : 20;
       const totalHeight = upperHeight + lowerHeight;
 
@@ -345,19 +373,13 @@ const templateName = safeCheck.templateName || undefined;
       // Embedded photo box state — LARGER for full readability
       doc.setDrawColor("#E2E8F0");
       doc.setFillColor("#E2E8F0");
-      doc.rect(130, y + 4, 64, Math.max(35, upperHeight - 6), "F");
+      doc.rect(124, y + 5, 70, Math.max(42, upperHeight - 10), "F");
       doc.setFont("Helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor(grayColor);
       if (def.photoUrl) {
-        try {
-          try { doc.addImage(def.photoUrl, "JPEG", 130, y + 4, 64, Math.max(35, upperHeight - 6)); } catch(je) { try { doc.addImage(def.photoUrl, 130, y + 4, 64, Math.max(35, upperHeight - 6)); } catch(pe) { doc.text("[Photo]", 130, y + 20); } }
-        } catch (e) {
-          try {
-            doc.addImage(def.photoUrl, 130, y + 4, 64, Math.max(35, upperHeight - 6));
-          } catch (e2) {
-            doc.text("[PHOTO ATTACHED]", 145, y + 20);
-          }
+        if (!addImageContained(def.photoUrl, 124, y + 5, 70, Math.max(42, upperHeight - 10))) {
+          doc.text("[PHOTO ATTACHED]", 145, y + 20);
         }
       } else {
         doc.text("No photo", 148, y + 20);
@@ -423,7 +445,7 @@ const templateName = safeCheck.templateName || undefined;
 
   const monitorItems = (safeCheck.items || []).filter((item: any) => item.result === "monitor");
   if (monitorItems.length > 0) {
-    if (y + 22 + monitorItems.length * 6 > 280) {
+    if (y + 28 > 280) {
       doc.addPage();
       y = 15;
     }
@@ -431,7 +453,7 @@ const templateName = safeCheck.templateName || undefined;
     doc.setDrawColor(monitorColor);
     doc.setLineWidth(0.4);
     doc.setFillColor("#FFFBEB");
-    const monitorBoxHeight = Math.max(22, 13 + monitorItems.length * 6);
+    const monitorBoxHeight = 18;
     doc.rect(10, y, 190, monitorBoxHeight, "F");
     doc.rect(10, y, 190, monitorBoxHeight);
 
@@ -443,22 +465,48 @@ const templateName = safeCheck.templateName || undefined;
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(grayColor);
-    monitorItems.slice(0, 12).forEach((item: any, index: number) => {
-      const label = `${item.sequenceOrder || index + 1}. ${item.itemLabel || "Inspection item"}`;
-      const suffix = item.photoUrl ? " - photo attached" : "";
-      doc.text(`${label}${suffix}`, 14, y + 13 + index * 5);
-    });
-    if (monitorItems.length > 12) {
-      doc.text(`+${monitorItems.length - 12} additional monitor item(s) recorded.`, 14, y + 13 + 12 * 5);
-    }
+    doc.text(`${monitorItems.length} advisory monitor item(s) recorded. These are not defects unless escalated by the operator.`, 14, y + 13);
     y += monitorBoxHeight + 6;
+
+    monitorItems.forEach((item: any, index: number) => {
+      const noteLines = doc.splitTextToSize(item.notes || "No monitor notes added.", item.photoUrl ? 104 : 170);
+      const rowHeight = Math.max(item.photoUrl ? 46 : 18, 14 + noteLines.length * 4);
+      if (y + rowHeight + 8 > 280) {
+        doc.addPage();
+        y = 15;
+      }
+      doc.setDrawColor("#FBBF24");
+      doc.setFillColor("#FFFBEB");
+      doc.rect(10, y, 190, rowHeight, "F");
+      doc.rect(10, y, 190, rowHeight);
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(monitorColor);
+      doc.text(`${index + 1}. ${item.itemLabel || "Inspection item"}`, 14, y + 6);
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(grayColor);
+      doc.text(noteLines, 14, y + 12);
+      if (item.photoUrl) {
+        doc.setDrawColor("#E2E8F0");
+        doc.setFillColor("#FFFFFF");
+        doc.rect(126, y + 5, 66, rowHeight - 10, "F");
+        if (!addImageContained(item.photoUrl, 126, y + 5, 66, rowHeight - 10)) {
+          doc.text("[Monitor photo attached]", 132, y + 22);
+        }
+      }
+      y += rowHeight + 5;
+    });
   }
 
   // -- CHECK ITEM PHOTOS (pass/fail photos for all checks) --
   // -- INLINE ITEM PHOTOS (addImage with auto-detection) --
   // try simple addImage with auto-detect from data URL
   // -- ITEM PHOTOS (using manual y cursor) --
-  const defectKeys = new Set((relatedDefects || []).filter((d) => d.photoUrl).map((d) => d.itemKey));
+  const excludedPhotoKeys = new Set([
+    ...(relatedDefects || []).filter((d) => d.photoUrl).map((d) => d.itemKey),
+    ...monitorItems.filter((m: any) => m.photoUrl).map((m: any) => m.itemKey)
+  ]);
   if ((check as any).items) {
     const photoItems2 = (check as any).items;
     const photoMap2 = (check as any).itemPhotos || [];
@@ -469,7 +517,7 @@ const templateName = safeCheck.templateName || undefined;
     for (let pi2 = 0; pi2 < photoItems2.length; pi2++) {
       const pit2 = photoItems2[pi2];
       const url2 = pit2.photoUrl || photoLookup2[pit2.itemKey];
-      if (url2 && typeof url2 === "string" && url2.length > 100 && !defectKeys.has(pit2.itemKey)) {
+      if (url2 && typeof url2 === "string" && url2.length > 100 && !excludedPhotoKeys.has(pit2.itemKey)) {
         try {
           if (y > 250) { doc.addPage(); y = 15; }
           doc.setFont("Helvetica", "bold");
@@ -479,8 +527,11 @@ const templateName = safeCheck.templateName || undefined;
           doc.setFont("Helvetica", "normal");
           doc.setFontSize(6);
           doc.text("Result: " + (pit2.result === "monitor" ? "MONITOR" : pit2.result === "fail" ? "FAIL" : "PASS"), 10, y + 10);
-          doc.addImage(url2, 125, y + 1, 60, 38);
-          y += 42;
+          if ((pit2 as any).notes) doc.text(doc.splitTextToSize(String((pit2 as any).notes), 95), 10, y + 15);
+          doc.setDrawColor("#E2E8F0");
+          doc.rect(112, y + 1, 82, 52);
+          if (!addImageContained(url2, 112, y + 1, 82, 52)) doc.text("[Photo attached]", 130, y + 24);
+          y += 58;
         } catch(e2) {
           console.warn("[PDF] photo skip:", e2);
           y += 10;
@@ -524,7 +575,7 @@ const templateName = safeCheck.templateName || undefined;
     
     if (safeCheck.miscDamagePhotoUrl) {
       try {
-        doc.addImage(safeCheck.miscDamagePhotoUrl, "JPEG", 145, y + 3, 50, boxHeight - 6);
+        addImageContained(safeCheck.miscDamagePhotoUrl, 145, y + 3, 50, boxHeight - 6);
       } catch (err) {
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(8);

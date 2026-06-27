@@ -1304,7 +1304,8 @@ const loadDatabaseState = async (silently = false) => {
       longitude: checkPayload.longitude,
       miscDamageNotes: checkPayload.miscDamageNotes,
       miscDamagePhotoUrl: checkPayload.miscDamagePhotoUrl,
-      templateName: checkPayload.templateName
+      templateName: checkPayload.templateName,
+      monitors: checkPayload.monitors || []
     };
 
     // Update checks state locally
@@ -1343,7 +1344,8 @@ const loadDatabaseState = async (silently = false) => {
       const safeItems: any[] = [];
       if (Array.isArray(checkPayload.items)) {
         for (const it of checkPayload.items) {
-          safeItems.push({ itemKey: String(it?.itemKey ?? ""), itemLabel: String(it?.itemLabel ?? ""), result: it?.result === "fail" ? "fail" : "pass", sequenceOrder: Number(it?.sequenceOrder ?? 0), photoUrl: typeof it?.photoUrl === "string" ? it.photoUrl : "" });
+          const safeResult = it?.result === "fail" ? "fail" : it?.result === "monitor" ? "monitor" : "pass";
+          safeItems.push({ itemKey: String(it?.itemKey ?? ""), itemLabel: String(it?.itemLabel ?? ""), result: safeResult, sequenceOrder: Number(it?.sequenceOrder ?? 0), photoUrl: typeof it?.photoUrl === "string" ? it.photoUrl : "", notes: typeof it?.notes === "string" ? it.notes : "" });
         }
       }
       const safeResults: any[] = [];
@@ -1366,7 +1368,14 @@ const loadDatabaseState = async (silently = false) => {
         miscDamagePhotoUrl: typeof checkPayload.miscDamagePhotoUrl === "string" ? checkPayload.miscDamagePhotoUrl : "",
         scheduleId: checkPayload.scheduleId != null ? String(checkPayload.scheduleId) : null,
         templateName: String(checkPayload.templateName ?? ""),
-        itemPhotos: checkPayload.itemPhotos || []
+        itemPhotos: checkPayload.itemPhotos || [],
+        monitors: Array.isArray(checkPayload.monitors) ? checkPayload.monitors.map((m: any) => ({
+          itemKey: String(m?.itemKey ?? ""),
+          itemLabel: String(m?.itemLabel ?? ""),
+          photoUrl: typeof m?.photoUrl === "string" ? m.photoUrl : "",
+          notes: typeof m?.notes === "string" ? m.notes : "",
+          createdAt: String(m?.createdAt ?? new Date().toISOString())
+        })) : []
       };
 
       try {

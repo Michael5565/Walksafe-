@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { 
   Shield, Truck, AlertTriangle, CheckCircle, RefreshCw, X, Plus, 
   Search, Download, Users, Wrench, FileText, Check, Settings, 
-  MapPin, Calendar, Clock, Lock, Trash2, Edit, AlertOctagon, Menu, ChevronDown, LogOut, ShieldCheck, ArrowRight, CreditCard, Eye, Filter
+  MapPin, Calendar, Clock, Lock, Trash2, Edit, AlertOctagon, Menu, ChevronDown, LogOut, ShieldCheck, ArrowRight, CreditCard, Eye, Filter, Flag
 } from "lucide-react";
 import { Vehicle, Driver, WalkaroundCheck, Defect, Company, Announcement, ScheduledChecklist, Notification as WalkSafeNotification, ChecklistTemplate, MaintenanceRecord, Document, AlertRule, FuelRecord, ExpenseRecord, Part, WorkOrder, VehiclePosition, DriverScore, BuiltInTemplate } from "../types";
 import { generateDVSA_PDF } from "../utils/pdfGenerator";
@@ -1120,7 +1120,7 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
             <span className="font-data-mono text-data-mono text-primary font-bold">DVSA REF: 8820-X</span>
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={() => { setShowTour(true); setTourStep(0); }}
+            <button onClick={() => { setTourStep(0); }}
               className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container transition-colors p-2 rounded cursor-pointer">
               help
             </button>

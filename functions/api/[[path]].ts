@@ -808,9 +808,13 @@ app.post("/auth/flag-monitors", async (c) => {
   try {
     const comp = await db.prepare("SELECT email, name FROM company WHERE id = ?").bind(companyId).first() as any;
     if (comp && comp.email) {
-      const monList = monitors.map((m:any) => m.itemLabel || "Unknown item").join(", ");
       const subject = "Monitors Flagged for Next PMI - " + vehicleReg;
-      const body = driverName + " flagged " + monitors.length + " monitor(s) for " + vehicleReg + ". Items: " + monList;
+      const monList = monitors.map((m:any, index:number) => {
+        const note = m.notes ? " - " + String(m.notes) : "";
+        const photo = m.photoUrl ? " (photo attached in WalkSafe record)" : "";
+        return (index + 1) + ". " + (m.itemLabel || "Unknown item") + note + photo;
+      }).join("<br/>");
+      const body = driverName + " flagged " + monitors.length + " monitor(s) for " + vehicleReg + " to review at the next PMI.<br/><br/>" + monList;
       sendZeptoMail(c.env, comp.email, subject, buildEmailHtml(subject, body));
     }
     return c.json({ success: true });
@@ -1504,8 +1508,13 @@ app.post('/checks', async (c) => {
         } else {
           summary = driverName + " completed a clean walkaround check for " + vehReg + ". No defects found.";
         }
+        const monitorItems = Array.isArray(items) ? items.filter((it: any) => it.result === "monitor") : [];
+        if (monitorItems.length > 0) {
+          const monitorDetails = monitorItems.map((m: any) => "  - " + (m.itemLabel || m.itemKey) + (m.notes ? ": " + m.notes : "") + (m.photoUrl ? " (photo recorded)" : "")).join("");
+          summary += "  Monitors for PMI review (" + monitorItems.length + "):" + monitorDetails;
+        }
         summary += "  View full report: " + appUrl3;
-        const subject = "WalkSafe - " + vehReg + " - " + (hasFail ? (isGround ? "GROUNDED" : defectCount + " defect(s)") : "PASSED");
+        const subject = "WalkSafe - " + vehReg + " - " + (hasFail ? (isGround ? "GROUNDED" : defectCount + " defect(s)") : "PASSED") + (monitorItems.length > 0 ? " + " + monitorItems.length + " monitor(s)" : "");
         await sendZeptoMail(c.env, compRow.email, subject, buildEmailHtml(subject, summary.replace(/  /g, "<br/>"))).catch((e2)=>console.warn("[EmailAlert] Consolidated email send failed:", e2));
       }
     } catch(e) { console.warn("[EmailAlert] Consolidated email handler error:", e); }

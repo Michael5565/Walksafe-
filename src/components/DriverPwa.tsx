@@ -4,7 +4,7 @@ import {
   BookOpen, ChevronDown, Check, AlertOctagon, User, Phone, ArrowLeft, ArrowRight, Download, Lock,
   Trash2, LogOut, CheckSquare, Calendar, Camera, MapPin, Image, Megaphone, Flag
 } from "lucide-react";
-import { Vehicle, Driver, WalkaroundCheck, Defect, Company, CHECKLIST_ITEMS, CheckItemResult, DefectSeverity, Announcement, ScheduledChecklist, ChecklistTemplate } from "../types";
+import { Vehicle, Driver, WalkaroundCheck, Defect, Company, CHECKLIST_ITEMS, CheckItemResult, DefectSeverity, Announcement, ScheduledChecklist, ChecklistTemplate, BuiltInTemplate } from "../types";
 import SignaturePad from "./SignaturePad";
 import { generateDVSA_PDF } from "../utils/pdfGenerator";
 import { isScheduleDueToday } from "../utils/scheduleUtils";
@@ -327,6 +327,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     severity?: DefectSeverity;
     description?: string;
     photoUrl?: string;
+    notes?: string;
   }[]>([]);
 
   // GPS / Geolocation Tracking State
@@ -338,6 +339,9 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const [defectSeverity, setDefectSeverity] = useState<DefectSeverity>('major');
   const [defectDescription, setDefectDescription] = useState<string>("");
   const [defectPhoto, setDefectPhoto] = useState<string>("");
+  const [isReportingMonitor, setIsReportingMonitor] = useState<boolean>(false);
+  const [monitorNotes, setMonitorNotes] = useState<string>("");
+  const [monitorPhoto, setMonitorPhoto] = useState<string>("");
   const [requiredPhotoUrl, setRequiredPhotoUrl] = useState<string>("");
   const [requiredPhotoItemKey, setRequiredPhotoItemKey] = useState<string | null>(null);
   const [miscDamageNotes, setMiscDamageNotes] = useState<string>("");
@@ -349,7 +353,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   // HTML5 Direct Camera & Canvas states
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [cameraMode, setCameraMode] = useState<'defect' | 'misc' | null>(null);
+  const [cameraMode, setCameraMode] = useState<'defect' | 'monitor' | 'misc' | null>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [usingInAppCamera, setUsingInAppCamera] = useState<boolean>(false);
   const [cameraInitError, setCameraInitError] = useState<string | null>(null);
@@ -644,12 +648,16 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     try {
       const dataUrl = await compressImage(file);
       if (dataUrl) {
-        setDefectPhoto(dataUrl);
+        if (cameraMode === "monitor") setMonitorPhoto(dataUrl);
+        else setDefectPhoto(dataUrl);
       } else {
         // Ultimate fallback
         const reader = new FileReader();
         reader.onload = () => {
-          if (typeof reader.result === "string") setDefectPhoto(reader.result);
+          if (typeof reader.result === "string") {
+            if (cameraMode === "monitor") setMonitorPhoto(reader.result);
+            else setDefectPhoto(reader.result);
+          }
         };
         reader.readAsDataURL(file);
       }
@@ -658,7 +666,10 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       // Extra fallback in case of generic error
       const reader = new FileReader();
       reader.onload = () => {
-        if (typeof reader.result === "string") setDefectPhoto(reader.result);
+        if (typeof reader.result === "string") {
+          if (cameraMode === "monitor") setMonitorPhoto(reader.result);
+          else setDefectPhoto(reader.result);
+        }
       };
       reader.readAsDataURL(file);
     } finally {
@@ -741,6 +752,8 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     setIsGroundedAlert(false);
     setMiscDamageNotes("");
     setMiscDamagePhotoUrl("");
+    setMonitorNotes("");
+    setMonitorPhoto("");
     setPmiFlaggedAt(null);
 
     // Initial GPS lock trigger
@@ -818,18 +831,27 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const handleItemMonitor = () => {
     if (!assignedVehicle) return;
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
+    const existing = activeCheckResults.find(r => r.itemKey === currentItem.key);
+    setMonitorNotes(existing?.notes || "");
+    setMonitorPhoto(existing?.photoUrl || "");
+    setIsReportingMonitor(true);
+  };
+
+  const confirmMonitorReport = () => {
+    if (!assignedVehicle) return;
+    const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
     const resultItem: any = {
       itemKey: currentItem.key,
       itemLabel: currentItem.label,
       result: "monitor" as const
     };
-    if (requiredPhotoUrl) {
-      resultItem.photoUrl = requiredPhotoUrl;
-      setRequiredPhotoUrl("");
-      setRequiredPhotoItemKey(null);
-    }
+    if (monitorPhoto) resultItem.photoUrl = monitorPhoto;
+    if (monitorNotes.trim()) resultItem.notes = monitorNotes.trim();
     const updated = [...activeCheckResults.filter(r => r.itemKey !== currentItem.key), resultItem];
     setActiveCheckResults(updated);
+    setIsReportingMonitor(false);
+    setMonitorNotes("");
+    setMonitorPhoto("");
     advanceWizard(updated);
   };
 
@@ -918,9 +940,9 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       driverId: currentDriver.id,
       startedAt: checkStartedAt,
       driverSignature: driverSignature || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='30'></svg>",
-      items: wizardItems.map(w => { const r = activeCheckResults.find(a => a.itemKey === w.itemKey); return { itemKey: w.itemKey, itemLabel: w.itemLabel, result: r ? r.result : "pass", sequenceOrder: w.sequenceOrder, photoUrl: (r as any)?.photoUrl || undefined }; }),
+      items: wizardItems.map(w => { const r = activeCheckResults.find(a => a.itemKey === w.itemKey); return { itemKey: w.itemKey, itemLabel: w.itemLabel, result: r ? r.result : "pass", sequenceOrder: w.sequenceOrder, photoUrl: (r as any)?.photoUrl || undefined, notes: (r as any)?.notes || undefined }; }),
       itemPhotos: activeCheckResults.filter(r => (r as any).photoUrl).map(r => ({ itemKey: r.itemKey, photoUrl: (r as any).photoUrl })),
-      monitors: activeCheckResults.filter(r => r.result === "monitor").map(r => ({ itemKey: r.itemKey, itemLabel: r.itemLabel, photoUrl: (r as any).photoUrl, createdAt: new Date().toISOString() })),
+      monitors: activeCheckResults.filter(r => r.result === "monitor").map(r => ({ itemKey: r.itemKey, itemLabel: r.itemLabel, photoUrl: (r as any).photoUrl, notes: (r as any).notes, createdAt: new Date().toISOString() })),
       latitude: gpsCoords?.latitude || null,
       longitude: gpsCoords?.longitude || null,
       miscDamageNotes,
@@ -979,6 +1001,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
           monitors: monitorItems.map(r => ({
             itemKey: r.itemKey,
             itemLabel: r.itemLabel,
+            notes: (r as any)?.notes,
             photoUrl: (r as any)?.photoUrl
           }))
         })
@@ -2788,6 +2811,104 @@ try {
                   </button>
                 </div>
               )}
+
+              {/* MONITOR REPORTING MODAL Overlay */}
+              {isReportingMonitor && (
+                <div className="absolute inset-0 bg-white z-40 p-4 overflow-y-auto flex flex-col">
+                  <div>
+                    <div className="flex justify-between items-center border-b border-border-subtle pb-3">
+                      <h4 className="font-sans text-lg font-bold text-amber-700 flex items-center gap-1.5 uppercase">
+                        <Flag className="w-5 h-5" />
+                        MONITOR OBSERVATION
+                      </h4>
+                      <button
+                        onClick={() => setIsReportingMonitor(false)}
+                        className="p-1 bg-surface-container-high hover:bg-surface-container-high rounded text-on-surface-variant"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div className="mt-3 bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-xs text-amber-800">
+                      <strong>Target Area:</strong> {getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].label}
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="text-xs font-bold text-gray-800 block uppercase tracking-wider mb-1.5">
+                        Monitor Notes (Optional)
+                      </label>
+                      <textarea
+                        value={monitorNotes}
+                        onChange={(e) => setMonitorNotes(e.target.value)}
+                        placeholder='e.g., "Small stone chip on windscreen, not in swept area. Re-check at PMI."'
+                        rows={3}
+                        className="w-full bg-white border-2 border-gray-300 rounded-lg p-3 text-sm text-gray-900 focus:outline-hidden focus:border-amber-500 placeholder-gray-500"
+                      />
+                    </div>
+
+                    <div className="mt-4">
+                      <span className="text-xs font-bold text-on-surface block uppercase tracking-wider mb-1">
+                        Photo Evidence (Optional)
+                      </span>
+
+                      <div className="bg-surface-container rounded-lg border border-border-subtle p-3.5 text-center">
+                        <input
+                          type="file"
+                          ref={defectGalleryInputRef}
+                          accept="image/*"
+                          onChange={handlePhotoCapture}
+                          className="absolute w-0 h-0 opacity-0 overflow-hidden"
+                        />
+                        {monitorPhoto ? (
+                          <div className="relative inline-block mx-auto rounded-lg overflow-hidden border border-border-subtle w-full">
+                            <img
+                              src={monitorPhoto}
+                              alt="Monitor Evidence"
+                              className="h-44 w-full object-cover rounded-lg bg-surface"
+                              referrerPolicy="no-referrer"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setMonitorPhoto("")}
+                              className="absolute top-1 right-1 bg-danger-red hover:bg-danger-red/100 p-1 font-bold text-on-primary rounded-full shadow-sm transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <button
+                              type="button"
+                              onClick={() => setCameraMode("monitor")}
+                              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-body-md py-3.5 rounded uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
+                            >
+                              <Camera className="w-4 h-4 fill-white shrink-0" />
+                              Take Monitor Photo
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCameraMode("monitor");
+                                defectGalleryInputRef.current?.click();
+                              }}
+                              className="w-full bg-white border border-border-subtle text-on-surface font-bold text-body-sm py-2.5 rounded uppercase tracking-wider"
+                            >
+                              Upload From Gallery
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={confirmMonitorReport}
+                    className="w-full mt-6 bg-amber-500 text-white font-sans text-lg font-bold py-3 text-center rounded shadow-sm hover:bg-amber-600 uppercase transition-colors"
+                  >
+                    CONFIRM MONITOR & RESUME CHECK
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -2854,9 +2975,13 @@ try {
                     </div>
                     <div className="space-y-1.5">
                       {activeCheckResults.filter(r => r.result === 'monitor').map((m, i) => (
-                        <div key={i} className="flex items-center gap-2 text-[11px] text-amber-800">
+                        <div key={i} className="flex items-start gap-2 text-[11px] text-amber-800">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                          <span className="font-semibold">{m.itemLabel}</span>
+                          <span>
+                            <span className="font-semibold">{m.itemLabel}</span>
+                            {(m as any).notes && <span className="block text-amber-700">{(m as any).notes}</span>}
+                            {(m as any).photoUrl && <span className="block text-amber-600">Photo attached</span>}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -3536,7 +3661,7 @@ try {
             </button>
             <div className="flex flex-col items-center">
               <span className="text-[12px] text-secondary-container font-sans font-bold tracking-tight uppercase">
-                {cameraMode === 'defect' ? "Take Defect Photo" : "Take Cosmetic Photo"}
+                {cameraMode === 'defect' ? "Take Defect Photo" : cameraMode === 'monitor' ? "Take Monitor Photo" : "Take Cosmetic Photo"}
               </span>
             </div>
 
@@ -3613,6 +3738,8 @@ try {
                       } else {
                         setDefectPhoto(dataUrl);
                       }
+                    } else if (cameraMode === 'monitor') {
+                      setMonitorPhoto(dataUrl);
                     } else if (cameraMode === 'misc') {
                       setMiscDamagePhotoUrl(dataUrl);
                     }
