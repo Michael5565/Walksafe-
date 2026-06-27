@@ -69,8 +69,15 @@ const templateName = safeCheck.templateName || undefined;
   const passColor = "#22C55E";    // Green
   const failColor = "#EF4444";    // Red
   const grayColor = "#4A5568";    // Slate Gray
+  const monitorColor = "#D97706"; // Amber
 
   let y = 15;
+
+  const getResultMeta = (result?: string) => {
+    if (result === "monitor") return { label: "MONITOR", color: monitorColor };
+    if (result === "fail") return { label: "FAIL", color: failColor };
+    return { label: "PASS", color: passColor };
+  };
 
   // -- HEADER --
   doc.setFillColor(primaryColor);
@@ -257,11 +264,10 @@ const templateName = safeCheck.templateName || undefined;
       const labelText = item.itemLabel.length > 38 ? item.itemLabel.slice(0, 35) + "..." : item.itemLabel;
       doc.text(`${item.sequenceOrder}. ${labelText}`, 12, tempY + 4);
       
-      const passed = item.result === "pass";
-      const monitored = item.result === "monitor";
-      doc.setTextColor(passed ? passColor : failColor);
+      const resultMeta = getResultMeta(item.result);
+      doc.setTextColor(resultMeta.color);
       doc.setFont("Helvetica", "bold");
-      doc.text(passed ? "PASS" : "FAIL", 98, tempY + 4, { align: "right" });
+      doc.text(resultMeta.label, 98, tempY + 4, { align: "right" });
     }
 
     // Right column item
@@ -272,11 +278,10 @@ const templateName = safeCheck.templateName || undefined;
       const labelText = item.itemLabel.length > 38 ? item.itemLabel.slice(0, 35) + "..." : item.itemLabel;
       doc.text(`${item.sequenceOrder}. ${labelText}`, 108, tempY + 4);
       
-      const passed = item.result === "pass";
-      const monitored = item.result === "monitor";
-      doc.setTextColor(passed ? passColor : failColor);
+      const resultMeta = getResultMeta(item.result);
+      doc.setTextColor(resultMeta.color);
       doc.setFont("Helvetica", "bold");
-      doc.text(passed ? "PASS" : "FAIL", 196, tempY + 4, { align: "right" });
+      doc.text(resultMeta.label, 196, tempY + 4, { align: "right" });
     }
 
     doc.setDrawColor("#E2E8F0");
@@ -414,6 +419,39 @@ const templateName = safeCheck.templateName || undefined;
     doc.text(templateName ? "Vehicle has been certified as safe and roadworthy." : "Department for Transport/DVSA guide to maintaining roadworthiness legislation.", 14, y + 17);
     
     y += 26;
+  }
+
+  const monitorItems = (safeCheck.items || []).filter((item: any) => item.result === "monitor");
+  if (monitorItems.length > 0) {
+    if (y + 22 + monitorItems.length * 6 > 280) {
+      doc.addPage();
+      y = 15;
+    }
+
+    doc.setDrawColor(monitorColor);
+    doc.setLineWidth(0.4);
+    doc.setFillColor("#FFFBEB");
+    const monitorBoxHeight = Math.max(22, 13 + monitorItems.length * 6);
+    doc.rect(10, y, 190, monitorBoxHeight, "F");
+    doc.rect(10, y, 190, monitorBoxHeight);
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(monitorColor);
+    doc.text("MONITOR OBSERVATIONS FLAGGED FOR PMI REVIEW", 14, y + 7);
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(grayColor);
+    monitorItems.slice(0, 12).forEach((item: any, index: number) => {
+      const label = `${item.sequenceOrder || index + 1}. ${item.itemLabel || "Inspection item"}`;
+      const suffix = item.photoUrl ? " - photo attached" : "";
+      doc.text(`${label}${suffix}`, 14, y + 13 + index * 5);
+    });
+    if (monitorItems.length > 12) {
+      doc.text(`+${monitorItems.length - 12} additional monitor item(s) recorded.`, 14, y + 13 + 12 * 5);
+    }
+    y += monitorBoxHeight + 6;
   }
 
   // -- CHECK ITEM PHOTOS (pass/fail photos for all checks) --

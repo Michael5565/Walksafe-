@@ -323,7 +323,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const [activeCheckResults, setActiveCheckResults] = useState<{
     itemKey: string;
     itemLabel: string;
-    result: 'pass' | 'fail';
+    result: 'pass' | 'fail' | 'monitor';
     severity?: DefectSeverity;
     description?: string;
     photoUrl?: string;
@@ -483,6 +483,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const [isGroundedAlert, setIsGroundedAlert] = useState<boolean>(false);
   const [lastSubmittedCheck, setLastSubmittedCheck] = useState<WalkaroundCheck | null>(null);
   const [pendingScheduleId, setPendingScheduleId] = useState<string | null>(null);
+  const [pmiFlaggedAt, setPmiFlaggedAt] = useState<string | null>(null);
   const todayLocal = new Date().getFullYear() + "-" + String(new Date().getMonth()+1).padStart(2,"0") + "-" + String(new Date().getDate()).padStart(2,"0");
 
   // Selected check for history view
@@ -740,6 +741,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     setIsGroundedAlert(false);
     setMiscDamageNotes("");
     setMiscDamagePhotoUrl("");
+    setPmiFlaggedAt(null);
 
     // Initial GPS lock trigger
     setGpsCoords(null);
@@ -816,11 +818,6 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const handleItemMonitor = () => {
     if (!assignedVehicle) return;
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
-    if (!requiredPhotoUrl) {
-      setRequiredPhotoItemKey(currentItem.key);
-      setCameraMode("defect");
-      return;
-    }
     const resultItem: any = {
       itemKey: currentItem.key,
       itemLabel: currentItem.label,
@@ -849,11 +846,10 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const confirmDefectReport = () => {
     if (!assignedVehicle) return;
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
+    const evidencePhoto = defectPhoto || requiredPhotoUrl;
 
-    // If this item requires a photo and no photo has been taken, open camera first
-    if (!requiredPhotoUrl) {
-      setRequiredPhotoItemKey(currentItem.key);
-      setCameraMode('defect');  // Reuse camera but for mandatory photo
+    if (!evidencePhoto) {
+      setCameraMode('defect');
       return;
     }
 
@@ -863,12 +859,14 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       result: 'fail' as const,
       severity: defectSeverity,
       description: defectDescription.trim() || `Asset wear noted on ${currentItem.label}`,
-      photoUrl: requiredPhotoUrl || defectPhoto || "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=400" // fallbacks as per selection rules
+      photoUrl: evidencePhoto
     };
 
     const updated = [...activeCheckResults.filter(r => r.itemKey !== currentItem.key), resultItem];
     setActiveCheckResults(updated);
     setRequiredPhotoUrl("");
+    setRequiredPhotoItemKey(null);
+    setDefectPhoto("");
     setIsReportingDefect(false);
 
     if (defectSeverity === 'dangerous') {
@@ -962,6 +960,35 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       setPhase('home');
     } finally {
         setIsSubmitting(false);
+    }
+  };
+
+  const flagMonitorsForPmi = async () => {
+    if (!assignedVehicle || !currentDriver || pmiFlaggedAt) return;
+    const monitorItems = activeCheckResults.filter(r => r.result === "monitor");
+    if (monitorItems.length === 0) return;
+
+    try {
+      const res = await fetch("/api/auth/flag-monitors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vehicleId: assignedVehicle.id,
+          vehicleReg: assignedVehicle.registration,
+          driverName: currentDriver.fullName,
+          monitors: monitorItems.map(r => ({
+            itemKey: r.itemKey,
+            itemLabel: r.itemLabel,
+            photoUrl: (r as any)?.photoUrl
+          }))
+        })
+      });
+      if (!res.ok) throw new Error(`Flag monitors failed with ${res.status}`);
+      setPmiFlaggedAt(new Date().toISOString());
+      triggerAlert("Monitors flagged to office for next PMI booking.", "Flagged to TM");
+    } catch (e) {
+      console.warn("Flag monitors failed:", e);
+      triggerAlert("Could not flag monitors right now. You can try again after submitting.", "Notice");
     }
   };
 
@@ -2838,28 +2865,12 @@ try {
                     </p>
                     <button
                       type="button"
-                      onClick={async () => {
-                        const monitorItems = activeCheckResults.filter(r => r.result === 'monitor');
-                        try {
-                          await fetch('/api/auth/flag-monitors', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              vehicleId: assignedVehicle?.id,
-                              vehicleReg: assignedVehicle?.registration,
-                              driverName: currentDriver?.fullName,
-                              monitors: monitorItems.map(r => ({ itemLabel: r.itemLabel, photoUrl: (r as any)?.photoUrl }))
-                            })
-                          });
-                          triggerAlert('Monitors flagged to office for next PMI booking.', 'Flagged to TM ✓');
-                        } catch (e) {
-                          triggerAlert('Could not flag monitors right now. You can do this from the history screen after submitting.', 'Notice');
-                        }
-                      }}
-                      className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer uppercase tracking-wide"
+                      onClick={flagMonitorsForPmi}
+                      disabled={!!pmiFlaggedAt}
+                      className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer uppercase tracking-wide disabled:bg-compliance-green disabled:cursor-default"
                     >
                       <Flag className="w-3.5 h-3.5" />
-                      Flag to TM / Office for PMI Booking
+                      {pmiFlaggedAt ? "Flagged to TM / Office" : "Flag to TM / Office for PMI Booking"}
                     </button>
                   </div>
                 )}
@@ -3149,28 +3160,11 @@ try {
               {/* Flag Monitors to Office */}
               {activeCheckResults.filter(r => r.result === "monitor").length > 0 && (
                 <button
-                  onClick={async () => {
-                    const monitorItems = activeCheckResults.filter(r => r.result === "monitor");
-                    try {
-                      await fetch("/api/auth/flag-monitors", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          vehicleId: assignedVehicle.id,
-                          vehicleReg: assignedVehicle.registration,
-                          driverName: currentDriver?.fullName,
-                          monitors: monitorItems.map(r => ({ itemLabel: r.itemLabel, photoUrl: (r as any)?.photoUrl }))
-                        })
-                      });
-                      alert("Monitors flagged to office for next PMI booking.");
-                    } catch(e) {
-                      console.warn("Flag monitors failed:", e);
-                      alert("Could not flag monitors. Please try again.");
-                    }
-                  }}
-                  className="w-full bg-amber-500 text-white font-bold py-3 text-center rounded shadow-sm hover:bg-amber-600 uppercase cursor-pointer text-sm mt-2"
+                  onClick={flagMonitorsForPmi}
+                  disabled={!!pmiFlaggedAt}
+                  className="w-full bg-amber-500 text-white font-bold py-3 text-center rounded shadow-sm hover:bg-amber-600 uppercase cursor-pointer text-sm mt-2 disabled:bg-compliance-green disabled:cursor-default"
                 >
-                  FLAG MONITORS FOR PMI BOOKING
+                  {pmiFlaggedAt ? "MONITORS FLAGGED FOR PMI BOOKING" : "FLAG MONITORS FOR PMI BOOKING"}
                 </button>
               )}
             </div>
