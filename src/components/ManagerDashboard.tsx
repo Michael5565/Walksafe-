@@ -2094,6 +2094,46 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
               </div>
             )}
             
+            {/* === OPEN MONITORS === */}
+            {defectViewMode === 'gallery' && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-bold text-amber-700 uppercase tracking-wider">Open Monitors</span>
+                  <span className="text-xs text-on-surface-variant">({defects.filter(d => d.status === 'open' && checks.filter(c => c.items && c.items.some(i => i.result === 'monitor' && i.itemKey === d.itemKey)).length > 0).length})</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+                  {checks.filter(c => c.items && c.items.some(i => i.result === 'monitor')).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0,6).map(c => {
+                    const monitors = c.items.filter(i => i.result === 'monitor');
+                    const v = vehicles.find(vh => vh.id === c.vehicleId);
+                    return (
+                      <div key={c.id} className="bg-surface-card border border-amber-200 border-2 rounded-lg overflow-hidden">
+                        <div className="p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <UkPlate registration={v ? v.registration : 'Unknown'} size="sm" />
+                            <span className="text-[10px] text-on-surface-variant">{new Date(c.createdAt).toLocaleDateString('en-GB')}</span>
+                          </div>
+                          {monitors.map((m, i) => (
+                            <div key={i} className="flex items-start gap-2 mb-1.5 p-1.5 bg-amber-50 rounded">
+                              <Flag className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                              <div className="text-xs">
+                                <span className="font-bold text-amber-800">{m.itemLabel}</span>
+                                <span className="text-amber-600 block">Monitor</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {checks.filter(c => c.items && c.items.some(i => i.result === 'monitor')).length === 0 && (
+                    <div className="col-span-full text-center py-8 text-on-surface-variant font-body-sm">
+                      No open monitor observations. Items flagged as 'Monitor' during walkaround checks will appear here.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {defectViewMode === 'list' && (
                 <div className="flex flex-col gap-3">
                   {defects.filter(def => {

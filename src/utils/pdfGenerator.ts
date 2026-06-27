@@ -258,6 +258,7 @@ const templateName = safeCheck.templateName || undefined;
       doc.text(`${item.sequenceOrder}. ${labelText}`, 12, tempY + 4);
       
       const passed = item.result === "pass";
+      const monitored = item.result === "monitor";
       doc.setTextColor(passed ? passColor : failColor);
       doc.setFont("Helvetica", "bold");
       doc.text(passed ? "PASS" : "FAIL", 98, tempY + 4, { align: "right" });
@@ -272,6 +273,7 @@ const templateName = safeCheck.templateName || undefined;
       doc.text(`${item.sequenceOrder}. ${labelText}`, 108, tempY + 4);
       
       const passed = item.result === "pass";
+      const monitored = item.result === "monitor";
       doc.setTextColor(passed ? passColor : failColor);
       doc.setFont("Helvetica", "bold");
       doc.text(passed ? "PASS" : "FAIL", 196, tempY + 4, { align: "right" });
@@ -438,7 +440,7 @@ const templateName = safeCheck.templateName || undefined;
           doc.text(String(pit2.itemLabel || "Item " + (pi2+1)), 10, y + 5);
           doc.setFont("Helvetica", "normal");
           doc.setFontSize(6);
-          doc.text("Result: " + (pit2.result === "fail" ? "FAIL" : "PASS"), 10, y + 10);
+          doc.text("Result: " + (pit2.result === "monitor" ? "MONITOR" : pit2.result === "fail" ? "FAIL" : "PASS"), 10, y + 10);
           doc.addImage(url2, 125, y + 1, 60, 38);
           y += 42;
         } catch(e2) {
