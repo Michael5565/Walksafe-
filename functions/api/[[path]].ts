@@ -1590,7 +1590,7 @@ app.post('/checks', async (c) => {
   });
 });
 
-// 14b. GET /api/reports/:checkId/pdf — Generate and download PDF report
+// 14b. GET /api/reports/:checkId/pdf — Generate and download the same DVSA PDF as the app
 app.get('/reports/:checkId/pdf', async (c) => {
   const db = getDbOrThrow(c);
   const { checkId } = c.req.param();
@@ -1605,64 +1605,271 @@ app.get('/reports/:checkId/pdf', async (c) => {
     const { results: defects } = await db.prepare("SELECT * FROM defects WHERE checkId = ?").bind(checkId).all();
 
     const items = JSON.parse(check.items || '[]');
-    const failedItems = items.filter((i: any) => i.result === 'fail');
-    const monitorItems = items.filter((i: any) => i.result === 'monitor');
-
     const vehReg = vehicle ? vehicle.registration.toUpperCase() : "UNKNOWN";
-    const driverName = driver ? driver.fullName : "Unknown Driver";
-    const companyName = company ? company.name : "Unknown Company";
-    const checkDate = check.checkDate || "Unknown";
 
-    // Build a simple HTML report and return it as a downloadable file
-    // (jsPDF is available in node_modules; using HTML for reliable Worker compatibility)
-    const reportHtml = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>WalkSafe Report - ${vehReg} - ${checkDate}</title>
-<style>
-  body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;color:#1a1c1b;}
-  h1{font-size:24px;color:#fea619;border-bottom:2px solid #fea619;padding-bottom:8px;}
-  h2{font-size:16px;color:#1a1c1b;margin-top:24px;}
-  .header{background:#f9f9f7;padding:16px;border-radius:8px;margin:16px 0;}
-  .header td{padding:4px 8px;font-size:14px;}
-  .pass{color:#166534;background:#f0fdf4;padding:8px;border-radius:6px;}
-  .fail{color:#991b1b;background:#fef2f2;padding:8px;border-radius:6px;}
-  .monitor{color:#92400e;background:#fffbeb;padding:8px;border-radius:6px;}
-  table{width:100%;border-collapse:collapse;margin:12px 0;}
-  th,td{text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;font-size:13px;}
-  th{background:#f3f4f6;font-weight:bold;}
-  .footer{margin-top:32px;font-size:11px;color:#a0a09a;text-align:center;}
-</style></head><body>
-<h1>WalkSafe Compliance Report</h1>
-<div class="header">
-  <table><tr><td><strong>Company:</strong></td><td>${companyName}</td></tr>
-  <tr><td><strong>Vehicle:</strong></td><td>${vehReg} ${vehicle ? `(${vehicle.make || ''} ${vehicle.model || ''})` : ''}</td></tr>
-  <tr><td><strong>Driver:</strong></td><td>${driverName}</td></tr>
-  <tr><td><strong>Date:</strong></td><td>${checkDate}</td></tr>
-  <tr><td><strong>Result:</strong></td><td>${check.result === 'nil_defect' ? '✅ Pass (Nil Defect)' : '⚠️ Defects Found'}</td></tr>
-  <tr><td><strong>Duration:</strong></td><td>${Math.round((check.durationSeconds || 0)/60)} minutes</td></tr></table>
-</div>
+    // Use jsPDF directly to generate the same DVSA-style PDF the app creates
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-${failedItems.length > 0 ? `
-<h2>Reported Defects (${failedItems.length})</h2>
-<table><tr><th>Item</th><th>Severity</th><th>Notes</th></tr>
-${failedItems.map((i: any) => {
-  const def = (defects || []).find((d: any) => d.itemKey === i.itemKey);
-  return `<tr><td>${i.itemLabel}</td><td>${def ? (def.severity || 'major').toUpperCase() : 'MAJOR'}</td><td>${i.notes || def?.description || ''}</td></tr>`;
-}).join('')}
-</table>` : '<div class="pass">✅ No defects reported — clean walkaround check.</div>'}
+    const primaryColor = "#0D1F2D";
+    const accentColor = "#F5A623";
+    const passColor = "#22C55E";
+    const failColor = "#EF4444";
+    const grayColor = "#6B7280";
+    const lightBg = "#F3F4F6";
 
-${monitorItems.length > 0 ? `
-<h2>Monitors for PMI Review (${monitorItems.length})</h2>
-<div class="monitor">
-${monitorItems.map((m: any) => `<div style="padding:4px 0;">🔍 <strong>${m.itemLabel}</strong>${m.notes ? ': ' + m.notes : ''}</div>`).join('')}
-</div>` : ''}
+    // -- HEADER --
+    doc.setFillColor(primaryColor);
+    doc.rect(0, 0, 210, 22, "F");
+    doc.setTextColor("#FFFFFF");
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("WalkSafe", 10, 15);
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("DVSA Compliance Report", 10, 20);
 
-<div class="footer">WalkSafe Fleet Compliance &copy; ${new Date().getFullYear()} &mdash; Generated ${new Date().toISOString()}</div>
-</body></html>`;
+    doc.setTextColor(accentColor);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text(vehReg, 200, 15, { align: "right" });
 
-    return c.html(reportHtml);
+    // -- VEHICLE / DRIVER INFO --
+    let y = 30;
+    doc.setFillColor(lightBg);
+    doc.rect(10, y, 40, 36, "F");
+    doc.setDrawColor("#D1D5DB");
+    doc.rect(10, y, 40, 36, "S");
+    doc.setTextColor(primaryColor);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("VEHICLE", 12, y + 6);
+    doc.setTextColor("#000000");
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(vehicle ? `${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "N/A", 12, y + 14);
+    doc.setFontSize(8);
+    doc.setTextColor(grayColor);
+    doc.text(vehicle ? `Type: ${(vehicle.type || "").toUpperCase()}` : "N/A", 12, y + 20);
+    doc.text(vehicle ? `Colour: ${vehicle.colour || "N/A"}` : "", 12, y + 25);
+    doc.text(`MOT: ${vehicle ? (vehicle.motExpiry || "N/A") : "N/A"}`, 12, y + 30);
+
+    doc.setFillColor(lightBg);
+    doc.rect(52, y, 40, 36, "F");
+    doc.setDrawColor("#D1D5DB");
+    doc.rect(52, y, 40, 36, "S");
+    doc.setTextColor(primaryColor);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("DRIVER", 54, y + 6);
+    doc.setTextColor("#000000");
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(driver ? driver.fullName : "Unknown Driver", 54, y + 14);
+    doc.setFontSize(8);
+    doc.setTextColor(grayColor);
+    doc.text(`Company: ${company ? company.name : "N/A"}`, 54, y + 22);
+    doc.text(`O-Licence: ${company ? (company.oLicence || "N/A") : "N/A"}`, 54, y + 28);
+
+    doc.setFillColor(lightBg);
+    doc.rect(94, y, 106, 36, "F");
+    doc.setDrawColor("#D1D5DB");
+    doc.rect(94, y, 106, 36, "S");
+    doc.setTextColor(grayColor);
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Check Date:", 97, y + 6);
+    doc.setTextColor("#000000");
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(`${check.checkDate || "Unknown"}`, 132, y + 6);
+    doc.setTextColor(grayColor);
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Duration:", 97, y + 12);
+    doc.setTextColor("#000000");
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(9);
+    const min = Math.floor((check.durationSeconds || 0) / 60);
+    const sec = (check.durationSeconds || 0) % 60;
+    doc.text(`${min}m ${sec}s`, 132, y + 12);
+    doc.setFontSize(7);
+    if (check.quickCheckAlert) { doc.setTextColor(failColor); doc.text("(SPEED ALERT - FLAGGED)", 132, y + 17); }
+    doc.setTextColor(grayColor);
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Result:", 97, y + 24);
+    doc.setFont("Helvetica", "bold");
+    const isPassed = check.result === "nil_defect";
+    doc.setTextColor(isPassed ? passColor : failColor);
+    doc.text(isPassed ? "NIL DEFECT - PASSED" : "DEFECTS REPORTED", 132, y + 24);
+    doc.setTextColor(grayColor);
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Template:", 97, y + 30);
+    doc.setTextColor("#000000");
+    doc.text(`${check.templateName || "Standard DVSA"}`, 132, y + 30);
+
+    // -- CHECKLIST ITEMS TABLE --
+    y += 44;
+    doc.setFillColor(primaryColor);
+    doc.rect(10, y, 190, 6, "F");
+    doc.setTextColor("#FFFFFF");
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(7);
+    doc.text("ITEM", 12, y + 4.5);
+    doc.text("GROUP", 90, y + 4.5);
+    doc.text("RESULT", 150, y + 4.5);
+    doc.text("NOTES / PHOTO", 175, y + 4.5);
+
+    const itemRows = items.map((it: any) => ({
+      label: it.itemLabel || it.itemKey || "Unknown",
+      group: it.group || "check",
+      result: it.result || "pass",
+      notes: it.notes || "",
+      hasPhoto: !!(it.photoUrl)
+    }));
+
+    for (const row of itemRows) {
+      y += 5.5;
+      if (y > 275) { doc.addPage(); y = 15; }
+      doc.setDrawColor("#E5E7EB");
+      doc.line(10, y, 200, y);
+      doc.setTextColor("#000000");
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(7);
+      doc.text(row.label.substring(0, 50), 12, y + 4);
+      doc.text(row.group, 90, y + 4);
+      if (row.result === "pass") {
+        doc.setTextColor(passColor);
+        doc.text("PASS", 150, y + 4);
+      } else if (row.result === "fail") {
+        doc.setTextColor(failColor);
+        doc.text("FAIL", 150, y + 4);
+      } else if (row.result === "monitor") {
+        doc.setTextColor(accentColor);
+        doc.text("MONITOR", 150, y + 4);
+      } else {
+        doc.setTextColor(grayColor);
+        doc.text(row.result.toUpperCase(), 150, y + 4);
+      }
+      doc.setTextColor(grayColor);
+      doc.setFontSize(6);
+      let noteText = row.notes || "";
+      if (row.hasPhoto) noteText += (noteText ? " | " : "") + "📷";
+      doc.text(noteText.substring(0, 30), 175, y + 4);
+    }
+
+    // -- DEFECTS SECTION --
+    y += 10;
+    const failedItems = items.filter((i: any) => i.result === 'fail');
+    if (failedItems.length > 0) {
+      if (y > 250) { doc.addPage(); y = 15; }
+      doc.setFillColor(failColor);
+      doc.rect(10, y, 190, 6, "F");
+      doc.setTextColor("#FFFFFF");
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text(`REPORTED DEFECTS (${failedItems.length})`, 12, y + 4.5);
+      y += 9;
+      for (const fi of failedItems) {
+        if (y > 275) { doc.addPage(); y = 15; }
+        const def = (defects || []).find((d: any) => d.itemKey === fi.itemKey);
+        doc.setFillColor("#FEF2F2");
+        doc.rect(10, y, 190, 8, "F");
+        doc.setTextColor("#991B1B");
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(7);
+        doc.text(`⚠ ${fi.itemLabel || fi.itemKey}`, 12, y + 4);
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(6);
+        doc.text(`Severity: ${def ? (def.severity || "major").toUpperCase() : "MAJOR"}`, 135, y + 4);
+        y += 9;
+        if (fi.description || (def && def.description)) {
+          doc.setTextColor("#6B7280");
+          doc.setFont("Helvetica", "italic");
+          doc.setFontSize(6);
+          doc.text(`"${(fi.description || (def ? def.description : "") || "").substring(0, 120)}"`, 14, y + 2);
+          y += 5;
+        }
+        if (fi.photoUrl || (def && def.photoUrl)) {
+          doc.setTextColor(grayColor);
+          doc.setFont("Helvetica", "normal");
+          doc.setFontSize(6);
+          doc.text("📷 Photo attached to defect record", 14, y + 2);
+          y += 4;
+        }
+      }
+    }
+
+    // -- MONITORS SECTION --
+    const monitorItems = items.filter((i: any) => i.result === 'monitor');
+    if (monitorItems.length > 0) {
+      y += 4;
+      if (y > 250) { doc.addPage(); y = 15; }
+      doc.setFillColor(accentColor);
+      doc.rect(10, y, 190, 6, "F");
+      doc.setTextColor("#1A1C1B");
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text(`MONITORS FOR PMI REVIEW (${monitorItems.length})`, 12, y + 4.5);
+      y += 9;
+      for (const mi of monitorItems) {
+        if (y > 275) { doc.addPage(); y = 15; }
+        doc.setFillColor("#FFFBEB");
+        doc.rect(10, y, 190, 6, "F");
+        doc.setTextColor("#78350F");
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(7);
+        doc.text(`🔍 ${mi.itemLabel || mi.itemKey}`, 12, y + 3.5);
+        y += 7;
+        if (mi.notes) {
+          doc.setTextColor("#92400E");
+          doc.setFont("Helvetica", "italic");
+          doc.setFontSize(6);
+          doc.text(`"${mi.notes.substring(0, 120)}"`, 14, y + 2);
+          y += 4;
+        }
+        if (mi.photoUrl) {
+          doc.setTextColor(grayColor);
+          doc.setFont("Helvetica", "normal");
+          doc.setFontSize(6);
+          doc.text("📷 Photo recorded", 14, y + 2);
+          y += 4;
+        }
+      }
+    }
+
+    // -- FOOTER --
+    y = Math.max(y + 12, 270);
+    if (y < 280) y = 280;
+    doc.setDrawColor(primaryColor);
+    doc.setLineWidth(0.3);
+    doc.line(10, y, 200, y);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(primaryColor);
+    doc.text(`Record Reference: WS-${check.id ? check.id.toUpperCase().substring(0, 16) : "UNKNOWN"}`, 10, y + 4.5);
+    doc.setFont("Helvetica", "normal");
+    doc.setTextColor(grayColor);
+    doc.setFontSize(6);
+    doc.text(`Generated At: ${new Date().toLocaleDateString("en-GB")} ${new Date().toLocaleTimeString("en-GB")} UTC | Stored on Secure Cloud Archive`, 10, y + 9);
+    doc.text(`This document is a certified compliance record generated through WalkSafe. Retain for 15 months minimum.`, 10, y + 13);
+
+    // Return the PDF
+    const pdfBuffer = doc.output('arraybuffer');
+    return new Response(pdfBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="WalkSafe_${vehReg}_${check.checkDate || "report"}.pdf"`,
+        'Content-Length': pdfBuffer.byteLength.toString()
+      }
+    });
   } catch (e) {
     console.error("[PDF Report] Error:", e);
-    return c.json({ error: "Failed to generate report" }, 500);
+    // Fallback: return a simple error HTML page
+    return c.html(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>WalkSafe Report</title><style>body{font-family:Arial,sans-serif;text-align:center;padding:40px;color:#991b1b;}h1{font-size:20px;}</style></head><body><h1>Could not generate PDF report</h1><p>Please try again from the WalkSafe app.</p><p style="color:#6b7280;font-size:11px;">${String(e).substring(0, 200)}</p></body></html>`);
   }
 });
 
