@@ -2847,6 +2847,63 @@ app.get("/auth/verify-email", async (c) => {
   }
 });
 
+// POST /api/alerts/overdue-checks — Triggered by cron at 7:30 AM daily; emails managers about vehicles without today's check
+app.post('/alerts/overdue-checks', async (c) => {
+  const db = getDbOrThrow(c);
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  try {
+    // Get all companies with active vehicles
+    const { results: companies }: any = await db.prepare("SELECT * FROM company").all();
+    let totalAlerts = 0;
+
+    for (const company of companies) {
+      if (!company.email) continue;
+      const { results: vehicles }: any = await db.prepare("SELECT * FROM vehicles WHERE companyId = ? AND isActive = 1 AND isGrounded = 0").bind(company.id).all();
+      if (vehicles.length === 0) continue;
+
+      // Find vehicles without a check today
+      const overdue: any[] = [];
+      const companyDrivers: any[] = (await db.prepare("SELECT fullName, assignedVehicleIds FROM drivers WHERE companyId = ?").bind(company.id).all() as any).results || [];
+      for (const v of vehicles) {
+        const chk: any = await db.prepare("SELECT id FROM checks WHERE vehicleId = ? AND companyId = ? AND checkDate = ? LIMIT 1").bind(v.id, company.id, todayStr).first();
+        if (!chk) {
+          const assignedDriver = companyDrivers.find((d: any) => {
+            if (d.assignedVehicleIds) {
+              try { return JSON.parse(d.assignedVehicleIds).includes(v.id); } catch { return false; }
+            }
+            return false;
+          });
+          overdue.push({ reg: v.registration || "Unknown", driver: assignedDriver ? assignedDriver.fullName : "Unassigned" });
+        }
+      }
+
+      if (overdue.length > 0) {
+        const vehList = overdue.map((o: any) => `• ${o.reg} (Driver: ${o.driver})`).join("<br/>");
+        const subject = `⛔ WalkSafe Alert: ${overdue.length} Vehicle(s) Overdue for Daily Check`;
+        const body = `
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:16px;margin-bottom:12px;">
+            <h3 style="color:#991b1b;margin:0 0 8px;">⚠️ Compliance Check Overdue</h3>
+            <p style="color:#7f1d1d;font-size:14px;">${overdue.length} vehicle(s) in your fleet have not completed their daily walkaround check today (${todayStr}) and it is now past the 7:30 AM deadline.</p>
+          </div>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;">
+            <h4 style="color:#92400e;margin:0 0 8px;">Vehicles Requiring Inspection:</h4>
+            <div style="font-size:13px;color:#78350f;">${vehList}</div>
+          </div>
+          <p style="color:#6b7280;font-size:12px;margin-top:16px;">Please ensure these vehicles complete their DVSA walkaround checks before being dispatched. View the compliance grid at https://app.getwalksafe.co.uk</p>
+        `;
+        await sendZeptoMail(c.env, company.email, subject, buildEmailHtml(subject, body));
+        totalAlerts += overdue.length;
+      }
+    }
+
+    return c.json({ success: true, alertsSent: totalAlerts });
+  } catch (e) {
+    console.error("[OverdueAlert] Error:", e);
+    return c.json({ error: "Failed to process overdue alerts" }, 500);
+  }
+});
+
 // Catch-all 404 fallback
 app.all('/*', (c) => {
   return c.json({ error: "Not Found or Unsupported API Endpoint" }, 404);

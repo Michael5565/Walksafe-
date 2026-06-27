@@ -953,6 +953,20 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
   const groundedCount = vehicles.filter(v => v.isActive && v.isGrounded).length;
   const activeDefectsCount = defects.filter(d => d.status !== 'closed').length;
   const outstandingChecks = Math.max(0, vehicles.length - completedToday);
+  const activeMonitorCount = checks.filter(c => c.monitors && c.monitors.some((m: any) => !m.resolvedAt)).length;
+  // Per-vehicle check completion for today
+  const todayStr = new Date().toISOString().split('T')[0];
+  const nowHours = new Date().getHours();
+  const nowMinutes = new Date().getMinutes();
+  const isPastDeadline = nowHours > 7 || (nowHours === 7 && nowMinutes >= 15);
+  const vehicleCheckStatus = vehicles.filter(v => v.isActive).map(v => {
+    const lastCheck = checks.filter(c => c.vehicleId === v.id).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+    const checkedToday = checks.some(c => c.vehicleId === v.id && c.checkDate === todayStr);
+    const isOverdue = !checkedToday && isPastDeadline;
+    const driver = drivers.find(d => d.defaultVehicleId === v.id || (d.assignedVehicleIds && d.assignedVehicleIds.includes(v.id)));
+    return { vehicle: v, lastCheck, checkedToday, isOverdue, driver };
+  });
+  const overdueCount = vehicleCheckStatus.filter(v => v.isOverdue).length;
 
   const calcComplianceScore = () => {
     let safetyRating = 100;
@@ -1013,12 +1027,12 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
             const sections = [
               { name: 'DVSA COMPLIANCE', icon: 'verified', items: [
                 { id: 'overview', label: "Today's Overview" },
-                { id: 'vehicles', label: 'Vehicle Fleet' },
-                { id: 'drivers', label: 'Drivers & PINs' },
                 { id: 'defects', label: 'Defect Triage' },
                 { id: 'records', label: 'Compliance Log' },
                 { id: 'schedules', label: 'Schedules' },
                 { id: 'templates', label: 'Templates' },
+                { id: 'vehicles', label: 'Vehicles' },
+                { id: 'drivers', label: 'Drivers & PINs' },
               ]},
               { name: 'ACCOUNT', icon: 'settings', items: [
                 { id: 'billing', label: 'Billing & Plans' },
@@ -1214,7 +1228,7 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
               )}
 
               {/* Metric Cards Row */}
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-gutter">
+              <div className="grid grid-cols-1 md:grid-cols-6 gap-gutter">
                 
                 {/* Fleet Integrity */}
                 <div className="bg-surface-card border border-border-subtle p-card-padding cursor-pointer hover:border-primary transition-all" onClick={() => guardedSetTab("analytics")}>
@@ -1237,6 +1251,17 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                   <div className="space-y-1">
                     <span className="font-headline-md text-headline-md font-data-mono">{completedToday}/{vehicles.length}</span>
                     <p className="font-body-sm text-body-sm text-secondary">{outstandingChecks} Outstanding</p>
+                  </div>
+                </div>
+
+                {/* Open Monitors */}
+                <div className="bg-surface-card border border-amber-200 border-2 p-card-padding cursor-pointer hover:border-amber-500 transition-all" onClick={() => guardedSetTab("defects")}>
+                  <p className="font-label-caps text-label-caps text-amber-700 mb-4">OPEN MONITORS</p>
+                  <div className="flex items-center gap-3">
+                    <span className="font-headline-md text-headline-md font-data-mono text-amber-700">{activeMonitorCount}</span>
+                    {activeMonitorCount > 0 && (
+                      <span className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse"></span>
+                    )}
                   </div>
                 </div>
 
@@ -1384,6 +1409,83 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Real-Time Compliance Grid */}
+              <div className={`bg-surface-card border overflow-hidden rounded ${overdueCount > 0 ? 'border-danger-red/30' : 'border-border-subtle'}`}>
+                <div className="p-card-padding border-b border-border-subtle flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-title-sm text-title-sm">⚡ Real-Time Compliance Grid</h3>
+                    {overdueCount > 0 && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 bg-danger-red/10 text-danger-red font-label-caps text-label-caps rounded font-bold animate-pulse">
+                        ⛔ {overdueCount} Overdue
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px]">
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-compliance-green inline-block"></span> {completedToday} Checked</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> {Math.max(0, vehicles.length - completedToday - overdueCount)} Pending</span>
+                    {overdueCount > 0 && (
+                      <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-danger-red inline-block"></span> {overdueCount} Overdue</span>
+                    )}
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-surface-container-low border-b border-border-subtle">
+                        <th className="px-4 py-2.5 font-label-caps text-label-caps text-on-surface-variant">Vehicle</th>
+                        <th className="px-4 py-2.5 font-label-caps text-label-caps text-on-surface-variant">Driver</th>
+                        <th className="px-4 py-2.5 font-label-caps text-label-caps text-on-surface-variant">Status</th>
+                        <th className="px-4 py-2.5 font-label-caps text-label-caps text-on-surface-variant">Last Check</th>
+                        <th className="px-4 py-2.5 font-label-caps text-label-caps text-on-surface-variant">Alert</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-subtle">
+                      {vehicleCheckStatus.map(({ vehicle: v, lastCheck, checkedToday, isOverdue, driver }) => (
+                        <tr key={v.id} className={`transition-colors ${isOverdue ? 'bg-danger-red/5 hover:bg-danger-red/10' : 'hover:bg-surface-container-low'}`}>
+                          <td className="px-4 py-2.5">
+                            <span className="font-data-mono text-data-mono font-bold">{v.registration}</span>
+                            <span className="block text-[11px] text-on-surface-variant">{v.make} {v.model}</span>
+                          </td>
+                          <td className="px-4 py-2.5 font-body-sm text-body-sm text-on-surface-variant">{driver ? driver.fullName : "—"}</td>
+                          <td className="px-4 py-2.5">
+                            {checkedToday ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-compliance-green/10 text-compliance-green font-label-caps text-label-caps rounded font-bold">✓ Checked</span>
+                            ) : isOverdue ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-danger-red/10 text-danger-red font-label-caps text-label-caps rounded font-bold animate-pulse">⛔ MISSING</span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 font-label-caps text-label-caps rounded font-bold">⏳ Pending</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2.5 font-body-sm text-body-sm text-on-surface-variant">{lastCheck ? new Date(lastCheck.createdAt).toLocaleDateString("en-GB") : "Never"}</td>
+                          <td className="px-4 py-2.5">
+                            {isOverdue ? (
+                              <span className="flex items-center gap-1 text-danger-red font-bold text-[11px]" title="Vehicle has not been checked and it's past 7:15 AM deadline">
+                                <span className="material-symbols-outlined text-[16px]">warning</span> OVERDUE
+                              </span>
+                            ) : checkedToday ? (
+                              <span className="text-compliance-green text-[11px]">✓ OK</span>
+                            ) : (
+                              <span className="text-amber-600 text-[11px]">⏳ Before 7:15 AM</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {vehicles.filter(v => v.isActive).length === 0 && (
+                        <tr><td colSpan={5} className="py-8 text-center font-body-sm text-body-sm text-on-surface-variant">No active vehicles.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {overdueCount > 0 && (
+                  <div className="p-3 bg-danger-red/5 border-t border-danger-red/20 text-center">
+                    <p className="text-danger-red font-bold text-[12px] flex items-center justify-center gap-2">
+                      <span className="material-symbols-outlined text-[18px]">report</span>
+                      ⛔ {overdueCount} vehicle{overdueCount > 1 ? 's' : ''} {overdueCount > 1 ? 'are' : 'is'} overdue — compliance check required before dispatch
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -6,3 +6,6 @@ pages_build_output_dir = "dist"
 binding = "DB"
 database_name = "walksafe-db"
 database_id = "fc5c7200-1e11-40cf-a38f-c7b0b4884b69"
+
+[triggers]
+crons = ["30 7 * * *"]
