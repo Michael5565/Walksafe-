@@ -2439,6 +2439,14 @@ try {
                   </button>
 
                   <button
+                    onClick={handleItemMonitor}
+                    className="w-full h-18 bg-amber-500 text-on-primary font-bold text-xl rounded shadow-sm hover:bg-amber-500/90 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Flag className="w-6 h-6 shrink-0" />
+                    MONITOR
+                  </button>
+
+                  <button
                     onClick={handleItemFail}
                     className="w-full h-18 bg-danger-red text-on-primary font-bold text-xl rounded shadow-sm hover:bg-danger-red/90 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 cursor-pointer"
                   >
