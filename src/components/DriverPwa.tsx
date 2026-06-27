@@ -773,10 +773,10 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     if (!assignedVehicle) return;
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
 
-    // If this item requires a photo and no photo has been taken, open camera first
-    if (!requiredPhotoUrl) {
+    // Only open camera if this specific template item explicitly mandates a photo for PASS
+    if (currentItem.requiresPhoto && !requiredPhotoUrl) {
       setRequiredPhotoItemKey(currentItem.key);
-      setCameraMode('defect');  // Reuse camera but for mandatory photo
+      setCameraMode('defect');
       return;
     }
     
@@ -1505,6 +1505,51 @@ try {
                 </div>
               )}
 
+              {/* Monitor Carry-Forward Alert — non-solo */}
+              {assignedVehicle && !company.isSoloOperator && (() => {
+                const vehicleChecks = checks
+                  .filter(c => c.vehicleId === assignedVehicle.id)
+                  .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+                const lastCheck = vehicleChecks[0];
+                const unresolvedMonitors = lastCheck ? (lastCheck.monitors || []).filter(m => !m.resolvedAt) : [];
+                if (unresolvedMonitors.length === 0) return null;
+                return (
+                  <div className="bg-amber-50 border border-amber-300 rounded p-4 space-y-3 animate-fadeIn">
+                    <div className="flex items-center gap-2">
+                      <Flag className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
+                      <span className="text-xs font-black text-amber-800 uppercase tracking-wider">
+                        {unresolvedMonitors.length} Monitor{unresolvedMonitors.length > 1 ? 's' : ''} Carried Forward
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-amber-700 leading-relaxed">
+                      These items were flagged as 'Monitor' on the last check for <strong>{assignedVehicle.registration}</strong>. Inspect them carefully today.
+                    </p>
+                    <div className="space-y-2">
+                      {unresolvedMonitors.map((m, i) => (
+                        <div key={i} className="flex items-center gap-3 bg-white border border-amber-200 rounded-lg p-2.5">
+                          {m.photoUrl && (
+                            <img
+                              src={m.photoUrl}
+                              alt={m.itemLabel}
+                              className="w-12 h-12 object-cover rounded border border-amber-200 shrink-0 cursor-pointer"
+                              onClick={() => setSelectedZoomImage({ url: m.photoUrl, category: m.itemLabel, notes: `Monitor flagged: ${new Date(m.createdAt).toLocaleDateString('en-GB')}`, sourceType: 'defect', severity: 'minor', vehicleReg: assignedVehicle.registration, driverName: currentDriver?.fullName || '' })}
+                              referrerPolicy="no-referrer"
+                            />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <span className="text-xs font-bold text-amber-900 block truncate">{m.itemLabel}</span>
+                            <span className="text-[10px] text-amber-600 font-mono block mt-0.5">
+                              Detected {new Date(m.createdAt).toLocaleDateString('en-GB')}
+                            </span>
+                          </div>
+                          <Flag className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Compliance checklist actions trigger box */}
               {assignedVehicle && !company.isSoloOperator && (
                 <div className="bg-surface-card border border-border-subtle rounded p-card-padding text-center flex flex-col items-center">
@@ -1652,6 +1697,51 @@ try {
                   </div>
                 </div>
               )}
+
+              {/* Monitor Carry-Forward Alert — solo operator */}
+              {company.isSoloOperator && assignedVehicle && (() => {
+                const vehicleChecks = checks
+                  .filter(c => c.vehicleId === assignedVehicle.id)
+                  .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+                const lastCheck = vehicleChecks[0];
+                const unresolvedMonitors = lastCheck ? (lastCheck.monitors || []).filter(m => !m.resolvedAt) : [];
+                if (unresolvedMonitors.length === 0) return null;
+                return (
+                  <div className="bg-amber-50 border border-amber-300 rounded p-4 space-y-3 animate-fadeIn">
+                    <div className="flex items-center gap-2">
+                      <Flag className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
+                      <span className="text-xs font-black text-amber-800 uppercase tracking-wider">
+                        {unresolvedMonitors.length} Monitor{unresolvedMonitors.length > 1 ? 's' : ''} Carried Forward
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-amber-700 leading-relaxed">
+                      These items were flagged as 'Monitor' on the last check. Re-inspect carefully today.
+                    </p>
+                    <div className="space-y-2">
+                      {unresolvedMonitors.map((m, i) => (
+                        <div key={i} className="flex items-center gap-3 bg-white border border-amber-200 rounded-lg p-2.5">
+                          {m.photoUrl && (
+                            <img
+                              src={m.photoUrl}
+                              alt={m.itemLabel}
+                              className="w-12 h-12 object-cover rounded border border-amber-200 shrink-0 cursor-pointer"
+                              onClick={() => setSelectedZoomImage({ url: m.photoUrl, category: m.itemLabel, notes: `Monitor flagged: ${new Date(m.createdAt).toLocaleDateString('en-GB')}`, sourceType: 'defect', severity: 'minor', vehicleReg: assignedVehicle.registration, driverName: currentDriver?.fullName || '' })}
+                              referrerPolicy="no-referrer"
+                            />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <span className="text-xs font-bold text-amber-900 block truncate">{m.itemLabel}</span>
+                            <span className="text-[10px] text-amber-600 font-mono block mt-0.5">
+                              Detected {new Date(m.createdAt).toLocaleDateString('en-GB')}
+                            </span>
+                          </div>
+                          <Flag className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Compliance button trigger for solo operator */}
               {company.isSoloOperator && assignedVehicle && (
@@ -2391,20 +2481,33 @@ try {
               </div>
 
               {/* ACTIVE ITEM INSPECTION BOX */}
-              <div className="flex-1 px-5 py-6 flex flex-col justify-between">
+              <div className="flex-1 px-5 py-5 flex flex-col justify-between">
                 <div>
-                  <div className="flex justify-between items-center bg-surface-card py-1.5 px-3 rounded border border-border-subtle text-[11px] text-on-surface-variant font-data-mono">
-                    <span className="uppercase font-bold text-secondary-container">
-                      GROUP: {getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].group === 'interior' ? 'Cab Interior Group A' : 'Vehicle Exterior Group B'}
+                  {/* Group badge + registration */}
+                  <div className="flex justify-between items-center mb-4">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                      getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].group === 'interior'
+                        ? 'bg-blue-50 border-blue-200 text-blue-700'
+                        : getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].group === 'loading'
+                          ? 'bg-orange-50 border-orange-200 text-orange-700'
+                          : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    }`}>
+                      {getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].group === 'interior' ? '🚘' : getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].group === 'loading' ? '📦' : '🔧'}
+                      {getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].group === 'interior' ? 'Cab Interior' : getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].group === 'loading' ? 'Load & Cargo' : 'Vehicle Exterior'}
                     </span>
-                    <span className="bg-plate-yellow text-black font-plate-text text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded-sm border border-black/10">{assignedVehicle.registration}</span>
+                    <span className="bg-plate-yellow text-black font-mono text-[10px] font-black tracking-widest uppercase px-2 py-1 rounded-sm border border-black/10">{assignedVehicle.registration}</span>
                   </div>
 
                   {/* Large Area Label */}
-                  <div className="text-center my-6">
-                    <h3 className="font-headline-md text-headline-md font-extrabold text-primary uppercase tracking-tight">
+                  <div className="bg-surface-card border border-border-subtle rounded-xl p-5 text-center mb-4 shadow-sm">
+                    <h3 className="font-sans text-2xl font-black text-primary uppercase tracking-tight leading-tight">
                       {getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].label}
                     </h3>
+                    {getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex].requiresPhoto && (
+                      <span className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold text-secondary-container bg-secondary-container/10 border border-secondary-container/20 px-2 py-0.5 rounded-full">
+                        <Camera className="w-3 h-3" /> Photo required
+                      </span>
+                    )}
                   </div>
 
                   {/* Guidance Explanation Drawer */}
@@ -2429,29 +2532,47 @@ try {
                 </div>
 
                 {/* BIG TOUCH TARGET ACTION BUTTONS */}
-                <div className="flex flex-col gap-4 mt-6">
+                <div className="flex flex-col gap-3 mt-4">
+                  {/* PASS */}
                   <button
                     onClick={handleItemPass}
-                    className="w-full h-18 bg-compliance-green text-on-primary font-bold text-xl rounded shadow-sm hover:bg-compliance-green/90 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full min-h-[76px] bg-compliance-green text-white font-black text-xl rounded-xl shadow-md hover:bg-emerald-600 active:scale-[0.97] transition-all flex items-center justify-center gap-3 cursor-pointer select-none"
                   >
-                    <CheckCircle className="w-6 h-6 shrink-0" />
-                    PASS ITEM
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                      <CheckCircle className="w-6 h-6" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-xl font-black leading-none">PASS</div>
+                      <div className="text-[11px] font-medium opacity-90 mt-0.5">Item meets DVSA standard</div>
+                    </div>
                   </button>
 
+                  {/* MONITOR */}
                   <button
                     onClick={handleItemMonitor}
-                    className="w-full h-18 bg-amber-500 text-on-primary font-bold text-xl rounded shadow-sm hover:bg-amber-500/90 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full min-h-[76px] bg-amber-500 text-white font-black text-xl rounded-xl shadow-md hover:bg-amber-600 active:scale-[0.97] transition-all flex items-center justify-center gap-3 cursor-pointer select-none"
                   >
-                    <Flag className="w-6 h-6 shrink-0" />
-                    MONITOR
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                      <Flag className="w-6 h-6" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-xl font-black leading-none">MONITOR</div>
+                      <div className="text-[11px] font-medium opacity-90 mt-0.5">Flag & photo — re-check at PMI</div>
+                    </div>
                   </button>
 
+                  {/* FAIL */}
                   <button
                     onClick={handleItemFail}
-                    className="w-full h-18 bg-danger-red text-on-primary font-bold text-xl rounded shadow-sm hover:bg-danger-red/90 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full min-h-[76px] bg-danger-red text-white font-black text-xl rounded-xl shadow-md hover:bg-red-700 active:scale-[0.97] transition-all flex items-center justify-center gap-3 cursor-pointer select-none"
                   >
-                    <X className="w-6 h-6 shrink-0" />
-                    FAIL / DEFECT
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                      <AlertTriangle className="w-6 h-6" />
+                    </div>
+                    <div className="text-left">
+                      <div className="text-xl font-black leading-none">FAIL / DEFECT</div>
+                      <div className="text-[11px] font-medium opacity-90 mt-0.5">Report compliance defect</div>
+                    </div>
                   </button>
                 </div>
               </div>
@@ -2692,6 +2813,54 @@ try {
                     <p className="text-[10px] mt-1 opacity-90 max-w-[280px]">
                       This vehicle cannot be driven. Your operator administrator has been paged immediately. Call Dave Briggs (Mechanic) at depot.
                     </p>
+                  </div>
+                )}
+
+                {/* Monitor Flag to TM Section — shows if monitors were logged in this check */}
+                {activeCheckResults.filter(r => r.result === 'monitor').length > 0 && (
+                  <div className="mt-4 bg-amber-50 border border-amber-300 rounded-xl p-4 space-y-3 animate-fadeIn">
+                    <div className="flex items-center gap-2">
+                      <Flag className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span className="text-xs font-black text-amber-800 uppercase tracking-wider">
+                        {activeCheckResults.filter(r => r.result === 'monitor').length} Monitor{activeCheckResults.filter(r => r.result === 'monitor').length > 1 ? 's' : ''} Logged This Check
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {activeCheckResults.filter(r => r.result === 'monitor').map((m, i) => (
+                        <div key={i} className="flex items-center gap-2 text-[11px] text-amber-800">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                          <span className="font-semibold">{m.itemLabel}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-amber-700 leading-relaxed">
+                      These items need re-inspection. You can flag them to your Transport Manager for next PMI booking after submitting.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const monitorItems = activeCheckResults.filter(r => r.result === 'monitor');
+                        try {
+                          await fetch('/api/auth/flag-monitors', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              vehicleId: assignedVehicle?.id,
+                              vehicleReg: assignedVehicle?.registration,
+                              driverName: currentDriver?.fullName,
+                              monitors: monitorItems.map(r => ({ itemLabel: r.itemLabel, photoUrl: (r as any)?.photoUrl }))
+                            })
+                          });
+                          triggerAlert('Monitors flagged to office for next PMI booking.', 'Flagged to TM ✓');
+                        } catch (e) {
+                          triggerAlert('Could not flag monitors right now. You can do this from the history screen after submitting.', 'Notice');
+                        }
+                      }}
+                      className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer uppercase tracking-wide"
+                    >
+                      <Flag className="w-3.5 h-3.5" />
+                      Flag to TM / Office for PMI Booking
+                    </button>
                   </div>
                 )}
 
@@ -3222,41 +3391,51 @@ try {
 
         {/* Bottom Navigation for all drivers — visible on home, history, media, profile, schedules phases */}
         {(phase === 'home' || phase === 'history' || phase === 'media' || phase === 'profile' || phase === 'schedules') && currentDriver && (
-          <div className="bg-surface-card border-t border-border-subtle h-16 flex items-center justify-around z-50 shrink-0 relative w-full">
-            <button 
+          <div className="bg-white border-t border-border-subtle h-16 flex items-stretch justify-around z-50 shrink-0 relative w-full">
+            {/* Checks */}
+            <button
               onClick={() => { setPhase('home'); setActiveSoloTab('check'); }}
-              className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer ${phase === 'home' && activeSoloTab === 'check' ? 'text-secondary-container font-black' : 'text-on-surface-variant'}`}
+              className={`flex flex-col items-center justify-center flex-1 relative transition-colors cursor-pointer ${phase === 'home' && activeSoloTab === 'check' ? 'text-secondary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
+              {phase === 'home' && activeSoloTab === 'check' && <div className="absolute top-0 inset-x-2 h-0.5 bg-secondary-container rounded-b-full" />}
               <CheckSquare className="w-5 h-5" />
-              <span className="text-[9px] mt-0.5 uppercase tracking-wider font-mono">Checks</span>
+              <span className={`text-[9px] mt-0.5 tracking-wider font-mono ${phase === 'home' && activeSoloTab === 'check' ? 'font-black' : 'font-medium'}`}>Checks</span>
             </button>
-            <button 
+            {/* Schedule / Defects */}
+            <button
               onClick={() => company.isSoloOperator ? setActiveSoloTab('defects') : setPhase('schedules')}
-              className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer ${company.isSoloOperator ? (activeSoloTab === 'defects' ? 'text-secondary-container font-black' : 'text-on-surface-variant') : (phase === 'schedules' ? 'text-secondary-container font-black' : 'text-on-surface-variant')}`}
+              className={`flex flex-col items-center justify-center flex-1 relative transition-colors cursor-pointer ${company.isSoloOperator ? (activeSoloTab === 'defects' ? 'text-secondary-container' : 'text-on-surface-variant hover:text-on-surface') : (phase === 'schedules' ? 'text-secondary-container' : 'text-on-surface-variant hover:text-on-surface')}`}
             >
-              {company.isSoloOperator ? <span className="material-symbols-outlined w-5 h-5">warning</span> : <Calendar className="w-5 h-5" />}
-              <span className="text-[9px] mt-0.5 uppercase tracking-wider font-mono">{company.isSoloOperator ? 'Defects' : 'Schedule'}</span>
+              {(company.isSoloOperator ? activeSoloTab === 'defects' : phase === 'schedules') && <div className="absolute top-0 inset-x-2 h-0.5 bg-secondary-container rounded-b-full" />}
+              {company.isSoloOperator ? <AlertTriangle className="w-5 h-5" /> : <Calendar className="w-5 h-5" />}
+              <span className={`text-[9px] mt-0.5 tracking-wider font-mono ${(company.isSoloOperator ? activeSoloTab === 'defects' : phase === 'schedules') ? 'font-black' : 'font-medium'}`}>{company.isSoloOperator ? 'Defects' : 'Schedule'}</span>
             </button>
-            <button 
+            {/* History */}
+            <button
               onClick={() => setPhase('history')}
-              className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer ${phase === 'history' ? 'text-secondary-container font-black' : 'text-on-surface-variant'}`}
+              className={`flex flex-col items-center justify-center flex-1 relative transition-colors cursor-pointer ${phase === 'history' ? 'text-secondary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
+              {phase === 'history' && <div className="absolute top-0 inset-x-2 h-0.5 bg-secondary-container rounded-b-full" />}
               <Clock className="w-5 h-5" />
-              <span className="text-[9px] mt-0.5 uppercase tracking-wider font-mono">History</span>
+              <span className={`text-[9px] mt-0.5 tracking-wider font-mono ${phase === 'history' ? 'font-black' : 'font-medium'}`}>History</span>
             </button>
-            <button 
+            {/* Photos */}
+            <button
               onClick={() => setPhase('media')}
-              className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer ${phase === 'media' ? 'text-secondary-container font-black' : 'text-on-surface-variant'}`}
+              className={`flex flex-col items-center justify-center flex-1 relative transition-colors cursor-pointer ${phase === 'media' ? 'text-secondary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
+              {phase === 'media' && <div className="absolute top-0 inset-x-2 h-0.5 bg-secondary-container rounded-b-full" />}
               <Image className="w-5 h-5" />
-              <span className="text-[9px] mt-0.5 uppercase tracking-wider font-mono">Photos</span>
+              <span className={`text-[9px] mt-0.5 tracking-wider font-mono ${phase === 'media' ? 'font-black' : 'font-medium'}`}>Photos</span>
             </button>
-            <button 
+            {/* Profile */}
+            <button
               onClick={() => setPhase('profile')}
-              className={`flex flex-col items-center justify-center flex-1 h-full cursor-pointer ${phase === 'profile' ? 'text-secondary-container font-black' : 'text-on-surface-variant'}`}
+              className={`flex flex-col items-center justify-center flex-1 relative transition-colors cursor-pointer ${phase === 'profile' ? 'text-secondary-container' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
+              {phase === 'profile' && <div className="absolute top-0 inset-x-2 h-0.5 bg-secondary-container rounded-b-full" />}
               <User className="w-5 h-5" />
-              <span className="text-[9px] mt-0.5 uppercase tracking-wider font-mono">Profile</span>
+              <span className={`text-[9px] mt-0.5 tracking-wider font-mono ${phase === 'profile' ? 'font-black' : 'font-medium'}`}>Profile</span>
             </button>
           </div>
         )}
