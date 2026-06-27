@@ -219,80 +219,6 @@ function buildEmailHtml(title, body) {
     '</div>';
 }
 
-// POST /api/auth/flag-monitors
-app.post("/auth/flag-monitors", async (c) => {
-  const db = getDbOrThrow(c);
-  const { vehicleId, vehicleReg, driverName, monitors } = await c.req.json();
-  if (!vehicleId || !monitors || monitors.length === 0) {
-    return c.json({ error: "Missing required fields" }, 400);
-  }
-  try {
-    const companyId = c.req.header("x-company-id") || "";
-    const comp: any = await db.prepare("SELECT email, name FROM company WHERE id = ?").bind(companyId).first();
-    if (comp // --- Firebase Admin Auth Helper// --- Firebase Admin Auth Helper comp.email) {
-      const monList = monitors.map((m: any) => m.itemLabel || "Unknown item").join(", ");
-      const subject = "🚩 Monitors Flagged for Next PMI - " + vehicleReg;
-      const body = driverName + " flagged " + monitors.length + " monitor(s) for " + vehicleReg + " during their walkaround check.
-
-Items:
-" + monList + "
-
-Please book these into the next PMI or review in the dashboard.";
-      sendZeptoMail(c.env, comp.email, subject, buildEmailHtml(subject, body.replace(/
-/g, "<br/>")));
-    }
-    return c.json({ success: true });
-  } catch (e) {
-    console.error("[FlagMonitors] Error:", e);
-    return c.json({ error: "Failed to send notification" }, 500);
-  }
-});
-
-// --- Firebase Admin Auth Helper (reuses existing FCM service account) ---
-// POST /api/auth/flag-monitors
-app.post("/auth/flag-monitors", async (c) => {
-  const db = getDbOrThrow(c);
-  const { vehicleId, vehicleReg, driverName, monitors } = await c.req.json();
-  if (!vehicleId || !monitors || monitors.length === 0) {
-    return c.json({ error: "Missing required fields" }, 400);
-  }
-  try {
-    const companyId = c.req.header("x-company-id") || "";
-    const comp: any = await db.prepare("SELECT email, name FROM company WHERE id = ?").bind(companyId).first();
-    if (comp // --- Firebase Admin Auth Helper// --- Firebase Admin Auth Helper comp.email) {
-      const monList = monitors.map((m: any) => m.itemLabel || "Unknown item").join(", ");
-      const subject = "🚩 Monitors Flagged for Next PMI - " + vehicleReg;
-      const body = driverName + " flagged " + monitors.length + " monitor(s) for " + vehicleReg + " during their walkaround check.
-
-Items:
-" + monList + "
-
-Please book these into the next PMI or review in the dashboard.";
-      sendZeptoMail(c.env, comp.email, subject, buildEmailHtml(subject, body.replace(/
-/g, "<br/>")));
-    }
-    return c.json({ success: true });
-  } catch (e) {
-    console.error("[FlagMonitors] Error:", e);
-    return c.json({ error: "Failed to send notification" }, 500);
-  }
-});
-
-// --- Firebase Admin Auth Helper (reuses existing FCM service account) ---
-async function getFirebaseAdminToken(env) {
-  if (!env.FCM_CLIENT_EMAIL || !env.FCM_PRIVATE_KEY) return null;
-  const header = { alg: "RS256", typ: "JWT" };
-  const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    iss: env.FCM_CLIENT_EMAIL,
-    scope: "https://www.googleapis.com/auth/identitytoolkit https://www.googleapis.com/auth/firebase",
-    aud: "https://oauth2.googleapis.com/token",
-    exp: now + 3600,
-    iat: now,
-  };
-  const decodeKey = (pem) => {
-    const normalized = pem.replace(/\\\\n/g, "\n");
-    const c = normalized.replace(/-----BEGIN PRIVATE KEY-----/, "").replace(/-----END PRIVATE KEY-----/, "").replace(/\s/g, "");
     const b = atob(c);
     const a = new Uint8Array(b.length);
     for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
@@ -885,6 +811,30 @@ app.post('/auth/forgot-password', async (c) => {
   }
   return c.json({ success: true, message: "A password reset link has been sent to your email." });
 });
+
+// POST /api/auth/flag-monitors — Send monitor flag notification to manager
+app.post("/auth/flag-monitors", async (c) => {
+  const db = getDbOrThrow(c);
+  const { vehicleId, vehicleReg, driverName, monitors } = await c.req.json();
+  if (!vehicleId || !monitors || monitors.length === 0) {
+    return c.json({ error: "Missing required fields" }, 400);
+  }
+  const companyId = c.req.header("x-company-id") || "";
+  try {
+    const comp = await db.prepare("SELECT email, name FROM company WHERE id = ?").bind(companyId).first() as any;
+    if (comp && comp.email) {
+      const monList = monitors.map((m:any) => m.itemLabel || "Unknown item").join(", ");
+      const subject = "Monitors Flagged for Next PMI - " + vehicleReg;
+      const body = driverName + " flagged " + monitors.length + " monitor(s) for " + vehicleReg + ". Items: " + monList;
+      sendZeptoMail(c.env, comp.email, subject, buildEmailHtml(subject, body));
+    }
+    return c.json({ success: true });
+  } catch (e) {
+    console.error("[FlagMonitors] Error:", e);
+    return c.json({ error: "Failed to send notification" }, 500);
+  }
+});
+
 
 // POST /api/auth/send-test-alert — Send test notification to company manager
 app.post("/auth/send-test-alert", async (c) => {
