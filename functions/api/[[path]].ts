@@ -1639,13 +1639,11 @@ app.get('/reports/:checkId/pdf', async (c) => {
     const pdfBuffer = doc.output('arraybuffer');
     const vehReg = vehicleRow ? (vehicleRow.registration || "").toUpperCase() : "UNKNOWN";
 
-    return new Response(pdfBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="WalkSafe_${vehReg}_${checkRow.checkDate || "report"}.pdf"`,
-        'Content-Length': pdfBuffer.byteLength.toString()
-      }
+    return c.newResponse(pdfBuffer, 200, {
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': `attachment; filename="WalkSafe_${vehReg}_${checkRow.checkDate || "report"}.pdf"`,
+      'Content-Length': pdfBuffer.byteLength.toString(),
+      'Cache-Control': 'no-store, must-revalidate'
     });
   } catch (e: any) {
     console.error("[PDF Report] Error:", e);
