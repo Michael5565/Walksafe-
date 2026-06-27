@@ -235,6 +235,7 @@ async function setFirebaseEmailVerified(env, uid) {
 }
 
 async function checkFirebaseEmailVerified(env, uid) {
+  if (!uid) return null;
   const token = await getFirebaseAdminToken(env);
   if (!token) return null;
   try {
