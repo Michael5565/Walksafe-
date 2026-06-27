@@ -1647,7 +1647,8 @@ app.get('/reports/:checkId/pdf', async (c) => {
     doc.setTextColor("#000000");
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(vehicle ? `${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "N/A", 12, y + 14);
+    const vehDisplay = vehicle ? (`${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "N/A") : "N/A";
+    doc.text(vehDisplay, 12, y + 14);
     doc.setFontSize(8);
     doc.setTextColor(grayColor);
     doc.text(vehicle ? `Type: ${(vehicle.type || "").toUpperCase()}` : "N/A", 12, y + 20);
