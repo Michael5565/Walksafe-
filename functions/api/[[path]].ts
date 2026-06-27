@@ -1750,7 +1750,13 @@ app.get('/reports/:checkId/pdf', async (c) => {
     const passColor = "#22C55E";
     const failColor = "#EF4444";
     const grayColor = "#6B7280";
-    const lightBg = "#F3F4F6";
+    const monitorColor = "#D97706";
+
+    const getResultMeta = (result: string) => {
+      if (result === "monitor") return { label: "MONITOR", color: monitorColor };
+      if (result === "fail") return { label: "FAIL", color: failColor };
+      return { label: "PASS", color: passColor };
+    };
 
     // -- HEADER --
     doc.setFillColor(primaryColor);
