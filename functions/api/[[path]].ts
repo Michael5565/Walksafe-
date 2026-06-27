@@ -1560,9 +1560,10 @@ app.post('/checks', async (c) => {
         }
 
         // Link section
+        const reportUrl = appUrl3 + "/api/reports/" + checkId + "/pdf";
         emailBodyHtml += '<div style="text-align:center;margin-top:20px;">';
-        emailBodyHtml += '<a href="' + appUrl3 + '" style="display:inline-block;background:#fea619;color:#1a1c1b;text-decoration:none;font-weight:bold;font-size:13px;padding:10px 24px;border-radius:8px;">View Full Report on WalkSafe</a>';
-        emailBodyHtml += '<p style="color:#a0a09a;font-size:11px;margin-top:8px;">Open the report to download a PDF copy or review details.</p>';
+        emailBodyHtml += '<a href="' + reportUrl + '" style="display:inline-block;background:#fea619;color:#1a1c1b;text-decoration:none;font-weight:bold;font-size:13px;padding:10px 24px;border-radius:8px;">📄 Download PDF Report</a>';
+        emailBodyHtml += '<p style="color:#a0a09a;font-size:11px;margin-top:8px;">Click the button above to download the full PDF compliance report for this check.</p>';
         emailBodyHtml += '</div>';
 
         const subject = "WalkSafe - " + vehReg + " - " + (hasFail ? (isGround ? "GROUNDED" : defectCount + " defect(s)") : "PASSED") + (monitorItems.length > 0 ? " + " + monitorItems.length + " monitor(s)" : "");
@@ -1587,6 +1588,84 @@ app.post('/checks', async (c) => {
     monitors: monitors || [],
     createdAt
   });
+});
+
+// 14b. GET /api/reports/:checkId/pdf — Generate and download PDF report
+app.get('/reports/:checkId/pdf', async (c) => {
+  const db = getDbOrThrow(c);
+  const { checkId } = c.req.param();
+  const companyId = c.req.header('x-company-id');
+  if (!companyId) return c.json({ error: "X-Company-Id header is required" }, 401);
+
+  try {
+    const check: any = await db.prepare("SELECT * FROM checks WHERE id = ? AND companyId = ?").bind(checkId, companyId).first();
+    if (!check) return c.json({ error: "Check not found" }, 404);
+
+    const vehicle: any = await db.prepare("SELECT * FROM vehicles WHERE id = ?").bind(check.vehicleId).first();
+    const driver: any = await db.prepare("SELECT * FROM drivers WHERE id = ?").bind(check.driverId).first();
+    const company: any = await db.prepare("SELECT * FROM company WHERE id = ?").bind(companyId).first();
+    const { results: defects } = await db.prepare("SELECT * FROM defects WHERE checkId = ?").bind(checkId).all();
+
+    const items = JSON.parse(check.items || '[]');
+    const failedItems = items.filter((i: any) => i.result === 'fail');
+    const monitorItems = items.filter((i: any) => i.result === 'monitor');
+
+    const vehReg = vehicle ? vehicle.registration.toUpperCase() : "UNKNOWN";
+    const driverName = driver ? driver.fullName : "Unknown Driver";
+    const companyName = company ? company.name : "Unknown Company";
+    const checkDate = check.checkDate || "Unknown";
+
+    // Build a simple HTML report and return it as a downloadable file
+    // (jsPDF is available in node_modules; using HTML for reliable Worker compatibility)
+    const reportHtml = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>WalkSafe Report - ${vehReg} - ${checkDate}</title>
+<style>
+  body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;color:#1a1c1b;}
+  h1{font-size:24px;color:#fea619;border-bottom:2px solid #fea619;padding-bottom:8px;}
+  h2{font-size:16px;color:#1a1c1b;margin-top:24px;}
+  .header{background:#f9f9f7;padding:16px;border-radius:8px;margin:16px 0;}
+  .header td{padding:4px 8px;font-size:14px;}
+  .pass{color:#166534;background:#f0fdf4;padding:8px;border-radius:6px;}
+  .fail{color:#991b1b;background:#fef2f2;padding:8px;border-radius:6px;}
+  .monitor{color:#92400e;background:#fffbeb;padding:8px;border-radius:6px;}
+  table{width:100%;border-collapse:collapse;margin:12px 0;}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;font-size:13px;}
+  th{background:#f3f4f6;font-weight:bold;}
+  .footer{margin-top:32px;font-size:11px;color:#a0a09a;text-align:center;}
+</style></head><body>
+<h1>WalkSafe Compliance Report</h1>
+<div class="header">
+  <table><tr><td><strong>Company:</strong></td><td>${companyName}</td></tr>
+  <tr><td><strong>Vehicle:</strong></td><td>${vehReg} ${vehicle ? `(${vehicle.make || ''} ${vehicle.model || ''})` : ''}</td></tr>
+  <tr><td><strong>Driver:</strong></td><td>${driverName}</td></tr>
+  <tr><td><strong>Date:</strong></td><td>${checkDate}</td></tr>
+  <tr><td><strong>Result:</strong></td><td>${check.result === 'nil_defect' ? '✅ Pass (Nil Defect)' : '⚠️ Defects Found'}</td></tr>
+  <tr><td><strong>Duration:</strong></td><td>${Math.round((check.durationSeconds || 0)/60)} minutes</td></tr></table>
+</div>
+
+${failedItems.length > 0 ? `
+<h2>Reported Defects (${failedItems.length})</h2>
+<table><tr><th>Item</th><th>Severity</th><th>Notes</th></tr>
+${failedItems.map((i: any) => {
+  const def = (defects || []).find((d: any) => d.itemKey === i.itemKey);
+  return `<tr><td>${i.itemLabel}</td><td>${def ? (def.severity || 'major').toUpperCase() : 'MAJOR'}</td><td>${i.notes || def?.description || ''}</td></tr>`;
+}).join('')}
+</table>` : '<div class="pass">✅ No defects reported — clean walkaround check.</div>'}
+
+${monitorItems.length > 0 ? `
+<h2>Monitors for PMI Review (${monitorItems.length})</h2>
+<div class="monitor">
+${monitorItems.map((m: any) => `<div style="padding:4px 0;">🔍 <strong>${m.itemLabel}</strong>${m.notes ? ': ' + m.notes : ''}</div>`).join('')}
+</div>` : ''}
+
+<div class="footer">WalkSafe Fleet Compliance &copy; ${new Date().getFullYear()} &mdash; Generated ${new Date().toISOString()}</div>
+</body></html>`;
+
+    return c.html(reportHtml);
+  } catch (e) {
+    console.error("[PDF Report] Error:", e);
+    return c.json({ error: "Failed to generate report" }, 500);
+  }
 });
 
 // 15. GET /api/defects

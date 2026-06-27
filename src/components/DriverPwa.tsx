@@ -712,12 +712,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       const found = templatesFromProps.find(t => t.id === templateId);
       if (found) return found.items.filter(it => !it.requiresTrailer || vehicle.type === 'hgv_trailer');
     }
-    // 2. No template selected — match a built-in template by vehicle type if available
-    if (builtInTemplates && builtInTemplates.length > 0) {
-      const matchedTpl = builtInTemplates.find(t => t.vehicleType.includes(vehicle.type));
-      if (matchedTpl) return matchedTpl.items as ChecklistTemplateItem[];
-    }
-    // 3. Fall back to the standard DVSA 27-point checklist (the default)
+    // 2. No template selected — use the full DVSA 27-point checklist filtered by vehicle type
     return CHECKLIST_ITEMS.filter(it => !it.requiresTrailer || vehicle.type === 'hgv_trailer');
   };
 
@@ -792,13 +787,6 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const handleItemPass = () => {
     if (!assignedVehicle) return;
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
-
-    // Only open camera if this specific template item explicitly mandates a photo for PASS
-    if (currentItem.requiresPhoto && !requiredPhotoUrl) {
-      setRequiredPhotoItemKey(currentItem.key);
-      setCameraMode('defect');
-      return;
-    }
     
     // Save pass state
     const resultItem: any = {
@@ -1615,7 +1603,7 @@ try {
                               src={m.photoUrl}
                               alt={m.itemLabel}
                               className="w-12 h-12 object-cover rounded border border-amber-200 shrink-0 cursor-pointer"
-                              onClick={() => setSelectedZoomImage({ url: m.photoUrl, category: m.itemLabel, notes: `Monitor flagged: ${new Date(m.createdAt).toLocaleDateString('en-GB')}`, sourceType: 'defect', severity: 'minor', vehicleReg: assignedVehicle.registration, driverName: currentDriver?.fullName || '' })}
+                              onClick={() => setSelectedZoomImage({ url: m.photoUrl, category: m.itemLabel, notes: `Monitor flagged: ${new Date(m.createdAt).toLocaleDateString('en-GB')}`, sourceType: 'monitoring', severity: 'minor', vehicleReg: assignedVehicle.registration, driverName: currentDriver?.fullName || '' })}
                               referrerPolicy="no-referrer"
                             />
                           )}
@@ -1808,7 +1796,7 @@ try {
                               src={m.photoUrl}
                               alt={m.itemLabel}
                               className="w-12 h-12 object-cover rounded border border-amber-200 shrink-0 cursor-pointer"
-                              onClick={() => setSelectedZoomImage({ url: m.photoUrl, category: m.itemLabel, notes: `Monitor flagged: ${new Date(m.createdAt).toLocaleDateString('en-GB')}`, sourceType: 'defect', severity: 'minor', vehicleReg: assignedVehicle.registration, driverName: currentDriver?.fullName || '' })}
+                              onClick={() => setSelectedZoomImage({ url: m.photoUrl, category: m.itemLabel, notes: `Monitor flagged: ${new Date(m.createdAt).toLocaleDateString('en-GB')}`, sourceType: 'monitoring', severity: 'minor', vehicleReg: assignedVehicle.registration, driverName: currentDriver?.fullName || '' })}
                               referrerPolicy="no-referrer"
                             />
                           )}
