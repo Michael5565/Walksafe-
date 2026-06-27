@@ -1594,16 +1594,14 @@ app.post('/checks', async (c) => {
 app.get('/reports/:checkId/pdf', async (c) => {
   const db = getDbOrThrow(c);
   const { checkId } = c.req.param();
-  const companyId = c.req.header('x-company-id');
-  if (!companyId) return c.json({ error: "X-Company-Id header is required" }, 401);
 
   try {
-    const check: any = await db.prepare("SELECT * FROM checks WHERE id = ? AND companyId = ?").bind(checkId, companyId).first();
+    const check: any = await db.prepare("SELECT * FROM checks WHERE id = ?").bind(checkId).first();
     if (!check) return c.json({ error: "Check not found" }, 404);
 
     const vehicle: any = await db.prepare("SELECT * FROM vehicles WHERE id = ?").bind(check.vehicleId).first();
     const driver: any = await db.prepare("SELECT * FROM drivers WHERE id = ?").bind(check.driverId).first();
-    const company: any = await db.prepare("SELECT * FROM company WHERE id = ?").bind(companyId).first();
+    const company: any = await db.prepare("SELECT * FROM company WHERE id = ?").bind(check.companyId).first();
     const { results: defects } = await db.prepare("SELECT * FROM defects WHERE checkId = ?").bind(checkId).all();
 
     const items = JSON.parse(check.items || '[]');
