@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { handle } from 'hono/cloudflare-pages';
-import { jsPDF } from 'jspdf';
+import { generateDVSA_PDF } from '../../src/utils/pdfGenerator';
 
 type Bindings = {
   DB: D1Database;
@@ -1591,497 +1591,65 @@ app.post('/checks', async (c) => {
   });
 });
 
-// Fallback PDF generator that works without jspdf (for Workers compatibility)
-function generateSimplePDF(check: any, vehicle: any, driver: any, company: any, defects: any[]): Uint8Array {
-  const vehReg = vehicle ? vehicle.registration.toUpperCase() : "UNKNOWN";
-  const drvName = driver ? driver.fullName : "Unknown Driver";
-  const compName = company ? company.name : "Unknown Company";
-  const checkDate = check?.checkDate || "Unknown";
-  const isPassed = check?.result === "nil_defect";
-  const items: any[] = JSON.parse(check?.items || '[]');
-  const failedItems = items.filter((i: any) => i.result === 'fail');
-  const monitorItems = items.filter((i: any) => i.result === 'monitor');
-  const lines: string[] = [];
-
-  const add = (s: string) => lines.push(s);
-  const esc = (s: string) => (s || "").replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
-  
-  // --- PDF objects ---
-  const objects: any[] = [];
-  let objNum = 0;
-  const obj = (content: string) => { objNum++; return { num: objNum, content }; };
-
-  // Build PDF content as a simple structured document
-  let content = "";
-  content += "BT\n";
-  content += "/F1 20 Tf\n";
-  content += "50 770 Td\n";
-  content += `(WALKSAFE - DAILY COMPLIANCE RECORD) Tj\n`;
-  content += "0 -15 Td\n";
-  content += "/F1 10 Tf\n";
-  content += `(Vehicle: ${esc(vehReg)}) Tj\n`;
-  content += "0 -12 Td\n";
-  content += `(Driver: ${esc(drvName)}) Tj\n`;
-  content += "0 -12 Td\n";
-  content += `(Company: ${esc(compName)}) Tj\n`;
-  content += "0 -12 Td\n";
-  content += `(Date: ${esc(checkDate)}) Tj\n`;
-  content += "0 -12 Td\n";
-  content += `(Result: ${isPassed ? "PASSED - NIL DEFECT" : "DEFECTS REPORTED"}) Tj\n`;
-  content += "0 -12 Td\n";
-  content += `(Duration: ${Math.floor((check?.durationSeconds || 0)/60)}m ${(check?.durationSeconds || 0)%60}s) Tj\n`;
-  
-  content += "0 -25 Td\n";
-  content += "/F1 14 Tf\n";
-  content += `(CHECKLIST ITEMS) Tj\n`;
-  content += "0 -15 Td\n";
-  
-  items.forEach((item: any, idx: number) => {
-    const resultLabel = item.result === "fail" ? "FAIL" : item.result === "monitor" ? "MONITOR" : "PASS";
-    const label = item.itemLabel || "Unknown";
-    if (idx > 0) content += "0 -10 Td\n";
-    content += `/F1 9 Tf\n`;
-    content += `(${idx+1}. ${esc(label)} - ${resultLabel}) Tj\n`;
-  });
-
-  if (failedItems.length > 0) {
-    content += "0 -20 Td\n";
-    content += "/F1 12 Tf\n";
-    content += `(DEFECTS (${failedItems.length})) Tj\n`;
-    content += "0 -15 Td\n";
-    failedItems.forEach((fi: any) => {
-      const def = (defects || []).find((d: any) => d.itemKey === fi.itemKey);
-      content += "/F1 9 Tf\n";
-      content += `(  ${esc(fi.itemLabel)} - ${def ? (def.severity || "major").toUpperCase() : "MAJOR"}) Tj\n`;
-      content += "0 -8 Td\n";
-      if (fi.notes || def?.description) {
-        content += `/F1 8 Tf\n`;
-        content += `(  "${esc(fi.notes || def?.description || "").substring(0,80)}") Tj\n`;
-        content += "0 -8 Td\n";
-      }
-    });
-  }
-
-  if (monitorItems.length > 0) {
-    content += "0 -15 Td\n";
-    content += "/F1 12 Tf\n";
-    content += `(MONITORS FOR PMI REVIEW (${monitorItems.length})) Tj\n`;
-    content += "0 -12 Td\n";
-    monitorItems.forEach((mi: any) => {
-      content += "/F1 9 Tf\n";
-      content += `(  ${esc(mi.itemLabel)}) Tj\n`;
-      content += "0 -8 Td\n";
-    });
-  }
-
-  content += "0 -25 Td\n";
-  content += "/F1 8 Tf\n";
-  content += `(Record: WS-${esc(check?.id || "").substring(0,16)}) Tj\n`;
-  content += "0 -8 Td\n";
-  content += `(Generated: ${new Date().toISOString()}) Tj\n`;
-  content += "ET\n";
-
-  // Page object
-  const pageContent = obj(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
-  
-  // Font
-  const fontObj = obj(`<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>`);
-  
-  // Page
-  const pageObj = obj(`<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Contents ${pageContent.num} 0 R /Resources << /Font << /F1 ${fontObj.num} 0 R >> >> >>`);
-  
-  // Pages
-  const pagesObj = obj(`<< /Type /Pages /Kids [${pageObj.num} 0 R] /Count 1 >>`);
-  
-  // Catalog
-  const catalogObj = obj(`<< /Type /Catalog /Pages ${pagesObj.num} 0 R >>`);
-
-  // Build file
-  const pdf = [`%PDF-1.4`];
-  
-  const offsets: number[] = [];
-  for (const o of [catalogObj, pagesObj, pageObj, fontObj, pageContent]) {
-    offsets.push(pdf.join("\n").length + 1);
-    pdf.push(`${o.num} 0 obj`);
-    pdf.push(o.content);
-    pdf.push("endobj");
-  }
-
-  const xrefOffset = pdf.join("\n").length + 1;
-  pdf.push("xref");
-  pdf.push(`0 ${objNum + 1}`);
-  pdf.push("0000000000 65535 f ");
-  for (let i = 1; i <= objNum; i++) {
-    const offset = offsets[i - 1];
-    pdf.push(`${String(offset).padStart(10, "0")} 00000 n `);
-  }
-  pdf.push("trailer");
-  pdf.push(`<< /Size ${objNum + 1} /Root 1 0 R >>`);
-  pdf.push("startxref");
-  pdf.push(String(xrefOffset));
-  pdf.push("%%EOF");
-
-  const text = pdf.join("\n");
-  return new TextEncoder().encode(text);
-}
-
-// 14b. GET /api/reports/:checkId/pdf — Generate and download the same DVSA PDF as the app
+// 14b. GET /api/reports/:checkId/pdf — Download PDF using the app's exact DVSA generator
 app.get('/reports/:checkId/pdf', async (c) => {
   const db = getDbOrThrow(c);
   const { checkId } = c.req.param();
 
   try {
-    const check: any = await db.prepare("SELECT * FROM checks WHERE id = ?").bind(checkId).first();
-    if (!check) return c.json({ error: "Check not found" }, 404);
+    const checkRow: any = await db.prepare("SELECT * FROM checks WHERE id = ?").bind(checkId).first();
+    if (!checkRow) return c.json({ error: "Check not found" }, 404);
 
-    const vehicle: any = await db.prepare("SELECT * FROM vehicles WHERE id = ?").bind(check.vehicleId).first();
-    const driver: any = await db.prepare("SELECT * FROM drivers WHERE id = ?").bind(check.driverId).first();
-    const company: any = await db.prepare("SELECT * FROM company WHERE id = ?").bind(check.companyId).first();
-    const { results: defects } = await db.prepare("SELECT * FROM defects WHERE checkId = ?").bind(checkId).all();
+    const vehicleRow: any = await db.prepare("SELECT * FROM vehicles WHERE id = ?").bind(checkRow.vehicleId).first();
+    const driverRow: any = await db.prepare("SELECT * FROM drivers WHERE id = ?").bind(checkRow.driverId).first();
+    const companyRow: any = await db.prepare("SELECT * FROM company WHERE id = ?").bind(checkRow.companyId).first();
+    const { results: defectRows } = await db.prepare("SELECT * FROM defects WHERE checkId = ?").bind(checkId).all();
 
-    const items = JSON.parse(check.items || '[]');
-    const vehReg = vehicle ? vehicle.registration.toUpperCase() : "UNKNOWN";
-
-    // Use jsPDF directly to generate the same DVSA-style PDF the app creates
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-
-    const primaryColor = "#0D1F2D";
-    const accentColor = "#F5A623";
-    const passColor = "#22C55E";
-    const failColor = "#EF4444";
-    const grayColor = "#6B7280";
-    const monitorColor = "#D97706";
-
-    const getResultMeta = (result: string) => {
-      if (result === "monitor") return { label: "MONITOR", color: monitorColor };
-      if (result === "fail") return { label: "FAIL", color: failColor };
-      return { label: "PASS", color: passColor };
+    // Build the check object the pdfGenerator expects
+    const items = JSON.parse(checkRow.items || '[]');
+    const itemPhotos = checkRow.itemPhotos ? JSON.parse(checkRow.itemPhotos) : [];
+    const check = {
+      id: checkRow.id,
+      vehicleId: checkRow.vehicleId,
+      driverId: checkRow.driverId,
+      companyId: checkRow.companyId,
+      startedAt: checkRow.startedAt,
+      completedAt: checkRow.completedAt,
+      durationSeconds: checkRow.durationSeconds,
+      result: checkRow.result,
+      driverSignature: checkRow.driverSignature || "",
+      checkDate: checkRow.checkDate,
+      quickCheckAlert: !!checkRow.quickCheckAlert,
+      items,
+      itemPhotos,
+      createdAt: checkRow.createdAt,
+      latitude: checkRow.latitude,
+      longitude: checkRow.longitude,
+      miscDamageNotes: checkRow.miscDamageNotes || "",
+      miscDamagePhotoUrl: checkRow.miscDamagePhotoUrl || "",
+      templateName: checkRow.templateName || undefined
     };
+    const vehicle = { ...vehicleRow, isSoloOperator: !!companyRow?.isSoloOperator };
+    const driver = { ...driverRow };
+    const company = { ...companyRow, isSoloOperator: !!companyRow?.isSoloOperator };
+    const relatedDefects = (defectRows || []).map((d: any) => ({ ...d }));
 
-    // -- HEADER --
-    doc.setFillColor(primaryColor);
-    doc.rect(0, 0, 210, 22, "F");
-    doc.setTextColor("#FFFFFF");
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("WalkSafe", 10, 15);
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text("DVSA ROADWORTHINESS COMPLIANT", 196, 17.5, { align: "right" });
-
-    let y = 28;
-    const todayStr = new Date().toISOString().split('T')[0];
-    const motExpired = vehicle && vehicle.motExpiry && vehicle.motExpiry < todayStr;
-    const taxExpired = vehicle && vehicle.taxExpiry && vehicle.taxExpiry < todayStr;
-
-    // -- VEHICLE DETAILS --
-    doc.setDrawColor(primaryColor);
-    doc.setLineWidth(0.3);
-    doc.rect(10, y, 92, 45);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(primaryColor);
-    doc.text("VEHICLE DETAILS", 14, y + 5);
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(grayColor);
-    doc.text("Registration Plate:", 14, y + 12);
-    doc.setFont("Helvetica", "bold");
-    doc.setTextColor("#000000");
-    doc.text(vehicle ? vehicle.registration : "N/A", 48, y + 12);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(grayColor);
-    doc.text("Make & Model:", 14, y + 18);
-    doc.setTextColor("#000000");
-    const vehDisplay = vehicle ? (`${vehicle.make || ""} ${vehicle.model || ""}`.trim() || "N/A") : "N/A";
-    doc.text(vehDisplay, 48, y + 18);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(grayColor);
-    doc.text("Vehicle Type:", 14, y + 24);
-    doc.setTextColor("#000000");
-    doc.text(vehicle ? (vehicle.type || "lgv").toUpperCase().replace("_", " + ") : "N/A", 48, y + 24);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(grayColor);
-    doc.text("MOT Expiry:", 14, y + 30);
-    doc.setTextColor(motExpired ? failColor : "#000000");
-    doc.text(vehicle ? (motExpired ? `EXPIRED (${vehicle.motExpiry})` : vehicle.motExpiry || "N/A") : "N/A", 48, y + 30);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(grayColor);
-    doc.text("Tax Status:", 14, y + 36);
-    doc.setTextColor(taxExpired ? failColor : "#000000");
-    doc.text(vehicle ? (taxExpired ? `EXPIRED (${vehicle.taxExpiry})` : `Valid (Expires ${vehicle.taxExpiry})`) : "N/A", 48, y + 36);
-
-    // -- CHECK & OPERATOR DETAILS --
-    doc.rect(108, y, 92, 45);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(primaryColor);
-    doc.text("CHECK & OPERATOR DETAILS", 112, y + 5);
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(grayColor);
-    doc.text("Operator Name:", 112, y + 12);
-    doc.setFont("Helvetica", "bold");
-    doc.setTextColor("#000000");
-    doc.text(company ? (company.name || "N/A") : "N/A", 144, y + 12);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(grayColor);
-    doc.text("O-Licence Number:", 112, y + 18);
-    doc.setTextColor("#000000");
-    doc.text(company ? (company.oLicence || "NOT PROVIDED") : "N/A", 144, y + 18);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(grayColor);
-    doc.text("Nominated Driver:", 112, y + 24);
-    doc.setTextColor("#000000");
-    doc.text(driver ? driver.fullName : "Unknown Driver", 144, y + 24);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(grayColor);
-    doc.text("Check Date:", 112, y + 30);
-    doc.setTextColor("#000000");
-    doc.text(check.checkDate || "Unknown", 144, y + 30);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(grayColor);
-    doc.text("Check Duration:", 112, y + 36);
-    doc.setTextColor("#000000");
-    const min = Math.floor((check.durationSeconds || 0) / 60);
-    const sec = (check.durationSeconds || 0) % 60;
-    doc.text(`${min}m ${sec}s ${check.quickCheckAlert ? " (SPEED ALERT - CODE RED)" : ""}`, 144, y + 36);
-
-    y += 50;
-
-    // -- STATUS BANNER --
-    const isPassed = check.result === "nil_defect";
-    const statusBg = isPassed ? passColor : failColor;
-    doc.setFillColor(statusBg);
-    doc.rect(10, y, 190, 10, "F");
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor("#FFFFFF");
-    doc.text(isPassed ? "PASSED - NIL DEFECTS DETECTED DURING WALKAROUND" : "DEFECTS REPORTED - FAULTS SUSPENDING FULL FLEET READINESS", 14, y + 6.5);
-    y += 15;
-
-    // -- TWO-COLUMN CHECKLIST TABLE --
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(primaryColor);
-    doc.text(check.templateName ? `DETAILED CHECKLIST RESULTS: ${check.templateName.toUpperCase()}` : "DETAILED CHECKLIST RESULTS (27 POINT AUDIT)", 10, y);
-    y += 4;
-    doc.setFontSize(8);
-    doc.setTextColor(primaryColor);
-    doc.setLineWidth(0.1);
-    doc.setDrawColor("#CBD5E1");
-    doc.setFillColor("#E2E8F0");
-    doc.rect(10, y, 190, 7, "F");
-    doc.setFont("Helvetica", "bold");
-    doc.text("Item / Area Inspected", 14, y + 5);
-    doc.text("Result", 98, y + 5, { align: "right" });
-    doc.text("Item / Area Inspected", 110, y + 5);
-    doc.text("Result", 196, y + 5, { align: "right" });
-    let tempY = y + 7;
-    doc.setFont("Helvetica", "normal");
-    for (let i = 0; i < 14; i++) {
-      const rIdx = i + 14;
-      if (i % 2 === 0) {
-        doc.setFillColor("#F8FAFC");
-        if (items[i]) doc.rect(10, tempY, 92, 5.5, "F");
-        if (items[rIdx]) doc.rect(106, tempY, 94, 5.5, "F");
-      }
-      if (items[i]) {
-        const item = items[i];
-        doc.setTextColor(primaryColor);
-        doc.setFont("Helvetica", "normal");
-        const lt = item.itemLabel ? (item.itemLabel.length > 38 ? item.itemLabel.slice(0,35)+"..." : item.itemLabel) : "Unknown";
-        doc.text(`${item.sequenceOrder||(i+1)}. ${lt}`, 12, tempY + 4);
-        const rm = getResultMeta(item.result);
-        doc.setTextColor(rm.color);
-        doc.setFont("Helvetica", "bold");
-        doc.text(rm.label, 98, tempY + 4, { align: "right" });
-      }
-      if (items[rIdx]) {
-        const item = items[rIdx];
-        doc.setTextColor(primaryColor);
-        doc.setFont("Helvetica", "normal");
-        const lt = item.itemLabel ? (item.itemLabel.length > 38 ? item.itemLabel.slice(0,35)+"..." : item.itemLabel) : "Unknown";
-        doc.text(`${item.sequenceOrder||(rIdx+1)}. ${lt}`, 108, tempY + 4);
-        const rm = getResultMeta(item.result);
-        doc.setTextColor(rm.color);
-        doc.setFont("Helvetica", "bold");
-        doc.text(rm.label, 196, tempY + 4, { align: "right" });
-      }
-      doc.setDrawColor("#E2E8F0");
-      doc.line(10, tempY + 5.5, 102, tempY + 5.5);
-      doc.line(106, tempY + 5.5, 200, tempY + 5.5);
-      tempY += 5.5;
-    }
-    y = tempY + 5;
-
-    // -- DEFECTS --
-    if (!isPassed && defects && defects.length > 0) {
-      doc.setFont("Helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(primaryColor);
-      doc.text("DEFECTS LOGGED & REPAIR LOOP REPORT", 10, y);
-      y += 4;
-      for (const def of defects) {
-        const descLines = doc.splitTextToSize(`Description: ${def.description||""}`, 120);
-        const upperH = Math.max(50, 34 + (descLines.length-1)*5);
-        const lowerH = def.status === "closed" ? 15 + (descLines.length-1)*5 : 20;
-        const totalH = upperH + lowerH;
-        if (y + totalH + 10 > 280) { doc.addPage(); y = 15; }
-        doc.setDrawColor(failColor); doc.setLineWidth(0.4); doc.setFillColor("#FFF5F5");
-        doc.rect(10, y, 190, totalH, "F"); doc.rect(10, y, 190, totalH);
-        doc.setFont("Helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(failColor);
-        doc.text(`${def.severity === "dangerous" ? "CRITICAL: DANGEROUS (VEHICLE GROUNDED)" : def.severity === "major" ? "URGENT: MAJOR DEFECT" : "ADVISORY: MINOR DEFECT"} - ${def.itemLabel||"Unknown"}`, 14, y + 5);
-        doc.setFont("Helvetica", "normal"); doc.setTextColor("#000000");
-        doc.text(descLines, 14, y + 11);
-        const teY = y + 11 + (descLines.length-1)*5;
-        doc.text(`Reported verbally to: ${def.reportedTo||"Fleet Manager"}`, 14, teY + 6);
-        doc.text(`Logged timestamp: ${new Date(def.createdAt).toLocaleTimeString("en-GB")} UTC`, 14, teY + 12);
-        doc.setDrawColor("#E2E8F0"); doc.setFillColor("#E2E8F0");
-        doc.rect(124, y + 5, 70, Math.max(42, upperH-10), "F");
-        doc.setFont("Helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(grayColor);
-        doc.text(def.photoUrl ? "[PHOTO ATTACHED]" : "No photo", 148, y + 20);
-        doc.line(10, y + upperH + 2, 200, y + upperH + 2);
-        doc.setFont("Helvetica", "bold"); doc.setFontSize(9);
-        if (def.status === "closed") {
-          doc.setTextColor(passColor);
-          doc.text("REPAIRED & SIGNED OFF BY CERTIFIED MECHANIC", 14, y + upperH + 5);
-          doc.setFont("Helvetica", "normal"); doc.setTextColor("#000000");
-          doc.text(`Mechanic: ${def.engineerName||"Unknown"} | Date: ${def.repairCompletedAt ? new Date(def.repairCompletedAt).toLocaleDateString("en-GB") : "N/A"}`, 14, y + upperH + 10);
-          doc.text(`Notes: ${def.repairDescription||""} | Parts: ${def.partsUsed||"None"}`, 14, y + upperH + 15);
-        } else {
-          doc.setTextColor(accentColor);
-          doc.text("CURRENT STATUS: ACTIVE OUTSTANDING DEFECT ON SITE", 14, y + upperH + 5);
-          doc.setFont("Helvetica", "normal"); doc.setTextColor(grayColor);
-          doc.text("Awaiting official engineer sign-off inside the manager portal.", 14, y + upperH + 11);
-        }
-        y += totalH + 4;
-      }
-    } else {
-      doc.setDrawColor(passColor); doc.setLineWidth(0.4); doc.setFillColor("#F0FDF4");
-      doc.rect(10, y, 190, 20, "F"); doc.rect(10, y, 190, 20);
-      doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(passColor);
-      doc.text("ZERO OUTSTANDING COMPLIANCE FAULTS REGISTERED", 14, y + 7);
-      doc.setFont("Helvetica", "normal"); doc.setTextColor(grayColor); doc.setFontSize(9);
-      doc.text("This vehicle has been certified as safe and fully roadworthy in accordance with the standard", 14, y + 12);
-      doc.text("Department for Transport/DVSA guide to maintaining roadworthiness legislation.", 14, y + 17);
-      y += 26;
-    }
-
-    // -- MONITORS --
-    const monitorItems = items.filter((i: any) => i.result === "monitor");
-    if (monitorItems.length > 0) {
-      if (y + 28 > 280) { doc.addPage(); y = 15; }
-      doc.setDrawColor(monitorColor); doc.setLineWidth(0.4); doc.setFillColor("#FFFBEB");
-      doc.rect(10, y, 190, 18, "F"); doc.rect(10, y, 190, 18);
-      doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(monitorColor);
-      doc.text("MONITOR OBSERVATIONS FLAGGED FOR PMI REVIEW", 14, y + 7);
-      doc.setFont("Helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(grayColor);
-      doc.text(`${monitorItems.length} advisory monitor item(s) recorded. These are not defects unless escalated by the operator.`, 14, y + 13);
-      y += 24;
-      monitorItems.forEach((item: any, idx: number) => {
-        const nl = doc.splitTextToSize(item.notes || "No monitor notes added.", item.photoUrl ? 104 : 170);
-        const rh = Math.max(item.photoUrl ? 46 : 18, 14 + nl.length*4);
-        if (y + rh + 8 > 280) { doc.addPage(); y = 15; }
-        doc.setDrawColor("#FBBF24"); doc.setFillColor("#FFFBEB");
-        doc.rect(10, y, 190, rh, "F"); doc.rect(10, y, 190, rh);
-        doc.setFont("Helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(monitorColor);
-        doc.text(`${idx+1}. ${item.itemLabel||"Inspection item"}`, 14, y + 6);
-        doc.setFont("Helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(grayColor);
-        doc.text(nl, 14, y + 12);
-        if (item.photoUrl) { doc.text("[Monitor photo attached]", 132, y + 22); }
-        y += rh + 5;
-      });
-    }
-
-    // -- ITEM PHOTOS --
-    for (let pi = 0; pi < items.length; pi++) {
-      const pit = items[pi];
-      if (pit.photoUrl && typeof pit.photoUrl === "string" && pit.photoUrl.length > 100) {
-        if (y > 250) { doc.addPage(); y = 15; }
-        doc.setFont("Helvetica", "bold"); doc.setFontSize(8); doc.setTextColor("#000000");
-        doc.text(pit.itemLabel || "Item "+(pi+1), 10, y + 5);
-        doc.setFont("Helvetica", "normal"); doc.setFontSize(6);
-        doc.text("Result: "+(pit.result==="monitor"?"MONITOR":pit.result==="fail"?"FAIL":"PASS"), 10, y + 10);
-        if (pit.notes) doc.text(doc.splitTextToSize(pit.notes, 95), 10, y + 15);
-        doc.setDrawColor("#E2E8F0");
-        doc.rect(112, y + 1, 82, 52);
-        doc.text("[Photo attached]", 130, y + 24);
-        y += 58;
-      }
-    }
-
-    // -- MISC DAMAGE --
-    if (check.miscDamageNotes || check.miscDamagePhotoUrl) {
-      if (y + 40 > 280) { doc.addPage(); y = 15; }
-      doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(primaryColor);
-      doc.text("MISCELLANEOUS DRIVER FIELD NOTES & DAMAGE RECORD", 10, y);
-      y += 4;
-      const nt = check.miscDamageNotes || "No cosmetic damage notes described.";
-      const nls = doc.splitTextToSize(nt, check.miscDamagePhotoUrl ? 115 : 175);
-      const bh = Math.max(25, nls.length*4.5+10);
-      doc.setDrawColor("#94A3B8"); doc.setFillColor("#F8FAFC");
-      doc.rect(10, y, 190, bh, "F"); doc.rect(10, y, 190, bh);
-      doc.setFont("Helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(grayColor);
-      doc.text(nls, 14, y + 6);
-      if (check.miscDamagePhotoUrl) { doc.text("[Damage photo attached]", 132, y + bh/2); }
-      y += bh + 8;
-    }
-
-    // -- SIGNATURE & SEAL --
-    if (y + 50 > 280) { doc.addPage(); y = 15; }
-    doc.setDrawColor("#0D1F2D"); doc.setLineWidth(0.3);
-    doc.rect(10, y, 190, 45);
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(primaryColor);
-    doc.text("CERTIFICATION & DIGITAL SEAL OF COMPLIANCE", 14, y + 7);
-    doc.setFont("Helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(grayColor);
-    doc.text("Driver / Operator Digital Signature:", 14, y + 15);
-    doc.setDrawColor("#E2E8F0"); doc.setFillColor("#FFFFFF");
-    doc.rect(80, y + 5, 60, 18, "F");
-    doc.text(check.driverSignature && check.driverSignature.length > 50 ? "[Signature recorded]" : "[No signature]", 95, y + 16);
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(9);
-    doc.setTextColor(isPassed ? passColor : failColor);
-    doc.text(isPassed ? "APPROVED - ROADWORTHY" : "UNAPPROVED - GROUNDED", 156, y + 13);
-    y += 50;
-
-    // -- FOOTER --
-    if (y + 20 > 280) { doc.addPage(); y = 15; }
-    doc.setDrawColor(primaryColor); doc.setLineWidth(0.3);
-    doc.line(10, y, 200, y);
-    doc.setFont("Helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(primaryColor);
-    doc.text(`Record Reference: WS-${check.id ? check.id.toUpperCase().substring(0,16) : "UNKNOWN"}`, 10, y + 4.5);
-    doc.setFont("Helvetica", "normal"); doc.setTextColor(grayColor); doc.setFontSize(6);
-    doc.text(`Generated At: ${new Date().toLocaleDateString("en-GB")} ${new Date().toLocaleTimeString("en-GB")} UTC | Stored on Secure Cloud Archive`, 10, y + 9);
-    doc.text("This document is a certified compliance record generated through WalkSafe. Retain for 15 months minimum.", 10, y + 13);
-
+    // Use the app's exact PDF generator
+    const doc = generateDVSA_PDF(check, vehicle, driver, company, relatedDefects);
     const pdfBuffer = doc.output('arraybuffer');
+    const vehReg = vehicleRow ? (vehicleRow.registration || "").toUpperCase() : "UNKNOWN";
+
     return new Response(pdfBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="WalkSafe_${vehReg}_${check.checkDate || "report"}.pdf"`,
+        'Content-Disposition': `attachment; filename="WalkSafe_${vehReg}_${checkRow.checkDate || "report"}.pdf"`,
         'Content-Length': pdfBuffer.byteLength.toString()
       }
     });
   } catch (e: any) {
     console.error("[PDF Report] Error:", e);
-    const errMsg = e?.message || String(e);
-    // Fallback: generate a simple PDF without jspdf
-    try {
-      const vehReg = "REPORT";
-      const checkDate = "unknown";
-      const pdf = generateSimplePDF(check, vehicle, driver, company, defects);
-      return new Response(pdf, {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="WalkSafe_${vehReg}_${check.checkDate || "report"}.pdf"`,
-        }
-      });
-    } catch (e2: any) {
-      console.error("[PDF Report] Fallback also failed:", e2);
-      return c.html(`<!doctype html><html><head><meta charset="utf-8"><title>WalkSafe Report</title><style>body{font-family:Arial,sans-serif;text-align:center;padding:40px;color:#991b1b;}h1{font-size:20px;}</style></head><body><h1>Could not generate PDF report</h1><p>${errMsg}</p></body></html>`);
-    }
+    return c.json({ error: "Could not generate PDF. " + (e?.message || String(e)) }, 500);
   }
 });
 
