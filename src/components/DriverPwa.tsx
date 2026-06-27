@@ -774,7 +774,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
 
     // If this item requires a photo and no photo has been taken, open camera first
-    if (currentItem.requiresPhoto && !requiredPhotoUrl) {
+    if (!requiredPhotoUrl) {
       setRequiredPhotoItemKey(currentItem.key);
       setCameraMode('defect');  // Reuse camera but for mandatory photo
       return;
@@ -816,7 +816,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   const handleItemMonitor = () => {
     if (!assignedVehicle) return;
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
-    if (currentItem.requiresPhoto && !requiredPhotoUrl) {
+    if (!requiredPhotoUrl) {
       setRequiredPhotoItemKey(currentItem.key);
       setCameraMode("defect");
       return;
@@ -851,7 +851,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
 
     // If this item requires a photo and no photo has been taken, open camera first
-    if (currentItem.requiresPhoto && !requiredPhotoUrl) {
+    if (!requiredPhotoUrl) {
       setRequiredPhotoItemKey(currentItem.key);
       setCameraMode('defect');  // Reuse camera but for mandatory photo
       return;
