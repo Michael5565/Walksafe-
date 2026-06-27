@@ -80,6 +80,7 @@ export interface WalkaroundCheck {
   miscDamageNotes?: string;
   miscDamagePhotoUrl?: string;
   templateName?: string;
+  monitors?: { itemKey: string; itemLabel: string; photoUrl?: string; createdAt: string; resolvedAt?: string }[];
 }
 
 export interface Defect {

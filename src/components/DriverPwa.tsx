@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   Shield, Truck, AlertTriangle, CheckCircle, RefreshCw, X, Play, Clock, 
   BookOpen, ChevronDown, Check, AlertOctagon, User, Phone, ArrowLeft, ArrowRight, Download, Lock,
-  Trash2, LogOut, CheckSquare, Calendar, Camera, MapPin, Image, Megaphone
+  Trash2, LogOut, CheckSquare, Calendar, Camera, MapPin, Image, Megaphone, Flag
 } from "lucide-react";
 import { Vehicle, Driver, WalkaroundCheck, Defect, Company, CHECKLIST_ITEMS, CheckItemResult, DefectSeverity, Announcement, ScheduledChecklist, ChecklistTemplate } from "../types";
 import SignaturePad from "./SignaturePad";
@@ -812,6 +812,30 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
   };
 
   const handleItemFail = () => {
+  const handleItemMonitor = () => {
+    if (!assignedVehicle) return;
+    const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
+    if (currentItem.requiresPhoto && !requiredPhotoUrl) {
+      setRequiredPhotoItemKey(currentItem.key);
+      setCameraMode("defect");
+      return;
+    }
+    const resultItem: any = {
+      itemKey: currentItem.key,
+      itemLabel: currentItem.label,
+      result: "monitor" as const
+    };
+    if (requiredPhotoUrl) {
+      resultItem.photoUrl = requiredPhotoUrl;
+      setRequiredPhotoUrl("");
+      setRequiredPhotoItemKey(null);
+    }
+    const updated = [...activeCheckResults.filter(r => r.itemKey !== currentItem.key), resultItem];
+    setActiveCheckResults(updated);
+    advanceWizard(updated);
+  };
+
+
     // Open the defect modal configuration
     setDefectSeverity('major');
     setDefectDescription("");
@@ -895,6 +919,7 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
       driverSignature: driverSignature || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='30'></svg>",
       items: wizardItems.map(w => { const r = activeCheckResults.find(a => a.itemKey === w.itemKey); return { itemKey: w.itemKey, itemLabel: w.itemLabel, result: r ? r.result : "pass", sequenceOrder: w.sequenceOrder, photoUrl: (r as any)?.photoUrl || undefined }; }),
       itemPhotos: activeCheckResults.filter(r => (r as any).photoUrl).map(r => ({ itemKey: r.itemKey, photoUrl: (r as any).photoUrl })),
+      monitors: activeCheckResults.filter(r => r.result === "monitor").map(r => ({ itemKey: r.itemKey, itemLabel: r.itemLabel, photoUrl: (r as any).photoUrl, createdAt: new Date().toISOString() })),
       latitude: gpsCoords?.latitude || null,
       longitude: gpsCoords?.longitude || null,
       miscDamageNotes,
@@ -2275,7 +2300,32 @@ try {
                   </div>
                 </div>
 
-                <div className="mt-6 bg-amber-950/20 rounded-lg p-3 border border-amber-500/25 text-xs text-secondary-container">
+                // --- PREVIOUS MONITORS SNIPPET ---
+            {(() => {
+              const prevChecks = checks.filter(c => c.vehicleId === assignedVehicle.id && c.items && c.items.some(i => i.result === "monitor")).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+              const activeMons = prevChecks.length > 0 ? prevChecks[0].monitors.filter((m: any) => !m.resolvedAt) : [];
+              if (activeMons.length === 0) return null;
+              return (
+                <div className="mt-4 bg-amber-50 border border-amber-300 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Flag className="w-4 h-4 text-amber-600" />
+                    <span className="font-bold text-sm text-amber-800">Previous Monitors ({activeMons.length})</span>
+                  </div>
+                  {activeMons.slice(0,3).map((m: any, i: number) => (
+                    <div key={i} className="flex items-start gap-2 text-xs text-amber-700 mb-1.5">
+                      {m.photoUrl && <img src={m.photoUrl} className="w-12 h-12 rounded object-cover shrink-0" />}
+                      <div>
+                        <span className="font-bold">{m.itemLabel}</span>
+                        {m.notes && <span className="block text-amber-600">{m.notes}</span>}
+                        <span className="block text-amber-500">{(new Date(m.createdAt)).toLocaleDateString("en-GB")}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+            
+            <div className="mt-6 bg-amber-950/20 rounded-lg p-3 border border-amber-500/25 text-xs text-secondary-container">
                   ⚠️ <strong>DVSA LAWS:</strong> This check should take 10–15 minutes. Completing it in under 5 minutes will flag your record for manager compliance review.
                 </div>
               </div>
