@@ -813,7 +813,6 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     advanceWizard(updated);
   };
 
-  const handleItemFail = () => {
   const handleItemMonitor = () => {
     if (!assignedVehicle) return;
     const currentItem = getRelevantChecklist(assignedVehicle, activeTemplateId)[currentItemIndex];
@@ -836,6 +835,8 @@ const [activeTemplateName, setActiveTemplateName] = useState<string | undefined>
     setActiveCheckResults(updated);
     advanceWizard(updated);
   };
+
+  const handleItemFail = () => {
 
 
     // Open the defect modal configuration
