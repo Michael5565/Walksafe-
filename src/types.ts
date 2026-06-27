@@ -48,7 +48,7 @@ export interface Driver {
 }
 
 export type CheckResult = 'nil_defect' | 'defect' | 'incomplete';
-export type ItemResult = 'pass' | 'fail' | 'na';
+export type ItemResult = 'pass' | 'fail' | 'monitor' | 'na';
 export type DefectSeverity = 'dangerous' | 'major' | 'minor';
 export type DefectStatus = 'open' | 'in_repair' | 'closed';
 
