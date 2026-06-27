@@ -347,19 +347,20 @@ export default function ManagerDashboard({
   
   // Plan-based feature gating
   const planTier = company.plan || 'starter';
+  // All plans get the same core DVSA tabs — vehicle limits differ, not features
   const allowedTabs: Record<string, string[]> = {
-    'solo': ['overview', 'defects', 'vehicles', 'drivers', 'templates', 'billing', 'settings'],
-    'owner-driver': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'templates', 'settings', 'billing'],
-    'starter': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'operations', 'schedules', 'templates', 'settings', 'billing'],
-    'growth': ['overview', 'analytics', 'fleetmap', 'vehicles', 'maintenance', 'fuel', 'parts', 'workorders', 'schedules', 'defects', 'records', 'operations', 'drivers', 'templates', 'billing', 'settings'],
-    'enterprise': ['overview', 'analytics', 'fleetmap', 'vehicles', 'maintenance', 'fuel', 'parts', 'workorders', 'schedules', 'defects', 'records', 'operations', 'drivers', 'templates', 'billing', 'settings'],
+    'solo': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'schedules', 'templates', 'billing', 'settings'],
+    'owner-driver': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'schedules', 'templates', 'billing', 'settings'],
+    'starter': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'schedules', 'templates', 'billing', 'settings'],
+    'growth': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'schedules', 'templates', 'billing', 'settings'],
+    'enterprise': ['overview', 'vehicles', 'drivers', 'defects', 'records', 'schedules', 'templates', 'billing', 'settings'],
   };
   const myTabs = allowedTabs[planTier] || allowedTabs['starter'];
   const guardedSetTab = (tab: string) => {
     if (myTabs.includes(tab)) {
       setActiveTab(tab as any);
     } else {
-      alert(`This feature requires the Growth plan or higher. Please upgrade from Billing & Plans.`);
+      setActiveTab('overview'); // Silently redirect to overview for hidden tabs
     }
   };
   const isTabAllowed = (tabId: string) => myTabs.includes(tabId);
@@ -1010,27 +1011,16 @@ try { consolidatedDoc.save('WalkSafe_Consolidated_' + reportDateFrom + '_to_' + 
                 <nav className="flex-1 px-2 space-y-0.5 overflow-y-auto">
           {(() => {
             const sections = [
-              { name: 'DASHBOARD', icon: 'dashboard', items: [
+              { name: 'DVSA COMPLIANCE', icon: 'verified', items: [
                 { id: 'overview', label: "Today's Overview" },
-                { id: 'analytics', label: 'Analytics' },
-                { id: 'fleetmap', label: 'Fleet Map' },
-              ]},
-              { name: 'FLEET', icon: 'local_shipping', items: [
                 { id: 'vehicles', label: 'Vehicle Fleet' },
-                { id: 'maintenance', label: 'Maintenance' },
-                { id: 'fuel', label: 'Fuel & Costs' },
-                { id: 'parts', label: 'Parts' },
-                { id: 'workorders', label: 'Work Orders' },
-              ]},
-              { name: 'COMPLIANCE', icon: 'verified', items: [
-                { id: 'schedules', label: 'Compliance Schedules' },
+                { id: 'drivers', label: 'Drivers & PINs' },
                 { id: 'defects', label: 'Defect Triage' },
                 { id: 'records', label: 'Compliance Log' },
-                { id: 'operations', label: 'Operations & Comms' },
-                { id: 'drivers', label: 'Drivers & PINs' },
-              ]},
-              { name: 'CONFIG', icon: 'settings', items: [
+                { id: 'schedules', label: 'Schedules' },
                 { id: 'templates', label: 'Templates' },
+              ]},
+              { name: 'ACCOUNT', icon: 'settings', items: [
                 { id: 'billing', label: 'Billing & Plans' },
                 { id: 'settings', label: 'Settings' },
               ]},
