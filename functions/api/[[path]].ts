@@ -218,27 +218,6 @@ function buildEmailHtml(title, body) {
     '<div style="text-align:center;margin-top:16px;"><p style="color:#a0a09a;font-size:11px;margin:0;">WalkSafe Fleet Compliance &copy; 2026</p></div>' +
     '</div>';
 }
-
-    const b = atob(c);
-    const a = new Uint8Array(b.length);
-    for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
-    return a.buffer;
-  };
-  const b64 = (o) => btoa(JSON.stringify(o)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const msg = b64(header) + "." + b64(payload);
-  const key = await crypto.subtle.importKey("pkcs8", decodeKey(env.FCM_PRIVATE_KEY), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
-  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(msg));
-  const sSig = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  const jwt = msg + "." + sSig;
-  const res = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=" + jwt,
-  });
-  const data = await res.json();
-  return data.access_token;
-}
-
 async function setFirebaseEmailVerified(env, uid) {
   const token = await getFirebaseAdminToken(env);
   if (!token) return false;
